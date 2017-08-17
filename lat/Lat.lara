@@ -1,6 +1,12 @@
 import lat.LatVar;
+import lat.LatConsts;
+import lat.LatUtils;
 
 var Lat = function(name) {
     println(name);
     this.name = name;
+};
+
+Lat.prototype.tune = function() {
+    LatUtils._error("function not implemented " + this);
 };
