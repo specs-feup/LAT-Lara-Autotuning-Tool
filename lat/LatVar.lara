@@ -1,0 +1,11 @@
+import lat.LatVarList;
+import lat.LatVarRange;
+import lat.LatVarOmp;
+
+var LatVar = function() {
+
+};
+
+LatVar.prototype.print = function() {
+    println("LatVar Hello");
+}
