@@ -1,0 +1,11 @@
+var LatVarList = function(name, value) {
+    LatVar.call(this, name);
+    this.value = value;
+};
+
+LatVarList.prototype = Object.create(LatVar.prototype);
+LatVarList.prototype.constructor = LatVarList;
+
+LatVarList.prototype.print = function() {
+    println(this.name + " - " + this.value);
+};

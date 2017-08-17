@@ -1,10 +1,16 @@
 import lat.LatVar;
+
+import lat.LatVarList;
+import lat.LatVarRange;
+import lat.LatVarOmp;
+
 import lat.LatConsts;
 import lat.LatUtils;
 
 var Lat = function(name) {
     println(name);
     this.name = name;
+    this.vars = [];
 };
 
 Lat.prototype.tune = function() {
