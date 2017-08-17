@@ -6,7 +6,7 @@
 
 ## Classes
 
- - ### **Lat**
+### **Lat**
 The main class for the tool, this will represent a region to autotune and all the associated configurations and hold all the variables and methods to invoke.
 
 ##### Properties
@@ -51,7 +51,7 @@ The main class for the tool, this will represent a region to autotune and all th
  - **`estimateTime()`** - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds. 
 
 
-  ### **LatVar** 
+### **LatVar** 
 The parent class for representing a named variable. This works like a Java Interface or a C++ Virtual Class. 
 
 ##### Properties
@@ -64,7 +64,7 @@ The parent class for representing a named variable. This works like a Java Inter
 
 It is not to be invoked on its own, choose one of the following **accessible** sub-classes, that inherit its properties and methods:
 
-   - #### LatVarList
+#### LatVarList
 Used to define a variable that varies withtin a the values of a list;
 
 ##### Properties
@@ -74,7 +74,7 @@ Used to define a variable that varies withtin a the values of a list;
 ##### Methods
  - **`LatVarList(name, elements)`** - Constructor, elements is optional and can be changed through the property. 
     
-   - #### LatVarRange
+#### LatVarRange
 Used to define a variable that has a starting value, a finish value, a step incremention and optionally a function to be called to get the next element from the previous. Apart from the `function` property it works like a `for` loop. 
 
 ##### Properties
@@ -88,7 +88,7 @@ Used to define a variable that has a starting value, a finish value, a step incr
  - **`LatVarRange(start, end, step, function)`** - Constructor, `step` and `function` are optional.  
 
 ---
-   - #### LatVarOmp
+#### LatVarOmp
 Used to control the flow of an OpenMP variable or variables
 
 **To be defined**
