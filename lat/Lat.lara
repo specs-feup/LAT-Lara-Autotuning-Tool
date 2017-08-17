@@ -1,0 +1,6 @@
+import lat.LatVar;
+
+var Lat = function(name) {
+    println(name);
+    this.name = name;
+};
