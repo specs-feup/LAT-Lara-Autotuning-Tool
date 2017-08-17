@@ -26,7 +26,6 @@ The main class for the tool, this will represent a region to autotune and all th
 
 ##### Defaults
 
-<center>
 |    property    |   default   |        accepted        |
 |:--------------:|:-----------:|:----------------------:|
 |     `name`     |   required  |                        |
@@ -41,7 +40,6 @@ The main class for the tool, this will represent a region to autotune and all th
 |    `verbose`   |     true    |         boolean        |
 |     `abort`    |    false    |         boolean        |
 |    `timeout`   |     360     |      unsigned int      |
-</center>
 
 ##### Methods
 
