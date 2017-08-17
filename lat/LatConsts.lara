@@ -1,0 +1,34 @@
+//NOTE: When adding constants and methods, make sure constants start with UPPERCASE and methods with lowercase
+
+var LatConst = {};
+
+/**
+ * Display all the available properties
+ */
+LatConst.getAvailable = function() {
+    for (var property in this) { //iterate LatConst elements
+        if (property.charAt(0).toUpperCase() == property.charAt(0)) { //only the properties start with uppercase
+            println("LatConst." + property);
+        }
+    }
+};
+
+/**
+ * Read the total number of hardware threads on the CPU for the current machine
+ */
+LatConst.getNumCpuThreads = function() {
+    //TODO: read from the system
+    return 10;
+};
+
+/**
+ * Read the cache line size in bytes for the current machine
+ */
+LatConst.getCacheLineSize = function() {
+    //TODO: read from the system
+    return 10;
+};
+
+//CONSTANTS
+LatConst.NUM_CPU_THREADS = LatConst.getNumCpuThreads();
+LatConst.L1_CACHE_LINESIZE = 2048;
