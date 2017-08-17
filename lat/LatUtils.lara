@@ -1,0 +1,9 @@
+var LatUtils = {};
+
+LatUtils._error = function(message) {
+    throw new Error("Lat error: " + message);
+};
+
+LatUtils._warn = function(message) {
+    println("Lat warning: " + message);
+};
