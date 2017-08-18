@@ -45,8 +45,8 @@ The main class for the tool, this will represent a region to autotune and all th
 
  - `Lat(name, scope, measure, variables, searchType, numTests, clearCode, verbose, abort, timeout)` - Constructor, apart from the first two parameters (`name` and `scope`) all the other variables can be left to their default values;
  - `tune()` - Start the tuning of the code;
- - `toConfig()` - Save the current properties of the **Lat** instance to a `.xml` file for future reuse, including the variables inside it;
- - `fromConfig(filename)` - Load a `.xml` file into a Lat instance;
+ - `toConfig()` - Save the current properties of the **Lat** instance to a `.json` file for future reuse, including the variables inside it;
+ - `fromConfig(filename)` - Load a `.json` file into a Lat instance;
  - `countVariants()` - Returns an int with the number of variants the current configuration will execute;
  - `estimateTime()` - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds. 
 
