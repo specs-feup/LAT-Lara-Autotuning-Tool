@@ -7,6 +7,8 @@ import lat.LatVarOmp;
 import lat.LatConsts;
 import lat.LatUtils;
 
+import lara.Io;
+
 var Lat = function(name) {
     println(name);
     this.name = name;
@@ -14,5 +16,36 @@ var Lat = function(name) {
 };
 
 Lat.prototype.tune = function() {
-    LatUtils._error("function not implemented " + this);
+    LatUtils._error("function tune not implemented");
+};
+
+
+Lat.prototype.toConfig = function(filename) {
+    filename = LatUtils.getRightExtension(filename, "json");
+    writeFile(filename, JSON.stringify(this));
+};
+
+Lat.prototype.fromConfig = function(filename) {
+    //TODO: this try catch is not working
+    try {
+        var filecontents = readFile(filename);
+    } catch (error) {
+        LatUtils._error("the file: '" + filename + "' does not exist.");
+    }
+    println("CONTENTS: " + filecontents);
+
+    var temp = JSON.parse(filecontents);
+    for (var property in temp) {
+        println("property: " + property + " = " + temp[property]);
+        //this["temp"] = temp[property];
+    }
+    println("name is:" + this.name);
+};
+
+Lat.prototype.countVariants = function() {
+    LatUtils._error("function countVariants not implemented");
+};
+
+Lat.prototype.estimateTime = function() {
+    LatUtils._error("function estimateTime not implemented");
 };
