@@ -7,3 +7,17 @@ LatUtils._error = function(message) {
 LatUtils._warn = function(message) {
     println("Lat warning: " + message);
 };
+
+/**
+ * Return a file name with the extension passed, only changes filename if this condition is not met
+ * @param filename the original filename
+ * @param extension the extension to force (without the '.', eg. 'json')
+ * @return filename altered if necessary to end in the specified extension, it will be appended if necessary
+ */
+LatUtils.getRightExtension = function(filename, extension) {
+    var realExtension = filename.split('.').pop();
+    if (realExtension != extension) {
+        filename += "." + extension;
+    }
+    return filename;
+};
