@@ -7,5 +7,11 @@ LatVar.prototype.print = function() {
 };
 
 LatVar.prototype.getNext = function() {
-    return 10000;
+    LatUtils._error("function getNext not implemented");
+};
+LatVar.prototype.hasNext = function() {
+    LatUtils._error("function hasNext not implemented");
+};
+LatVar.prototype.restart = function() {
+    LatUtils._error("function restart not implemented");
 };
