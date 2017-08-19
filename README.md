@@ -114,7 +114,9 @@ Since the same code can have different behaviours according to the phisical syst
 
 There are a few values that Lat requires that are grouped in the **LatConst** class, namely:
 
-1. SEARCH_TYPE - Ane enum used to specify the search type (`LatConst.SEARCH_TYPE.INDEPENDENT`, `LatConst.SEARCH_TYPE.DEPENDENT`)
+1. SEARCH_TYPE - An enum used to specify the search, values: 
+   - `LatConst.SEARCH_TYPE.INDEPENDENT`
+   - `LatConst.SEARCH_TYPE.DEPENDENT`
 
 
 ## Examples
