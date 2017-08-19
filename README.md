@@ -39,7 +39,7 @@ The main class for the tool, this will represent a region to autotune and all th
 |   `clearCode`  |     true    |         boolean        |
 |    `verbose`   |     true    |         boolean        |
 |     `abort`    |    false    |         boolean        |
-|    `timeout`   |     360     |      unsigned int      |
+|    `timeout`   |      0      |      unsigned int      |
 
 ##### Methods
 
