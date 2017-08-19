@@ -35,5 +35,6 @@ LatConst.L1_CACHE_LINESIZE = LatConst.getCacheLineSize();
 
 LatConst.SEARCH_TYPE = {
     INDEPENDENT: 1,
-    DEPENDENT: 0
+    DEPENDENT: 2,
+    CUSTOM: 3
 };
