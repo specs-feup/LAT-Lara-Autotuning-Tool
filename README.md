@@ -49,7 +49,7 @@ The main class for the tool, this will represent a region to autotune and all th
  - `toConfig()` - Save the current properties of the **Lat** instance to a `.json` file for future reuse, including the variables inside it;
  - `fromConfig(filename)` - Load a `.json` file into a Lat instance;
  - `countVariants()` - Returns an int with the number of variants the current configuration will execute;
- - `estimateTime()` - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds. 
+ - `estimateTime()` - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds for all the variants. 
 
 
 ### **LatVar** 
@@ -106,8 +106,15 @@ Used to control the flow of an OpenMP variable or variables
 
 Since the same code can have different behaviours according to the phisical system it is running on, there are a few variables that can be invoked in `Lat` that will be system dependent, such as: 
 
-1. NUM_CPU_THREADS - Total number of hardware threads on the CPU
-2. L1_CACHE_LINESIZE - L1 cache line size in bytes
+1. NUM_CPU_THREADS - Total number of hardware threads on the CPU (`LatConst.NUM_CPU_THREADS`)
+2. L1_CACHE_LINESIZE - L1 cache line size in bytes (`LatConst.L1_CACHE_LINESIZE`)
+
+
+## Global Constants
+
+There are a few values that Lat requires that are grouped in the **LatConst** class, namely:
+
+1. SEARCH_TYPE - Ane enum used to specify the search type (`LatConst.SEARCH_TYPE.INDEPENDENT`, `LatConst.SEARCH_TYPE.DEPENDENT`)
 
 
 ## Examples
