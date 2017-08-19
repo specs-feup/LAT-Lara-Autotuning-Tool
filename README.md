@@ -51,6 +51,7 @@ The main class for the tool, this will represent a region to autotune and all th
  - `countVariants()` - Returns an int with the number of variants the current configuration will execute;
  - `estimateTime()` - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds for all the variants. 
 
+---
 
 ### **LatVar** 
 The parent class for representing a named variable. This works like a Java Interface or a C++ Virtual Class. 
@@ -65,6 +66,8 @@ The parent class for representing a named variable. This works like a Java Inter
 
 It is not to be invoked on its own, choose one of the following **accessible** sub-classes, that inherit its properties and methods:
 
+---
+
 ### LatVarList
 Used to define a variable that varies withtin a the values of a list;
 
@@ -74,6 +77,8 @@ Used to define a variable that varies withtin a the values of a list;
 
 ##### Methods
  - `LatVarList(name, elements)` - Constructor, elements is optional and can be changed through the property. 
+    
+---
     
 ### LatVarRange
 Used to define a variable that has a starting value, a finish value, a step incremention and optionally a function to be called to get the next element from the previous. Apart from the `function` property it works like a `for` loop. 
@@ -100,7 +105,6 @@ Used to control the flow of an OpenMP variable or variables
 
 ##### Methods
  - ` ` - 
----
 
 ## System Specific Variables
 
