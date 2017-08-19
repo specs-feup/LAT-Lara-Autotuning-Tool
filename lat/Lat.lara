@@ -9,9 +9,13 @@ import lat.LatUtils;
 
 import lara.Io;
 
-var Lat = function(name) {
-    println(name);
-    this.name = name;
+//TODO: INCLUIR VARIÁVEL QUE DIZ A PASTA ONDE SE GERA O CODIGO E AQUELA ONDE APARECEM OS RESULTADOS E AQUELAS TIPO SHOW RESULTS AS CHARTS OU MELHOR, TORNAR ISSO NUMA FUNÇÃO
+
+var Lat = function(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout) {
+    this.loadDefaults(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout);
+
+    //this["name"] = name;
+
     this.vars = [];
 };
 
@@ -26,14 +30,9 @@ Lat.prototype.toConfig = function(filename) {
 };
 
 Lat.prototype.fromConfig = function(filename) {
-    //TODO: this try catch is not working
-    try {
-        var filecontents = readFile(filename);
-    } catch (error) {
-        LatUtils._error("the file: '" + filename + "' does not exist.");
-    }
-    println("CONTENTS: " + filecontents);
+    var filecontents = readFile(filename);
 
+    println("CONTENTS: " + filecontents);
     var temp = JSON.parse(filecontents);
     for (var property in temp) {
         println("property: " + property + " = " + temp[property]);
@@ -48,4 +47,30 @@ Lat.prototype.countVariants = function() {
 
 Lat.prototype.estimateTime = function() {
     LatUtils._error("function estimateTime not implemented");
+};
+
+
+
+//Helper functions (code compartimentalization)
+Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout) {
+    this.name = this.validateProperty("name", name);
+    this.scope = this.validateProperty("scope", scope);
+    this.variables = this.validateProperty("variables", variables, []);
+    this.measure = this.validateProperty("measure", measure, scope);
+    this.searchType = this.validateProperty("searchType", searchType, LatConst.SEARCH_TYPE.INDEPENDENT);
+    this.numTests = this.validateProperty("numTests", numTests, 1);
+    this.clearCode = this.validateProperty("clearCode", clearCode, false);
+    this.verbose = this.validateProperty("verbose", verbose, false);
+    this.abort = this.validateProperty("abort", abort, false);
+    this.timeout = this.validateProperty("timeout", timeout, 0);
+};
+
+Lat.prototype.validateProperty = function(propertyName, value, defaultValue) {
+    if (defaultValue === undefined && value === undefined) {
+        LatUtils._error("The value specified for the property '" + propertyName + "' is undefined and it is a required property");
+    }
+    if (value === undefined) {
+        value = defaultValue;
+    }
+    return value;
 };
