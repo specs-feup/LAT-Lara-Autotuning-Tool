@@ -31,4 +31,9 @@ LatConst.getCacheLineSize = function() {
 
 //CONSTANTS
 LatConst.NUM_CPU_THREADS = LatConst.getNumCpuThreads();
-LatConst.L1_CACHE_LINESIZE = 2048;
+LatConst.L1_CACHE_LINESIZE = LatConst.getCacheLineSize();
+
+LatConst.SEARCH_TYPE = {
+    INDEPENDENT: 1,
+    DEPENDENT: 0
+};
