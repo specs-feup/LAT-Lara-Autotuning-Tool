@@ -6,6 +6,13 @@ var LatVarList = function(name, value) {
 LatVarList.prototype = Object.create(LatVar.prototype);
 LatVarList.prototype.constructor = LatVarList;
 
-LatVarList.prototype.print = function() {
-    println(this.name + " - " + this.value);
+//Functions overloaded from LatVar
+LatVarList.prototype.getNext = function() {
+    LatUtils._error("function getNext not implemented");
+};
+LatVarList.prototype.hasNext = function() {
+    LatUtils._error("function hasNext not implemented");
+};
+LatVarList.prototype.restart = function() {
+    LatUtils._error("function restart not implemented");
 };

@@ -1,0 +1,18 @@
+var LatVarOmp = function(name, value) {
+    LatVar.call(this, name);
+    this.value = value;
+};
+
+LatVarOmp.prototype = Object.create(LatVar.prototype);
+LatVarOmp.prototype.constructor = LatVarOmp;
+
+//Functions overloaded from LatVar
+LatVarOmp.prototype.getNext = function() {
+    LatUtils._error("function getNext not implemented");
+};
+LatVarOmp.prototype.hasNext = function() {
+    LatUtils._error("function hasNext not implemented");
+};
+LatVarOmp.prototype.restart = function() {
+    LatUtils._error("function restart not implemented");
+};
