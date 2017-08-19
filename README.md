@@ -43,7 +43,8 @@ The main class for the tool, this will represent a region to autotune and all th
 
 ##### Methods
 
- - `Lat(name, scope, measure, variables, searchType, numTests, clearCode, verbose, abort, timeout)` - Constructor, apart from the first two parameters (`name` and `scope`) all the other variables can be left to their default values;
+ - `Lat(name, scope)` - Constructor, with the required parameters only;
+ - `Lat(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout)` - Constructor, apart from the first two parameters (`name` and `scope`) all the other variables are optional, but must be supplied in this order;
  - `tune()` - Start the tuning of the code;
  - `toConfig()` - Save the current properties of the **Lat** instance to a `.json` file for future reuse, including the variables inside it;
  - `fromConfig(filename)` - Load a `.json` file into a Lat instance;
