@@ -33,7 +33,7 @@ The main class for the tool, this will represent a region to autotune and all th
 |     `scope`    |   required  |        joinpoint       |
 |    `measure`   |    scope    |        joinpoint       |
 |   `variables`  |      []     |         LatVar         |
-| `searchGroups` |      []     |     lists of Latvar    |
+| `searchGroups` |      []     |     lists of LatVar    |
 |  `searchType`  | independent |  LatConst.SEARCH_TYPE  |
 |   `numTests`   |      1      |      unsigned int      |
 |   `compiler`   |     auto    |          none          |
@@ -68,7 +68,7 @@ As for the **Lat** constructors you can specify as many parameters as you want, 
  - `addVariable(LatVar)`
  - `setSearchGroups(searchGroups)`
  - `addSearchGroup(searchGroup)` - a search group is a list of one or more LatVar variables that 
- - `setSearchType(searchType)`
+ - `setSearchType(searchType)` - only `LatConst.SEARCH_TYPE.INDEPENDENT` and `LatConst.SEARCH_TYPE.DEPENDENT` accepted. If you change this after you have set any `searchGroups`, the searchGroup specifications will be reset accordingly (see [properties](#properties)). If you have set any searchGroups, the value of searchType will be `LatConst.SEARCH_TYPE.CUSTOM`;
  - `setNumTests(numTests)`
  - `setCompiler(compiler)`
  - `setClearCode(clearCode)`
