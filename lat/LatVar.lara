@@ -2,8 +2,8 @@ var LatVar = function(name) {
     this.name = name;
 };
 
-LatVar.prototype.print = function() {
-    println("LatVar: " + this.name);
+LatVar.prototype.equals = function(tester) {
+    return this.name === tester.name;
 };
 
 LatVar.prototype.getNext = function() {
