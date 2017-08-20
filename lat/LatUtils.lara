@@ -21,3 +21,76 @@ LatUtils.getRightExtension = function(filename, extension) {
     }
     return filename;
 };
+
+
+//validation functions
+
+LatUtils.isJoinpoint = function(variable) {
+    return typeof variable === LatConst.TYPE.OBJECT && variable.type == LatConst.TYPE.JOINPOINT;
+};
+LatUtils.checkJoinpoint = function(variable, name) {
+    if (!LatUtils.isJoinpoint(variable)) {
+        LatUtils._error(name + "variable requires a joinpoint to be passed - invalid type supplied");
+    }
+};
+
+LatUtils.isBoolean = function(variable) {
+    return typeof variable === LatConst.TYPE.BOOLEAN;
+};
+LatUtils.checkBoolean = function(variable, name) {
+    if (!LatUtils.isBoolean(variable)) {
+        LatUtils._error(name + " variable has to be a boolean to be passed - invalid value supplied");
+    }
+};
+
+LatUtils.isString = function(variable) {
+    return typeof variable === LatConst.TYPE.STRING;
+};
+LatUtils.checkString = function(variable, name) {
+    if (!LatUtils.isString(variable)) {
+        LatUtils._error(name + " variable has to be a string to be passed - invalid value supplied");
+    }
+};
+
+LatUtils.isArray = function(variable) {
+    return variable instanceof Array;
+};
+LatUtils.checkArray = function(variable, name) {
+    if (!LatUtils.isArray(variable)) {
+        LatUtils._error(name + " variable has to be an array to be passed - invalid value supplied");
+    }
+};
+
+LatUtils.isLatVar = function(variable) {
+    return variable instanceof LatVar;
+};
+LatUtils.checkLatVar = function(variable, name) {
+    if (!LatUtils.isLatVar(variable)) {
+        LatUtils._error("element " + name + " has to be a LatVar or one of its children (LatVarList, LatVarRange, LatVarOmp) to be passed - invalid value supplied");
+    }
+};
+LatUtils.checkLatVars = function(variables, name) {
+    LatUtils.checkArray(variables, name);
+    for (var i = 0; i < variables.length; i++) {
+        LatUtils.checkLatVar(variables[i], name + "[" + i + "]");
+    }
+};
+
+LatUtils.checkDuplicateLatVar = function(latVars, latVar, listName) {
+    for (var i = 0; i < latVars.length; i++) {
+        if (latVar.equals(latVars[i])) {
+            LatUtils._error("LatVar: " + latVar.name + " cannot appear more than once in the list " + listName + "(matches the element at position " + i + ")");
+        }
+    }
+};
+LatUtils.checkDuplicatesLatVar = function(latVars, listName) {
+    for (var i = 0; i < latVars.length; i++) {
+        for (var j = 0; j < latVars.length; j++) {
+            if (i != j) {
+                if (latVars[i].equals(latVars[j])) {
+                    LatUtils._error("LatVar: " + latVars[i].name + " cannot appear more than once in the list " + listName + "(matches the element at positions " + i + " and " + j + ")");
+                }
+            }
+        }
+    }
+};
