@@ -38,3 +38,10 @@ LatConst.SEARCH_TYPE = {
     DEPENDENT: 2,
     CUSTOM: 3
 };
+
+LatConst.TYPE = {
+    BOOLEAN: "boolean",
+    STRING: "string",
+    OBJECT: "object",
+    JOINPOINT: "Joinpoint 'type'"
+};
