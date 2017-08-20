@@ -16,30 +16,32 @@ The main class for the tool, this will represent a region to autotune and all th
  - `measure` - a **joinpoint** that specifies the region for the timing to happen, if none is specified then the scope will be used;
  - `variables` - a list of **LatVar** that specifies the actual variables in the code and the values they will assume;
  - `searchType` - Specify how to search for the best match with the given variables. The possibilities are _dependent_ and _independent_ or _custom_. _Dependent_ search will execute every combination of the variables whereas _independent_ search will execute each variable's variation while keeping every other variable to their default. See [Global constants](#global-constants) for more info. _Custom_ search will happen if you specify a value for the **searchGroups** variable;
- - `searchGroups` - A list of variable lists that will specify which variables to tune dependently. From 3 variables: `a`,`b` and `c`: `[a,b]` and `[a,c]` means that variables `a` and `b` will be tuned _dependently_ while keeping the value of `c`, and afterwars `a` and `c` will be tuned _dependently_ while keeping the value of `b`. In this example `[a]`,`[b]`,`[c]` would be the same as _independent_ search and `[a,b,c]` would the same as _dependent_ search;
+ - `searchGroups` - A list of variable lists that will specify which variables to tune dependently. From 3 variables: `a`,`b` and `c`: `[a,b]` and `[a,c]` means that variables `a` and `b` will be tuned _dependently_ while keeping the value of `c`, and afterwars `a` and `c` will be tuned _dependently_ while keeping the value of `b`. In this example, `[a]`,`[b]`,`[c]` would be the same as _independent_ search and `[a,b,c]` would the same as _dependent_ search;
  - `numTests` - How many tests to perform for each variant;
  - `compiler` - (To be defined whether this will be mentioned, since it is automatically detected);
  - `clearCode` - Define whether the generated code variants will be deleted or not;
  - `verbose` - Turn verbose output on and off;
  - `abort` - Define if the tool will stop upon error from one of the variants;
- - `timeout` - Define the maximum amount of time the execution of the tool can take before stopping, in seconds. 0 means there is no timeout.
+ - `timeout` - Define the maximum amount of time the execution of the tool can take before stopping, in seconds. 0 means there is no timeout;
+ - `outputPath` - The directory where the output code and results appear. The generated code will appear in that folder under the folder `/output` and the results under the folder `/results`. Inside the `/output` folder there will be a folder for each variant source code named accordingly to its index in execution: the first variant will be in the folder `/output/1` and so forth.
 
 ##### Defaults
 
-|    property    |   default   |       accepted       |
-|:--------------:|:-----------:|:--------------------:|
-|     `name`     |   required  |                      |
-|     `scope`    |   required  |       joinpoint      |
-|    `measure`   |    scope    |       joinpoint      |
-|   `variables`  |      []     |        LatVar        |
-| `searchGroups` |      []     |    lists of Latvar   |
-|  `searchType`  | independent | LatConst.SEARCH_TYPE |
-|   `numTests`   |      1      |     unsigned int     |
-|   `compiler`   |     auto    |         none         |
-|   `clearCode`  |     true    |        boolean       |
-|    `verbose`   |     true    |        boolean       |
-|     `abort`    |    false    |        boolean       |
-|    `timeout`   |      0      |     unsigned int     |
+|    property    |   default   |        accepted        |
+|:--------------:|:-----------:|:----------------------:|
+|     `name`     |   required  |                        |
+|     `scope`    |   required  |        joinpoint       |
+|    `measure`   |    scope    |        joinpoint       |
+|   `variables`  |      []     |         LatVar         |
+| `searchGroups` |      []     |     lists of Latvar    |
+|  `searchType`  | independent |  LatConst.SEARCH_TYPE  |
+|   `numTests`   |      1      |      unsigned int      |
+|   `compiler`   |     auto    |          none          |
+|   `clearCode`  |     true    |         boolean        |
+|    `verbose`   |     true    |         boolean        |
+|     `abort`    |    false    |         boolean        |
+|    `timeout`   |      0      |      unsigned int      |
+|  `outputPath`  |  curent dir | absolute/relative path |
 
 ##### Methods
 
@@ -52,7 +54,28 @@ As for the **Lat** constructors you can specify as many parameters as you want, 
  - `toConfig()` - Save the current properties of the **Lat** instance to a `.json` file for future reuse, including the variables inside it;
  - `fromConfig(filename)` - Load a `.json` file into a Lat instance;
  - `countVariants()` - Returns an int with the number of variants the current configuration will execute;
- - `estimateTime()` - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds for all the variants. 
+ - `estimateTime()` - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds for all the variants; 
+ - `printResults()` - Prints the results after a `tune` tuning has happened; 
+ - `showGraphs()` - Displays the results in user-friendly charts, these are automatically generated and sabed under the `outputPath/results`. 
+ 
+ #### Setters
+ Return a reference to the object so you can have chained calls:
+
+ - `setName(name)`
+ - `setScope(scope)`
+ - `setMeasure(measure)`
+ - `setVariables(variables)`
+ - `addVariable(LatVar)`
+ - `setSearchGroups(searchGroups)`
+ - `addSearchGroup(searchGroup)` - a search group is a list of one or more LatVar variables that 
+ - `setSearchType(searchType)`
+ - `setNumTests(numTests)`
+ - `setCompiler(compiler)`
+ - `setClearCode(clearCode)`
+ - `setVerbose(verbose)`
+ - `setAbort(abort)`
+ - `setTimeout(timeout)`
+ - `setOutputPath(outputPath)`
 
 ---
 
