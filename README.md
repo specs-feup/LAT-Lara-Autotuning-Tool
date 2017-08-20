@@ -43,6 +43,9 @@ The main class for the tool, this will represent a region to autotune and all th
 
 ##### Methods
 
+As for the **Lat** constructors you can specify as many parameters as you want, although you will only be able to invoke the other methods after `name` and `scope` are define, here are some common constructor forms:
+
+ - `Lat()` - Empty constructor, this creates an empty **Lat** that cannot be used until the required parameters are set: `name` and `scope`;
  - `Lat(name, scope)` - Constructor, with the required parameters only;
  - `Lat(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout)` - Constructor, apart from the first two parameters (`name` and `scope`) all the other variables are optional, but must be supplied in this order;
  - `tune()` - Start the tuning of the code;
