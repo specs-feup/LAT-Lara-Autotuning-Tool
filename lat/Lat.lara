@@ -9,6 +9,8 @@ import lat.LatUtils;
 
 import lara.Io;
 
+import clava.Clava;
+
 var Lat = function(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout, outputPath) {
     this.loadDefaults(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout, outputPath);
     this.tunned = false; //set to true after a tuning execution
@@ -32,7 +34,7 @@ Lat.prototype.fromConfig = function(filename) {
     for (var property in temp) {
         //println("property: " + property + " = " + temp[property]);
         //TODO: check it works after fixing this[property]
-        this[property] = temp[property];
+        //this[property] = temp[property];
     }
 };
 
@@ -47,27 +49,38 @@ Lat.prototype.estimateTime = function() {
 //--------------------------------------------Setters
 
 Lat.prototype.setName = function(name) {
+    LatUtils.checkString(name, "name");
     this.name = name;
     return this;
 };
 Lat.prototype.setScope = function(scope) {
+    LatUtils.checkJoinpoint(scope, "scope");
     this.scope = scope;
     return this;
 };
 Lat.prototype.setMeasure = function(measure) {
+    LatUtils.checkJoinpoint(measure, "measure");
     this.measure = measure;
     return this;
 };
 Lat.prototype.setVariables = function(variables) {
+    LatUtils.checkLatVars(variables, "variables");
+    LatUtils.checkDuplicatesLatVar(variables, "variables");
     this.variables = variables;
     return this;
 };
 Lat.prototype.addVariable = function(latVar) {
+    LatUtils.checkLatVar(latVar, "latVar in addVariable");
+    LatUtils.checkDuplicateLatVar(this.variables, latVar, "variables");
     this.variables.push(latVar);
     return this;
 };
 Lat.prototype.setSearchGroups = function(searchGroups) {
+    for (var i = 0; i < searchGroups.length; i++) {
+        LatUtils.checkLatVars(searchGroups[i], "searchGroups[" + i + "]");
+    }
     this.searchGroups = searchGroups;
+    this.searchType = LatConst.SEARCH_TYPE.CUSTOM;
     return this;
 };
 Lat.prototype.addSearchGroup = function(searchGroup) {
@@ -75,33 +88,57 @@ Lat.prototype.addSearchGroup = function(searchGroup) {
     return this;
 };
 Lat.prototype.setSearchType = function(searchType) {
+    if (searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
+        this.searchGroups = [];
+        for (var i = 0; i < this.variables.length; i++) {
+            this.searchGroups.push([this.variables[i]]);
+        }
+    } else if (searchType === LatConst.SEARCH_TYPE.DEPENDENT) {
+        this.searchGroups = this.variables;
+    } else {
+        LatUtils._error("setSearchType only accepts LatConst.SEARCH_TYPE.INDEPENDENT and LatConst.SEARCH_TYPE.DEPENDENT, see the documentation on how to specify LatConst.SEARCH_TYPE.CUSTOM");
+    }
+
     this.searchType = searchType;
     return this;
 };
 Lat.prototype.setNumTests = function(numTests) {
+    if (numTests <= 0) {
+        LatUtils._error("numTests has to be an int greater or equal to 1, invalid value (" + numTests + ")");
+    }
     this.numTests = numTests;
     return this;
 };
+
+//TODO: check if this will be exposed
 Lat.prototype.setCompiler = function(compiler) {
     this.compiler = compiler;
     return this;
 };
+
 Lat.prototype.setClearCode = function(clearCode) {
+    LatUtils.checkBoolean(numTests, "numTests");
     this.clearCode = clearCode;
     return this;
 };
 Lat.prototype.setVerbose = function(verbose) {
+    LatUtils.checkBoolean(numTests, "numTests");
     this.verbose = verbose;
     return this;
 };
 Lat.prototype.setAbort = function(abort) {
+    LatUtils.checkBoolean(numTests, "numTests");
     this.abort = abort;
     return this;
 };
 Lat.prototype.setTimeout = function(timeout) {
+    if (numTests < 0) {
+        LatUtils._error("timeout has to be an unsigned int, invalid value (" + timeout + ")");
+    }
     this.timeout = timeout;
     return this;
 };
+//TODO: validate path
 Lat.prototype.setOutputPath = function(outputPath) {
     this.outputPath = outputPath;
     return this;
