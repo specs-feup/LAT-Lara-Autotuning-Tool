@@ -9,14 +9,11 @@ import lat.LatUtils;
 
 import lara.Io;
 
-//TODO: INCLUIR VARIÁVEL QUE DIZ A PASTA ONDE SE GERA O CODIGO E AQUELA ONDE APARECEM OS RESULTADOS E AQUELAS TIPO SHOW RESULTS AS CHARTS OU MELHOR, TORNAR ISSO NUMA FUNÇÃO
+var Lat = function(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout, outputPath) {
+    this.loadDefaults(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout, outputPath);
+    this.tunned = false; //set to true after a tuning execution
 
-var Lat = function(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout) {
-    this.loadDefaults(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout);
 
-    //this["name"] = name;
-
-    this.vars = [];
 };
 
 Lat.prototype.tune = function() {
@@ -31,14 +28,12 @@ Lat.prototype.toConfig = function(filename) {
 
 Lat.prototype.fromConfig = function(filename) {
     var filecontents = readFile(filename);
-
-    println("CONTENTS: " + filecontents);
     var temp = JSON.parse(filecontents);
     for (var property in temp) {
-        println("property: " + property + " = " + temp[property]);
-        //this["temp"] = temp[property];
+        //println("property: " + property + " = " + temp[property]);
+        //TODO: check it works after fixing this[property]
+        this[property] = temp[property];
     }
-    println("name is:" + this.name);
 };
 
 Lat.prototype.countVariants = function() {
@@ -49,12 +44,77 @@ Lat.prototype.estimateTime = function() {
     LatUtils._error("function estimateTime not implemented");
 };
 
+//--------------------------------------------Setters
 
+Lat.prototype.setName = function(name) {
+    this.name = name;
+    return this;
+};
+Lat.prototype.setScope = function(scope) {
+    this.scope = scope;
+    return this;
+};
+Lat.prototype.setMeasure = function(measure) {
+    this.measure = measure;
+    return this;
+};
+Lat.prototype.setVariables = function(variables) {
+    this.variables = variables;
+    return this;
+};
+Lat.prototype.addVariable = function(latVar) {
+    this.variables.push(latVar);
+    return this;
+};
+Lat.prototype.setSearchGroups = function(searchGroups) {
+    this.searchGroups = searchGroups;
+    return this;
+};
+Lat.prototype.addSearchGroup = function(searchGroup) {
+    this.searchGroups.push(searchGroup);
+    return this;
+};
+Lat.prototype.setSearchType = function(searchType) {
+    this.searchType = searchType;
+    return this;
+};
+Lat.prototype.setNumTests = function(numTests) {
+    this.numTests = numTests;
+    return this;
+};
+Lat.prototype.setCompiler = function(compiler) {
+    this.compiler = compiler;
+    return this;
+};
+Lat.prototype.setClearCode = function(clearCode) {
+    this.clearCode = clearCode;
+    return this;
+};
+Lat.prototype.setVerbose = function(verbose) {
+    this.verbose = verbose;
+    return this;
+};
+Lat.prototype.setAbort = function(abort) {
+    this.abort = abort;
+    return this;
+};
+Lat.prototype.setTimeout = function(timeout) {
+    this.timeout = timeout;
+    return this;
+};
+Lat.prototype.setOutputPath = function(outputPath) {
+    this.outputPath = outputPath;
+    return this;
+};
 
-//Helper functions (code compartimentalization)
-Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout) {
+//--------------------------------------------Helper functions (code compartimentalization)
+
+Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout, outputPath) {
+    //requried values
     this.name = this.validateProperty("name", name);
     this.scope = this.validateProperty("scope", scope);
+
+    //optional values
     this.variables = this.validateProperty("variables", variables, []);
     this.measure = this.validateProperty("measure", measure, scope);
     this.searchType = this.validateProperty("searchType", searchType, LatConst.SEARCH_TYPE.INDEPENDENT);
@@ -63,12 +123,19 @@ Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchTyp
     this.verbose = this.validateProperty("verbose", verbose, false);
     this.abort = this.validateProperty("abort", abort, false);
     this.timeout = this.validateProperty("timeout", timeout, 0);
+    //TODO: fill with correct default value
+    this.outputPath = this.validateProperty("outputPath", outputPath, ".");
 };
 
+/**
+ * Return either the correct value or the default value for a given property
+ */
 Lat.prototype.validateProperty = function(propertyName, value, defaultValue) {
+    /*TODO: use this[propertyName]
+    
     if (defaultValue === undefined && value === undefined) {
         LatUtils._error("The value specified for the property '" + propertyName + "' is undefined and it is a required property");
-    }
+    }*/
     if (value === undefined) {
         value = defaultValue;
     }
