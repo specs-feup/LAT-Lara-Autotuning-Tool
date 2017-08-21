@@ -118,14 +118,14 @@ Used to define a variable that varies withtin a the values of a list;
 Used to define a variable that has a starting value, a finish value, a step incremention and optionally a function to be called to get the next element from the previous. Apart from the `function` property it works like a `for` loop. 
 
 ##### Properties
- - `next` - The next value to be returned, this starts equal to `start` and goes until it becomes greater than `end` or smaller if the step is negative; 
+ - `next` - The next value to be returned, this starts equal to `start` and goes until it becomes greater than `stop`, or smaller, if the step is negative; 
  - `start` - The initial value for the variable; 
- - `end` - The last value for the variable;
+ - `stop` - The last value for the variable;
  - `step` - The increment to the current value to obtain the next. Default is 1;
- - `function` - An optional function that receives the value of `next` and can generate another value from that. This is useful for mathematical expressions, returning non-numeric values, ...
+ - `callback` - An optional function that receives the value of `next` and can generate another value from that. This is useful for mathematical expressions, returning non-numeric values, ...
 
 ##### Methods
- - `LatVarRange(start, end, step, function)` - Constructor, `step` and `function` are optional.  
+ - `LatVarRange(name, start, stop, step, callback)` - Constructor, `step` and `callback` are optional.  
 
 ---
 ### LatVarOmp
