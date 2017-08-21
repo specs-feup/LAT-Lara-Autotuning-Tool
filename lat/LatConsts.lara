@@ -42,6 +42,7 @@ LatConst.SEARCH_TYPE = {
 LatConst.TYPE = {
     BOOLEAN: "boolean",
     STRING: "string",
+    NUMBER: "number",
     OBJECT: "object",
     JOINPOINT: "Joinpoint 'type'"
 };
