@@ -1,10 +1,14 @@
 import tests.testSetters;
 import tests.testDefaults;
+import tests.testLatVar;
+import tests.testLatVarList;
 
 aspectdef runTests
 
 	println("--------------------------------Running Tests------------------------------");
 	call TestDefaults();
+	call TestLatVar();
+	call TestLatVarList();
 	call TestSetters();
 
 	println();

@@ -1,0 +1,12 @@
+import lat.Lat;
+
+aspectdef TestLatVar
+	print("----------------------Testing LatVar...    ");
+	
+	try{
+		var lv = new LatVar();
+		LatUtils._error("LatVar name should not accept non-string");
+	}catch(e){}
+
+	println("DONE");
+end

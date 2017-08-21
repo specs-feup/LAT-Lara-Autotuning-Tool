@@ -1,0 +1,43 @@
+import lat.Lat;
+
+aspectdef TestLatVarList
+	print("----------------------Testing LatVarList...");
+	
+	try{
+		var lvl = new LatVarList("a");
+		LatUtils._error("LatVarList elements should not accept undefined");
+	}catch(e){}
+	
+	try{
+		var lvl = new LatVarList("a", []);
+		LatUtils._error("LatVarList elements should not accept empty lists");
+	}catch(e){}
+
+	var lat = new Lat();
+	var tempElements = [1,2,3, "a", lat];
+
+	var lvl = new LatVarList("a", tempElements);
+
+	if(lvl.countElements() !== tempElements.length){
+		LatUtils._error("LatVarList countElements should be " + tempElements.length);
+	}
+	
+	for(var i = 0; i < tempElements.length; i++){
+		if(lvl.hasNext() !== true){
+			LatUtils._error("LatVarList hasNext should identify "+tempElements.length+" elements, failed at: " + (i+1));
+		}
+
+		if(lvl.getNext() === undefined){
+			LatUtils._error("LatVarList getNext should return "+tempElements.length+" elements, failed at: " + (i+1) + " this value cannot be undefined");
+		}
+	}
+	
+	if(lvl.hasNext() !== false){
+		LatUtils._error("LatVarList hasNext should not identify unexistent element");
+	}
+	if(lvl.getNext() !== undefined){
+		LatUtils._error("LatVarList getNext should not identify unexistent element");
+	}
+
+	println("DONE");
+end

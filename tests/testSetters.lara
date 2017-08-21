@@ -1,14 +1,14 @@
 import lat.Lat;
 
 aspectdef TestSetters
-	print("----------------------Testing setters...");
+	print("----------------------Testing setters...   ");
 	
 	select vardecl end
 	apply
 		var lat = new Lat("tester");
 
 		var lv = new LatVar("LatVar");
-		var lvl = new LatVarList("LatVarList");
+		var lvl = new LatVarList("LatVarList", [1,2]);
 		var lvr = new LatVarRange("LatVarRange");
 		var lvo = new LatVarOmp("LatVarOmp");
 
