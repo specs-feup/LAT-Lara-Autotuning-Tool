@@ -13,6 +13,9 @@ LatVarOmp.prototype.getNext = function() {
 LatVarOmp.prototype.hasNext = function() {
     LatUtils._error("function hasNext not implemented");
 };
+LatVarOmp.prototype.countElements = function() {
+    LatUtils._error("function countElements not implemented");
+};
 LatVarOmp.prototype.restart = function() {
     LatUtils._error("function restart not implemented");
 };
