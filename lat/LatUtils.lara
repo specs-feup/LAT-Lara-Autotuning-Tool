@@ -43,6 +43,15 @@ LatUtils.checkBoolean = function(variable, name) {
     }
 };
 
+LatUtils.isNumber = function(variable) {
+    return typeof variable === LatConst.TYPE.NUMBER;
+};
+LatUtils.checkNumber = function(variable, name) {
+    if (!LatUtils.isNumber(variable)) {
+        LatUtils._error(name + " variable has to be an number - invalid value supplied");
+    }
+};
+
 LatUtils.isString = function(variable) {
     return typeof variable === LatConst.TYPE.STRING;
 };
