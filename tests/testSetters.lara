@@ -38,9 +38,8 @@ aspectdef TestSetters
 		if(lat.variables.length !== 4){
 			LatUtils._error("lat variables.length should be equal to 4");
 		}
-		
-		lat.addVariable(lvo);
 		try{
+			lat.addVariable(lvo);
 			LatUtils._error("lat addVariable should not accept duplicate elements");
 		}catch(e){}
 
