@@ -1,0 +1,13 @@
+import lat.Lat;
+
+aspectdef TestLatVarRange
+	print("----------------------Testing LatVarRange...");
+	
+	try{
+		var lvl = new LatVarRange("a");
+		LatUtils._error("LatVarRange elements should not accept undefined");
+	}catch(e){}
+	
+
+	println("DONE");
+end

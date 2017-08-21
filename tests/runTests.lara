@@ -2,6 +2,8 @@ import tests.testSetters;
 import tests.testDefaults;
 import tests.testLatVar;
 import tests.testLatVarList;
+import tests.testLatVarRange;
+import tests.testLatVarOmp;
 
 aspectdef runTests
 
@@ -9,6 +11,8 @@ aspectdef runTests
 	call TestDefaults();
 	call TestLatVar();
 	call TestLatVarList();
+	call TestLatVarRange();
+	call TestLatVarOmp();
 	call TestSetters();
 
 	println();

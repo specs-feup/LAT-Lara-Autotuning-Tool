@@ -1,0 +1,13 @@
+import lat.Lat;
+
+aspectdef TestLatVarOmp
+	print("----------------------Testing LatVarOmp...");
+	
+	try{
+		var lvl = new LatVarOmp("a");
+		LatUtils._error("LatVarOmp elements should not accept undefined");
+	}catch(e){}
+	
+
+	println("DONE");
+end
