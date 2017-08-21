@@ -1,0 +1,12 @@
+import tests.testSetters;
+import tests.testDefaults;
+
+aspectdef runTests
+
+	println("--------------------------------Running Tests------------------------------");
+	call TestDefaults();
+	call TestSetters();
+
+	println();
+	println("---------------------------------------------------------------------------");
+end

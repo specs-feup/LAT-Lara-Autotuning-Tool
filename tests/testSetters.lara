@@ -1,0 +1,107 @@
+import lat.Lat;
+
+aspectdef TestSetters
+	print("----------------------Testing setters...");
+	
+	select vardecl end
+	apply
+		var lat = new Lat("tester");
+
+		var lv = new LatVar("LatVar");
+		var lvl = new LatVarList("LatVarList");
+		var lvr = new LatVarRange("LatVarRange");
+		var lvo = new LatVarOmp("LatVarOmp");
+
+		//prevent user from using LatVar instead of one of the others
+		
+		lat.setScope($vardecl);
+		if(lat.scope !== $vardecl){
+			LatUtils._error("lat scope should be equal to vardecl");
+		}
+
+		lat.setName("tested2");
+		if(lat.name !== "tested2"){
+			LatUtils._error("lat name should be equal to 'tested2'");
+		}
+
+		lat.setMeasure($vardecl);
+		if(lat.measure !== $vardecl){
+			LatUtils._error("lat scope should be equal to vardecl");
+		}
+
+		lat.setVariables([lv, lvl, lvr]);
+		if(lat.variables.length !== 3){
+			LatUtils._error("lat variables.length should be equal to 3");
+		}
+
+		lat.addVariable(lvo);
+		if(lat.variables.length !== 4){
+			LatUtils._error("lat variables.length should be equal to 4");
+		}
+		
+		lat.addVariable(lvo);
+		try{
+			LatUtils._error("lat addVariable should not accept duplicate elements");
+		}catch(e){}
+
+		lat.setSearchGroups([[lvl],[lvl,lvr]]);
+		if(lat.searchType !== LatConst.SEARCH_TYPE.CUSTOM){
+			LatUtils._error("expected LatConst.SEARCH_TYPE.CUSTOM after setSearchGroups");
+		}
+		if(lat.searchGroups.length !== 2){
+			LatUtils._error("lat searchGroups.length should be equal to 2");
+		}
+
+		try{
+			lat.addSearchGroup(lvo);
+			LatUtils._error("lat searchGroups.addSearchGroup should not accept non-array elements");
+		}catch(e){}
+
+		lat.addSearchGroup([lvo]);
+		if(lat.searchGroups.length !== 3){
+			LatUtils._error("lat searchGroups.length should be equal to 3");
+		}
+
+		lat.setSearchType(LatConst.SEARCH_TYPE.INDEPENDENT);
+		if(lat.searchGroups.length !== 0){
+			LatUtils._error("lat searchGroups.length should be equal to 0 after setting INDEPENDENT");
+		}
+
+		lat.setSearchGroups([[lvl],[lvl,lvr]]);
+		lat.setSearchType(LatConst.SEARCH_TYPE.DEPENDENT);
+		if(lat.searchGroups.length !== 0){
+			LatUtils._error("lat searchGroups.length should be equal to 0 after setting DEPENDENT");
+		}
+
+		//Verbose
+		lat.setVerbose(true);
+		if(lat.verbose !== true){
+			LatUtils._error("lat verbose should be equal to true");
+		}
+		lat.setVerbose(false);
+		if(lat.verbose !== false){
+			LatUtils._error("lat verbose should be equal to false");
+		}
+
+		//clearCode
+		lat.setClearCode(true);
+		if(lat.clearCode !== true){
+			LatUtils._error("lat clearCode should be equal to true");
+		}
+		lat.setClearCode(false);
+		if(lat.clearCode !== false){
+			LatUtils._error("lat clearCode should be equal to false");
+		}
+		
+		//abort
+		lat.setAbort(true);
+		if(lat.abort !== true){
+			LatUtils._error("lat abort should be equal to true");
+		}
+		lat.setAbort(false);
+		if(lat.abort !== false){
+			LatUtils._error("lat abort should be equal to false");
+		}
+	end
+	print("DONE");
+end

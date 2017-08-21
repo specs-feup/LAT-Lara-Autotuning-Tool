@@ -1,0 +1,48 @@
+import lat.Lat;
+
+aspectdef TestDefaults
+	print("----------------------Testing defaults...");
+	
+	var lat = new Lat();
+	if(lat.name !== undefined){
+		LatUtils._error("lat name should be undefined");
+	}
+	if(lat.scope !== undefined){
+		LatUtils._error("lat scope should be undefined");
+	}
+	if(lat.measure !== undefined){
+		LatUtils._error("lat measure should be undefined");
+	}
+	if(lat.variables.length != 0){
+		println("vars:" + lat.variables);
+		LatUtils._error("lat variables should be []");
+	}
+	if(lat.searchType !== LatConst.SEARCH_TYPE.INDEPENDENT){
+		LatUtils._error("lat searchType should be LatConst.SEARCH_TYPE.INDEPENDENT");
+	}
+	if(lat.numTests !== 1){
+		LatUtils._error("lat numTests should be 1");
+	}
+	if(lat.clearCode !== false){
+		LatUtils._error("lat clearCode should be false");
+	}
+	if(lat.verbose !== false){
+		LatUtils._error("lat verbose should be false");
+	}
+	if(lat.abort !== false){
+		LatUtils._error("lat abort should be false");
+	}
+	if(lat.timeout !== 0){
+		LatUtils._error("lat timeout should be 0");
+	}
+	
+	select program end
+	apply
+		lat = new Lat("name", $program);
+		if(lat.measure !== lat.scope){
+			LatUtils._error("lat measure should be equal to scope");
+		}
+	end
+
+	println("DONE");
+end
