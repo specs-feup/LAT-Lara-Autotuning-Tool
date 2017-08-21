@@ -24,13 +24,13 @@ LatUtils.getRightExtension = function(filename, extension) {
 
 
 //validation functions
-
+//TODO: guarantee that scope and measure are only joinpoints that can have insert before and after
 LatUtils.isJoinpoint = function(variable) {
     return typeof variable === LatConst.TYPE.OBJECT && variable.type == LatConst.TYPE.JOINPOINT;
 };
 LatUtils.checkJoinpoint = function(variable, name) {
     if (!LatUtils.isJoinpoint(variable)) {
-        LatUtils._error(name + "variable requires a joinpoint to be passed - invalid type supplied");
+        LatUtils._error(name + "variable requires a joinpoint - invalid type supplied");
     }
 };
 
@@ -39,7 +39,7 @@ LatUtils.isBoolean = function(variable) {
 };
 LatUtils.checkBoolean = function(variable, name) {
     if (!LatUtils.isBoolean(variable)) {
-        LatUtils._error(name + " variable has to be a boolean to be passed - invalid value supplied");
+        LatUtils._error(name + " variable has to be a boolean - invalid value supplied");
     }
 };
 
@@ -48,7 +48,7 @@ LatUtils.isString = function(variable) {
 };
 LatUtils.checkString = function(variable, name) {
     if (!LatUtils.isString(variable)) {
-        LatUtils._error(name + " variable has to be a string to be passed - invalid value supplied");
+        LatUtils._error(name + " variable has to be a string - invalid value supplied");
     }
 };
 
@@ -57,7 +57,7 @@ LatUtils.isArray = function(variable) {
 };
 LatUtils.checkArray = function(variable, name) {
     if (!LatUtils.isArray(variable)) {
-        LatUtils._error(name + " variable has to be an array to be passed - invalid value supplied");
+        LatUtils._error(name + " variable has to be an array - invalid value supplied");
     }
 };
 
