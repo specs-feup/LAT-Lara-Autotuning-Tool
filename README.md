@@ -26,7 +26,7 @@ The main class for the tool, this will represent a region to autotune and all th
  - `outputPath` - The directory where the output code and results appear. The generated code will appear in that folder under the folder `/output` and the results under the folder `/results`. Inside the `/output` folder there will be a folder for each variant source code named accordingly to its index in execution: the first variant will be in the folder `/output/1` and so forth.
 
 ###### Variables, searchGroups and searchType behaviour
-If the `searchType` is set to either _dependent_ or _independent_, the `searchGroups` will be created accordingly with the supplied variables; the content of `searchGroups` will be overriden. This is done when `tune()` is called. 
+If the `searchType` is set to either _dependent_ or _independent_, the `searchGroups` will be created accordingly with the supplied variables; the content of `searchGroups` will be cleared immediately, but the groups generation is done when `tune()` is called, since more variables can be added in the meantime. 
 
 If any `searchGroup` is supplied, the value of `searchType` will be set to _custom_ and when `tune()` is called those groups are the ones used for the variants generation. 
 
