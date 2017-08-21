@@ -1,4 +1,5 @@
 var LatVar = function(name) {
+    LatUtils.checkString(name, "LatVar*.name");
     this.name = name;
 };
 
@@ -11,6 +12,9 @@ LatVar.prototype.getNext = function() {
 };
 LatVar.prototype.hasNext = function() {
     LatUtils._error("function hasNext not implemented");
+};
+LatVar.prototype.countElements = function() {
+    LatUtils._error("function countElements not implemented");
 };
 LatVar.prototype.restart = function() {
     LatUtils._error("function restart not implemented");
