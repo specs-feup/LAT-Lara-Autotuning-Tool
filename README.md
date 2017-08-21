@@ -95,6 +95,7 @@ The parent class for representing a named variable. This works like a Java Inter
 ##### Methods
  - `getNext()` - private method used for obtaining the next value for the variable
  - `hasNext()` - private method used for checking if there are still elements to use.
+ - `countElements()` - private method used to get the number of elements each LatVar produces
  - `restart()` - private method that restarts the variable to its first element
 
 It is not to be invoked on its own, choose one of the following **accessible** sub-classes, that inherit its properties and methods:
