@@ -19,13 +19,14 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, clearC
 };
 
 Lat.prototype.tune = function() {
-    LatUtils._error("function tune not implemented");
+    this.generateSearchGroups();
 };
 
 
 Lat.prototype.toConfig = function(filename) {
     filename = LatUtils.getRightExtension(filename, "json");
     writeFile(filename, JSON.stringify(this));
+    //writeJSON();
 };
 
 Lat.prototype.fromConfig = function(filename) {
@@ -84,21 +85,15 @@ Lat.prototype.setSearchGroups = function(searchGroups) {
     return this;
 };
 Lat.prototype.addSearchGroup = function(searchGroup) {
+    LatUtils.checkArray(searchGroup, "searchGroup");
     this.searchGroups.push(searchGroup);
     return this;
 };
 Lat.prototype.setSearchType = function(searchType) {
-    if (searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
-        this.searchGroups = [];
-        for (var i = 0; i < this.variables.length; i++) {
-            this.searchGroups.push([this.variables[i]]);
-        }
-    } else if (searchType === LatConst.SEARCH_TYPE.DEPENDENT) {
-        this.searchGroups = this.variables;
-    } else {
+    if(searchType !== LatConst.SEARCH_TYPE.INDEPENDENT && searchType !== LatConst.SEARCH_TYPE.DEPENDENT){
         LatUtils._error("setSearchType only accepts LatConst.SEARCH_TYPE.INDEPENDENT and LatConst.SEARCH_TYPE.DEPENDENT, see the documentation on how to specify LatConst.SEARCH_TYPE.CUSTOM");
     }
-
+    this.searchGroups = [];//will be generated when tune() is called
     this.searchType = searchType;
     return this;
 };
@@ -117,17 +112,17 @@ Lat.prototype.setCompiler = function(compiler) {
 };
 
 Lat.prototype.setClearCode = function(clearCode) {
-    LatUtils.checkBoolean(numTests, "numTests");
+    LatUtils.checkBoolean(clearCode, "clearCode");
     this.clearCode = clearCode;
     return this;
 };
 Lat.prototype.setVerbose = function(verbose) {
-    LatUtils.checkBoolean(numTests, "numTests");
+    LatUtils.checkBoolean(verbose, "verbose");
     this.verbose = verbose;
     return this;
 };
 Lat.prototype.setAbort = function(abort) {
-    LatUtils.checkBoolean(numTests, "numTests");
+    LatUtils.checkBoolean(abort, "abort");
     this.abort = abort;
     return this;
 };
@@ -177,4 +172,19 @@ Lat.prototype.validateProperty = function(propertyName, value, defaultValue) {
         value = defaultValue;
     }
     return value;
+};
+
+/**
+ * Generate the searchGroups for dependent and independent search
+ */
+Lat.prototype.generateSearchGroups = function(){
+    if (this.searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
+        this.searchGroups = [];
+        for (var i = 0; i < this.variables.length; i++) {
+            this.searchGroups.push([this.variables[i]]);
+        }
+    } else if (this.searchType === LatConst.SEARCH_TYPE.DEPENDENT) {
+        this.searchGroups = this.variables;
+    }
+    return this;
 };
