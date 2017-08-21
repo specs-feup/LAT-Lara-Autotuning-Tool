@@ -28,9 +28,9 @@ The main class for the tool, this will represent a region to autotune and all th
 ###### Variables, searchGroups and searchType behaviour
 If the `searchType` is set to either _dependent_ or _independent_, the `searchGroups` will be created accordingly with the supplied variables; the content of `searchGroups` will be overriden. This is done when `tune()` is called. 
 
-If any `searchGroup` is supplied, the value of `searchType` will be set to _custom_ and when `tune()` is called those groups are the ones used for the variants variation. 
+If any `searchGroup` is supplied, the value of `searchType` will be set to _custom_ and when `tune()` is called those groups are the ones used for the variants generation. 
 
-Essentially, either you choose _dependent_ or _independent_ search or you specify _custom_ `searchGroups`.
+Essentially, either you choose _dependent_ or _independent_ search or you specify _custom_ `searchGroups`. You can do any action as many times as desired before calling `tune()` as only the last will be considered.
 
 ##### Defaults
 
