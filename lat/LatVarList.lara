@@ -1,18 +1,27 @@
-var LatVarList = function(name, value) {
+var LatVarList = function(name, elements) {
     LatVar.call(this, name);
-    this.value = value;
+    LatUtils.checkArray(elements, "LatVarList elements");
+    if (elements.length <= 0) {
+        LatUtils._error("LatVarList elements parameter only accepts non-empty element lists");
+    }
+    this.elements = elements;
+    this.restart();
 };
 
 LatVarList.prototype = Object.create(LatVar.prototype);
 LatVarList.prototype.constructor = LatVarList;
 
 //Functions overloaded from LatVar
+
 LatVarList.prototype.getNext = function() {
-    LatUtils._error("function getNext not implemented");
+    return this.elements[this.elementIndex++];
 };
 LatVarList.prototype.hasNext = function() {
-    LatUtils._error("function hasNext not implemented");
+    return this.elementIndex < this.elements.length;
+};
+LatVarList.prototype.countElements = function() {
+    return this.elements.length;
 };
 LatVarList.prototype.restart = function() {
-    LatUtils._error("function restart not implemented");
+    this.elementIndex = 0;
 };
