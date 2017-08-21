@@ -1,6 +1,28 @@
-var LatVarRange = function(name, value) {
+var LatVarRange = function(name, start, stop, step, callback) {
     LatVar.call(this, name);
-    this.value = value;
+    LatUtils.checkNumber(start, "start");
+    LatUtils.checkNumber(stop, "stop");
+
+    if (step !== undefined) { //step is optional
+        LatUtils.checkNumber(step, "step");
+        this.step = step;
+    } else {
+        step = 1; //default value
+    }
+
+    if (step == 0) {
+        LatUtils._error("step cannot be equal to zero");
+    } else if (step < 0 && start < stop) {
+        LatUtils._error("step cannot be negative while start is smaller than stop - causes infinite loop");
+    } else if (start < stop) {
+        LatUtils._error("step cannot be positive while stop is smaller than start - causes infinite loop");
+    }
+
+    if (callback === undefined) { //callback is not defined
+        callback = this._defaultCallback;
+    }
+    this.callback = callback;
+    this.restart();
 };
 
 LatVarRange.prototype = Object.create(LatVar.prototype);
@@ -8,11 +30,20 @@ LatVarRange.prototype.constructor = LatVarRange;
 
 //Functions overloaded from LatVar
 LatVarRange.prototype.getNext = function() {
-    LatUtils._error("function getNext not implemented");
+    var current = this.next;
+    this.next = this.callback(this.next);
+    return current;
 };
 LatVarRange.prototype.hasNext = function() {
     LatUtils._error("function hasNext not implemented");
 };
+LatVarRange.prototype.countElements = function() {
+    LatUtils._error("function countElements not implemented");
+};
 LatVarRange.prototype.restart = function() {
-    LatUtils._error("function restart not implemented");
+    this.next = start;
+};
+
+LatVarRange.prototype._defaultCallback = function(previous) {
+    return previous + this.step;
 };
