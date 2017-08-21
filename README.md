@@ -25,6 +25,13 @@ The main class for the tool, this will represent a region to autotune and all th
  - `timeout` - Define the maximum amount of time the execution of the tool can take before stopping, in seconds. 0 means there is no timeout;
  - `outputPath` - The directory where the output code and results appear. The generated code will appear in that folder under the folder `/output` and the results under the folder `/results`. Inside the `/output` folder there will be a folder for each variant source code named accordingly to its index in execution: the first variant will be in the folder `/output/1` and so forth.
 
+###### Variables, searchGroups and searchType behaviour
+If the `searchType` is set to either _dependent_ or _independent_, the `searchGroups` will be created accordingly with the supplied variables; the content of `searchGroups` will be overriden. This is done when `tune()` is called. 
+
+If any `searchGroup` is supplied, the value of `searchType` will be set to _custom_ and when `tune()` is called those groups are the ones used for the variants variation. 
+
+Essentially, either you choose _dependent_ or _independent_ search or you specify _custom_ `searchGroups`.
+
 ##### Defaults
 
 |    property    |   default   |        accepted        |
