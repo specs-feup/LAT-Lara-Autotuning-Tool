@@ -119,10 +119,10 @@ Used to define a variable that has a starting value, a finish value, a step incr
 
 ##### Properties
  - `next` - The next value to be returned, this starts equal to `start` and goes until it becomes greater than `stop`, or smaller, if the step is negative; 
- - `start` - The initial value for the variable; 
- - `stop` - The last value for the variable;
+ - `start` - The initial value for the variable, **inclusive**; 
+ - `stop` - The last value for the variable, **exclsuive**;
  - `step` - The increment to the current value to obtain the next. Default is 1;
- - `callback` - An optional function that receives the value of `next` and can generate another value from that. This is useful for mathematical expressions, returning non-numeric values, ...
+ - `callback` - An optional function that generates the value of `next` and that receives the next element in the list. This is useful for mathematical expressions, returning non-numeric values, ...
 
 ##### Methods
  - `LatVarRange(name, start, stop, step, callback)` - Constructor, `step` and `callback` are optional.  
