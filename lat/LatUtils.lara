@@ -48,7 +48,7 @@ LatUtils.isNumber = function(variable) {
 };
 LatUtils.checkNumber = function(variable, name) {
     if (!LatUtils.isNumber(variable)) {
-        LatUtils._error(name + " variable has to be an number - invalid value supplied");
+        LatUtils._error(name + " variable has to be a number - invalid value supplied");
     }
 };
 
