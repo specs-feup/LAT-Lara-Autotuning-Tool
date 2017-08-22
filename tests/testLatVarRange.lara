@@ -1,13 +1,99 @@
 import lat.Lat;
 
 aspectdef TestLatVarRange
-	print("----------------------Testing LatVarRange...");
+	print("----------------------Testing LatVarRange... ");
 	
 	try{
-		var lvl = new LatVarRange("a");
-		LatUtils._error("LatVarRange elements should not accept undefined");
+		var lvr = new LatVarRange("a");
+		LatUtils._warn("LatVarRange start should not accept undefined");
 	}catch(e){}
+	
+	try{
+		var lvr = new LatVarRange("a", 1);
+		LatUtils._warn("LatVarRange stop elements should not accept undefined");
+	}catch(e){}
+	
+	try{
+		var lvr = new LatVarRange("a", 1, 10, 0);
+		LatUtils._warn("LatVarRange step should not be 0");
+	}catch(e){}
+	
+	try{
+		var lvr = new LatVarRange("a", 10, 1);
+		LatUtils._warn("LatVarRange start should not be greater than stop for step > 0");
+	}catch(e){}
+	
+	try{
+		var lvr = new LatVarRange("a", 1, 10, -1);
+		LatUtils._warn("LatVarRange stop should not be greater than start for step < 0");
+	}catch(e){}
+	
+	try{
+		var lvr = new LatVarRange("a", "a", 1);
+		LatUtils._warn("LatVarRange start should be numeric");
+	}catch(e){}
+	
+	try{
+		var lvr = new LatVarRange("a", 1, "a");
+		LatUtils._warn("LatVarRange stop should be numeric");
+	}catch(e){}
+	
+	try{
+		var lvr = new LatVarRange("a", 1, 10, "a");
+		LatUtils._warn("LatVarRange step should be numeric");
+	}catch(e){}
+	
+
+	var lvr = new LatVarRange("a", 0, 10);
+	if(lvr.countElements()!=10){
+		LatUtils._error("LatVarRange wrong value returned by countElements, should be 10 and is " + lvr.countElements());
+	}
+	
+	for(var i = lvr.start; i < lvr.stop; i+=lvr.step){
+		if(lvr.hasNext() !== true){
+			LatUtils._error("LatVarRange hasNext should identify "+lvr.countElements()+" elements, failed at: " + (i+1));
+		}
+
+		if(lvr.getNext() > lvr.stop){
+			LatUtils._error("LatVarRange getNext should return not return value greater than stop, failed at: " + (i+1));
+		}
+	}
+	
+	var lvr = new LatVarRange("a", 1, 6, 1, pow2);
+	var i = lvr.start;
+	while(lvr.hasNext()){
+		if(lvr.next != i){
+			LatUtils._error("LatVarRange next should be " + i + " but was " + lvr.next);
+		}
+		var tempNext = lvr.getNext();
+		//println(i + " -> " + tempNext);
+		if(tempNext != pow2(i)){
+			LatUtils._error("LatVarRange getNext should be " + pow2(i) + " but was " + tempNext);
+		}
+		i+=lvr.step;
+	}
+	
+	var lvr = new LatVarRange("a", 10, 1, -1, pow10);
+	var i = lvr.start;
+	while(lvr.hasNext()){
+		if(lvr.next != i){
+			LatUtils._error("LatVarRange next should be " + i + " but was " + lvr.next);
+		}
+		var tempNext = lvr.getNext();
+		//println(i + " -> " + tempNext);
+		if(tempNext != pow10(i)){
+			LatUtils._error("LatVarRange getNext should be " + pow10(i) + " but was " + tempNext);
+		}
+		i+=lvr.step;
+	}
 	
 
 	println("DONE");
 end
+
+function pow2(previous){
+	return Math.pow(previous, 2);
+}
+function pow10(previous){
+	return Math.pow(10, previous);
+}
