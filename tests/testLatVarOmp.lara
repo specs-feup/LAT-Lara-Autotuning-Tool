@@ -1,11 +1,11 @@
 import lat.Lat;
 
 aspectdef TestLatVarOmp
-	print("----------------------Testing LatVarOmp...");
+	print("----------------------Testing LatVarOmp...   ");
 	
 	try{
-		var lvl = new LatVarOmp("a");
-		LatUtils._error("LatVarOmp elements should not accept undefined");
+		var lvo = new LatVarOmp();
+		LatUtils._warn("LatVarOmp elements should not accept undefined");
 	}catch(e){}
 	
 

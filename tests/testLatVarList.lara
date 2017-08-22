@@ -1,16 +1,16 @@
 import lat.Lat;
 
 aspectdef TestLatVarList
-	print("----------------------Testing LatVarList...");
+	print("----------------------Testing LatVarList...  ");
 	
 	try{
 		var lvl = new LatVarList("a");
-		LatUtils._error("LatVarList elements should not accept undefined");
+		LatUtils._warn("LatVarList elements should not accept undefined");
 	}catch(e){}
 	
 	try{
 		var lvl = new LatVarList("a", []);
-		LatUtils._error("LatVarList elements should not accept empty lists");
+		LatUtils._warn("LatVarList elements should not accept empty lists");
 	}catch(e){}
 
 	var lat = new Lat();

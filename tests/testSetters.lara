@@ -1,7 +1,7 @@
 import lat.Lat;
 
 aspectdef TestSetters
-	print("----------------------Testing setters...   ");
+	print("----------------------Testing setters...     ");
 	
 	select vardecl end
 	apply
@@ -9,7 +9,7 @@ aspectdef TestSetters
 
 		var lv = new LatVar("LatVar");
 		var lvl = new LatVarList("LatVarList", [1,2]);
-		var lvr = new LatVarRange("LatVarRange");
+		var lvr = new LatVarRange("LatVarRange", 1, 10);
 		var lvo = new LatVarOmp("LatVarOmp");
 
 		//prevent user from using LatVar instead of one of the others
@@ -40,7 +40,7 @@ aspectdef TestSetters
 		}
 		try{
 			lat.addVariable(lvo);
-			LatUtils._error("lat addVariable should not accept duplicate elements");
+			LatUtils._warn("lat addVariable should not accept duplicate elements");
 		}catch(e){}
 
 		lat.setSearchGroups([[lvl],[lvl,lvr]]);
@@ -53,7 +53,7 @@ aspectdef TestSetters
 
 		try{
 			lat.addSearchGroup(lvo);
-			LatUtils._error("lat searchGroups.addSearchGroup should not accept non-array elements");
+			LatUtils._warn("lat searchGroups.addSearchGroup should not accept non-array elements");
 		}catch(e){}
 
 		lat.addSearchGroup([lvo]);
