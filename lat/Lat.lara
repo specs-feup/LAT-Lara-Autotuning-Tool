@@ -40,6 +40,7 @@ Lat.prototype.fromConfig = function(filename) {
 };
 
 Lat.prototype.countVariants = function() {
+
     LatUtils._error("function countVariants not implemented");
 };
 
@@ -90,10 +91,10 @@ Lat.prototype.addSearchGroup = function(searchGroup) {
     return this;
 };
 Lat.prototype.setSearchType = function(searchType) {
-    if(searchType !== LatConst.SEARCH_TYPE.INDEPENDENT && searchType !== LatConst.SEARCH_TYPE.DEPENDENT){
+    if (searchType !== LatConst.SEARCH_TYPE.INDEPENDENT && searchType !== LatConst.SEARCH_TYPE.DEPENDENT) {
         LatUtils._error("setSearchType only accepts LatConst.SEARCH_TYPE.INDEPENDENT and LatConst.SEARCH_TYPE.DEPENDENT, see the documentation on how to specify LatConst.SEARCH_TYPE.CUSTOM");
     }
-    this.searchGroups = [];//will be generated when tune() is called
+    this.searchGroups = []; //will be generated when tune() is called
     this.searchType = searchType;
     return this;
 };
@@ -177,7 +178,7 @@ Lat.prototype.validateProperty = function(propertyName, value, defaultValue) {
 /**
  * Generate the searchGroups for dependent and independent search
  */
-Lat.prototype.generateSearchGroups = function(){
+Lat.prototype.generateSearchGroups = function() {
     if (this.searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
         this.searchGroups = [];
         for (var i = 0; i < this.variables.length; i++) {
