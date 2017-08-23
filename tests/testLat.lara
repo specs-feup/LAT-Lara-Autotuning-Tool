@@ -1,0 +1,55 @@
+import lat.Lat;
+
+aspectdef TestLat
+	print("----------------------Testing Lat...         ");
+	
+	var lat = new Lat("tests");
+	
+	var lvl = new LatVarList("a", ['a', 'b', 'c']);
+
+	//Single var
+	lat.setVariables([lvl]);
+	//INDEPENDENT
+	lat.setSearchType(LatConst.SEARCH_TYPE.INDEPENDENT);
+	if(lat.countVariants() != lvl.countElements()){
+		LatUtils._error("Lat countVariants is not working for a single LatVarList INDEPENDENT");
+	}
+	//DEPENDENT
+	lat.setSearchType(LatConst.SEARCH_TYPE.DEPENDENT);
+	if(lat.countVariants() != lvl.countElements()){
+		LatUtils._error("Lat countVariants is not working for a single LatVarList DEPENDENT");
+	}
+
+	var lvr = new LatVarRange("b", 1, 10);
+
+	//Two vars
+	lat.addVariable(lvr);
+	//INDEPENDENT
+	lat.setSearchType(LatConst.SEARCH_TYPE.INDEPENDENT);
+	if(lat.countVariants() != lvl.countElements() + lvr.countElements()){
+		LatUtils._error("Lat countVariants is not working for a LatVarList and a LatVarRange INDEPENDENT");
+	}
+	//DEPENDENT
+	lat.setSearchType(LatConst.SEARCH_TYPE.DEPENDENT);
+	if(lat.countVariants() != lvl.countElements() * lvr.countElements()){
+		LatUtils._error("Lat countVariants is not working for a LatVarList and a LatVarRange DEPENDENT");
+	}
+	
+	//set searchGroups
+	var lvr2 = new LatVarRange("b", 1, 100, 2);
+	lat.setSearchGroups([[lvr, lvr2], [lvl]]);
+	if(lat.countVariants() != (lvr.countElements() * lvr2.countElements()) + lvl.countElements()){
+		LatUtils._error("Lat countVariants is not working for the searchGroups");
+	}
+
+	//Detect redundancy
+	/*
+	lat.addSearchGroup([lvr]);
+	if(lat.countVariants() != (lvr.countElements() * lvr2.countElements()) + lvl.countElements()){
+		LatUtils._error("Lat countVariants is not identifying redundancy");
+	}
+	*/
+
+
+	println("DONE");
+end
