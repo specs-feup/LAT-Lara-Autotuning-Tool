@@ -1,7 +1,7 @@
 import lat.Lat;
 
 aspectdef TestSetters
-	print("----------------------Testing setters...     ");
+	print("----------------------Testing Setters...     ");
 	
 	select vardecl end
 	apply
@@ -43,12 +43,13 @@ aspectdef TestSetters
 			LatUtils._warn("lat addVariable should not accept duplicate elements");
 		}catch(e){}
 
+		lat.setSearchType(LatConst.SEARCH_TYPE.INDEPENDENT);//to test auto change to custom
 		lat.setSearchGroups([[lvl],[lvl,lvr]]);
-		if(lat.searchType !== LatConst.SEARCH_TYPE.CUSTOM){
-			LatUtils._error("expected LatConst.SEARCH_TYPE.CUSTOM after setSearchGroups");
-		}
 		if(lat.searchGroups.length !== 2){
 			LatUtils._error("lat searchGroups.length should be equal to 2");
+		}
+		if(lat.searchType !== LatConst.SEARCH_TYPE.CUSTOM){
+			LatUtils._error("lat searchGroups.setSearchGroups should set searchType to CUSTOM");
 		}
 
 		try{
@@ -56,9 +57,19 @@ aspectdef TestSetters
 			LatUtils._warn("lat searchGroups.addSearchGroup should not accept non-array elements");
 		}catch(e){}
 
+		lat.setSearchType(LatConst.SEARCH_TYPE.INDEPENDENT);//to test auto change to custom, deletes searchGroups
 		lat.addSearchGroup([lvo]);
-		if(lat.searchGroups.length !== 3){
-			LatUtils._error("lat searchGroups.length should be equal to 3");
+		if(lat.searchGroups.length !== 1){
+			LatUtils._error("lat searchGroups.length should be equal to 1");
+		}
+		
+		try{
+			lat.addSearchGroup([[lvo]]);
+			LatUtils._warn("lat addSearchGroup should not accept a list of anything other than LatVar*");
+		}catch(e){}
+
+		if(lat.searchType !== LatConst.SEARCH_TYPE.CUSTOM){
+			LatUtils._error("lat searchGroups.addSearchGroup should set searchType to CUSTOM");
 		}
 
 		lat.setSearchType(LatConst.SEARCH_TYPE.INDEPENDENT);
@@ -102,5 +113,5 @@ aspectdef TestSetters
 			LatUtils._error("lat abort should be equal to false");
 		}
 	end
-	print("DONE");
+	println("DONE");
 end

@@ -1,7 +1,7 @@
 import lat.Lat;
 
 aspectdef TestDefaults
-	print("----------------------Testing defaults...    ");
+	print("----------------------Testing Defaults...    ");
 	
 	var lat = new Lat();
 	if(lat.name !== undefined){
