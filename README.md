@@ -182,4 +182,4 @@ There are a few values that Lat requires that are grouped in the **LatConst** cl
  1. Stop after a given usr condition is met, example: enough variations have been run and there is one that is x% above average or another measure
  2. In LatVarList enable random access to the variables, if 1. is implemented as it does not make sense to use this when there is no ending condition
  3. How to support chars, does it need to insert the '' ?
- 4. Identify irrelevant search Groups, example: `[[a, b][a]]` - on the first search group, `a` will be run with the default value of b
+ 4. Identify irrelevant search Groups, example: `[[a, b], [a]]` - on the first search group, `a` will be run with the default value of `b` on the first iteration of this search group, meaning that the second search group, with `a` alone, will execute the same iteration (varying `a` and keeping all the other variables, in this case `b`)
