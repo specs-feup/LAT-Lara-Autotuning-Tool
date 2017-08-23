@@ -25,13 +25,13 @@ Lat.prototype.tune = function() {
 
 Lat.prototype.toConfig = function(filename) {
     filename = LatUtils.getRightExtension(filename, "json");
+    Io.writeJson(filename, this);
     writeFile(filename, JSON.stringify(this));
-    //writeJSON();
 };
 
 Lat.prototype.fromConfig = function(filename) {
-    var filecontents = readFile(filename);
-    var temp = JSON.parse(filecontents);
+    LatUtils._error("function fromConfig not implemented, missing 'this[property]' access");
+    var temp = Io.readJson(filename);
     for (var property in temp) {
         //println("property: " + property + " = " + temp[property]);
         //TODO: check it works after fixing this[property]
@@ -40,8 +40,29 @@ Lat.prototype.fromConfig = function(filename) {
 };
 
 Lat.prototype.countVariants = function() {
-
-    LatUtils._error("function countVariants not implemented");
+    var count = 0;
+    if(this.searchType == LatConst.SEARCH_TYPE.DEPENDENT){
+        //dependent search means for every var, every other's value will be used -> product
+        count = 1;
+        for(var i = 0; i < this.variables.length; i++){
+            count *= this.variables[i].countElements();
+        }
+    }else if(this.searchType == LatConst.SEARCH_TYPE.INDEPENDENT){
+        //independent search iterates a single variable while keeping all the others constant -> sum
+        for(var i = 0; i < this.variables.length; i++){
+            count += this.variables[i].countElements();
+        }
+    }else if(this.searchType == LatConst.SEARCH_TYPE.CUSTOM){
+        //each search group acts as a dependent search, and between search groups the pattern is dependent
+        for(var i = 0; i < this.searchGroups.length; i++){
+            var temp = 1;
+            for(var j = 0; j < this.searchGroups[i].length; j++){
+                temp *= this.searchGroups[i][j].countElements();
+            }
+            count += temp;
+        }
+    }
+    return count;
 };
 
 Lat.prototype.estimateTime = function() {
@@ -86,8 +107,9 @@ Lat.prototype.setSearchGroups = function(searchGroups) {
     return this;
 };
 Lat.prototype.addSearchGroup = function(searchGroup) {
-    LatUtils.checkArray(searchGroup, "searchGroup");
+    LatUtils.checkLatVars(searchGroup, "searchGroup(addSearchGroup)");
     this.searchGroups.push(searchGroup);
+    this.searchType = LatConst.SEARCH_TYPE.CUSTOM;
     return this;
 };
 Lat.prototype.setSearchType = function(searchType) {
