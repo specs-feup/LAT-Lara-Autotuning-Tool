@@ -103,3 +103,15 @@ LatUtils.checkDuplicatesLatVar = function(latVars, listName) {
         }
     }
 };
+
+/**
+ * Remove duplicates from a javascript aray
+ * @param list the initial array
+ * @return an array with all the unique elements of list
+ */
+LatUtils.removeDuplicates = function(list) {
+    var seen = {};
+    return list.filter(function(item, pos) {
+	    return list.indexOf(item) == pos;
+    });
+};
