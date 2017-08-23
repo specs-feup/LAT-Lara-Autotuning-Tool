@@ -177,3 +177,7 @@ There are a few values that Lat requires that are grouped in the **LatConst** cl
 
 
 
+## Ideas
+
+ 1. Stop after a given usr condition is met, example: enough variations have been run and there is one that is x% above average or another measure
+ 2. In LatVarList enable random access to the variables, if 1. is implemented as it does not make sense to use this when there is no ending condition
