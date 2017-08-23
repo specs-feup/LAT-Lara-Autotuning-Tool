@@ -14,11 +14,13 @@ import clava.Clava;
 var Lat = function(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout, outputPath) {
     this.loadDefaults(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout, outputPath);
     this.tunned = false; //set to true after a tuning execution
-
-
 };
 
 Lat.prototype.tune = function() {
+    if(this.searchType === LatUtils.SEARCH_TYPE.DEPENDENT || this.searchType ===LatUtils.SEARCH_TYPE.INDEPENDENT){
+        this.variables = LatUtils.removeDuplicates(this.variables);
+    }
+
     this.generateSearchGroups();
 };
 
@@ -209,5 +211,14 @@ Lat.prototype.generateSearchGroups = function() {
     } else if (this.searchType === LatConst.SEARCH_TYPE.DEPENDENT) {
         this.searchGroups = this.variables;
     }
+    this.searchGroups = this.removeRedundancies();
+    return this;
+};
+
+/**
+ * remove redundant search groups
+ */
+Lat.prototype.removeRedundancies = function() {
+    //TODO: complete this
     return this;
 };
