@@ -18,17 +18,19 @@ aspectdef TestLatVarList
 
 	var lvl = new LatVarList("a", tempElements);
 
-	if(lvl.countElements() !== tempElements.length){
-		LatUtils._error("LatVarList countElements should be " + tempElements.length);
+	var expectedElements = tempElements.length;
+
+	if(lvl.countElements() !== expectedElements){
+		LatUtils._error("LatVarList countElements should be " + expectedElements);
 	}
 	
-	for(var i = 0; i < tempElements.length; i++){
+	for(var i = 0; i < expectedElements; i++){
 		if(lvl.hasNext() !== true){
-			LatUtils._error("LatVarList hasNext should identify "+tempElements.length+" elements, failed at: " + (i+1));
+			LatUtils._error("LatVarList hasNext should identify "+expectedElements+" elements, failed at: " + (i+1));
 		}
 
 		if(lvl.getNext() === undefined){
-			LatUtils._error("LatVarList getNext should return "+tempElements.length+" elements, failed at: " + (i+1) + " this value cannot be undefined");
+			LatUtils._error("LatVarList getNext should return "+expectedElements+" elements, failed at: " + (i+1) + " this value cannot be undefined");
 		}
 	}
 	
