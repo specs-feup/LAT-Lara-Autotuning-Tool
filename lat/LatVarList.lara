@@ -14,14 +14,19 @@ LatVarList.prototype.constructor = LatVarList;
 //Functions overloaded from LatVar
 
 LatVarList.prototype.getNext = function() {
-    return this.elements[this.elementIndex++];
+    if (this.first) {
+        this.first = false;
+        return LatUtils.clone(LatConst.LAT_VALUE.DEFAULT);
+    }
+    return { type: this.type, value: this.elements[this.elementIndex++], default: false };
 };
 LatVarList.prototype.hasNext = function() {
     return this.elementIndex < this.elements.length;
 };
 LatVarList.prototype.countElements = function() {
-    return this.elements.length;
+    return this.elements.length + 1;
 };
 LatVarList.prototype.restart = function() {
     this.elementIndex = 0;
+    this.first = true;
 };

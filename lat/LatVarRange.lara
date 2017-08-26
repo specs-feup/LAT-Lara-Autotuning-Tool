@@ -32,19 +32,24 @@ LatVarRange.prototype.constructor = LatVarRange;
 
 //Functions overloaded from LatVar
 LatVarRange.prototype.getNext = function() {
+    if (this.first) {
+        this.first = false;
+        return LatUtils.clone(LatConst.LAT_VALUE.DEFAULT);
+    }
     var currentResult = this.callback(this.next);
     this.next += this.step;
-    return currentResult;
+    return { type: this.type, value: currentResult, default: false };
 };
 LatVarRange.prototype.hasNext = function() {
     var nextResult = this.next + this.step;
-    return (nextResult <= this.stop && this.step > 0) || (nextResult >= this.stop && this.step < 0);
+    return this.first || (nextResult <= this.stop && this.step > 0) || (nextResult >= this.stop && this.step < 0);
 };
 LatVarRange.prototype.countElements = function() {
-    return Math.abs(this.stop - this.start) / Math.abs(this.step);
+    return (Math.abs(this.stop - this.start) / Math.abs(this.step)) + 1;
 };
 LatVarRange.prototype.restart = function() {
     this.next = this.start;
+    this.first = true;
 };
 
 LatVarRange.prototype._defaultCallback = function(current) {
