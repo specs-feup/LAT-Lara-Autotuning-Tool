@@ -105,13 +105,40 @@ LatUtils.checkDuplicatesLatVar = function(latVars, listName) {
 };
 
 /**
- * Remove duplicates from a javascript aray
+ * Remove duplicates from a javascript array
  * @param list the initial array
  * @return an array with all the unique elements of list
  */
 LatUtils.removeDuplicates = function(list) {
     var seen = {};
     return list.filter(function(item, pos) {
-	    return list.indexOf(item) == pos;
+        return list.indexOf(item) == pos;
     });
+};
+/**
+ * Remove duplicates from a javascript array that contains cloned items, the default removeDuplicates won't work
+ * @param list the initial array
+ * @return an array with all the unique elements of list
+ */
+LatUtils.removeDuplicatesCloned = function(list) {
+    var seen = {};
+    return list.filter(function(item, pos) {
+        return LatUtils.indexOf(list, item) == pos;
+    });
+};
+
+LatUtils.indexOf = function(array, item) {
+    for (var i = 0; i < array.length; i++) {
+        if (JSON.stringify(array[i]) === JSON.stringify(item)) return i;
+    }
+    return -1;
+};
+
+/**
+ * clone and return the cloned version of an object
+ * @param obj the object to clone
+ * @return cloned version of obj
+ */
+LatUtils.clone = function(obj) {
+    return JSON.parse(JSON.stringify(obj));
 };
