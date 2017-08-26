@@ -22,6 +22,8 @@ Lat.prototype.tune = function() {
     }
     this.generateSearchGroups();
     this.generateUniqueVariables();
+    this.generateBaseVariant(); //must come after generateUniqueVariables
+    this.generateUniqueVariants();
 };
 
 
@@ -239,22 +241,39 @@ Lat.prototype.generateUniqueVariables = function() {
 /**
  * Creates an array with the exact number of objects as there are unique variables, to be used as a stub further along the program
  */
+Lat.prototype.generateBaseVariant = function() {
+    this.baseVariant = [];
     for (var i = 0; i < this.uniqueVariables.length; i++) {
+        this.baseVariant.push(LatUtils.clone(LatConst.LAT_VALUE.DEFAULT));
     }
+    outs(this.baseVariant);
     return this;
 };
 
 /**
+ * remove redundant search groups by maping the variants into an array of variants
  */
+Lat.prototype.generateUniqueVariants = function() {
+    this.uniqueVariants = []; // a list 
     for (var i = 0; i < this.searchGroups.length; i++) {
+        this.currentVariant = this.baseVariant;
+        this.generateVariantsRecursive(this.searchGroups[i], 0);
     }
+    println("DONE: " + this.uniqueVariants.length + " uniqueVariants: ");
+    this.uniqueVariants = LatUtils.removeDuplicatesCloned(this.uniqueVariants);
+    println("removed duplicates: " + this.uniqueVariants.length + " uniqueVariants: ");
     print();
+    for (var i = 0; i < this.uniqueVariants.length; i++) {
+        for (var j = 0; j < this.uniqueVariants[i].length; j++) {
+            if (this.uniqueVariants[i][j].default) {
                 print("0 - ");
             } else {
+                print(this.uniqueVariants[i][j].value + " - ");
             }
         }
         println();
     }
+    this.uniqueVariants.map(outs);
     return this;
 };
 
@@ -264,27 +283,43 @@ Lat.prototype.generateUniqueVariables = function() {
  * @param current 
  * @param index
  */
+Lat.prototype.generateVariantsRecursive = function(searchGroup, index) {
     //the searchGroup[index].index is to keep the same variable in the same position, always, according to this.uniqueVariables
     while (searchGroup[index].hasNext()) {
         return;
+        this.currentVariant[searchGroup[index].index] = LatUtils.clone(LatConst.LAT_VALUE.DEFAULT);
         if ((index + 1) < searchGroup.length) {
             println("next");
+            this.generateVariantsRecursive(searchGroup, index + 1); //next LatVar in the searchGroup
         } else {
             println("no next");
+            this.currentVariant[searchGroup[index].index].type = searchGroup[index].type;
             while (searchGroup[index].hasNext()) {
+                this.uniqueVariants.push(LatUtils.clone(this.currentVariant)); //save to the array
+                this.currentVariant[searchGroup[index].index].value = searchGroup[index].getNext(); //only update the value
+                this.currentVariant[searchGroup[index].index].default = false;
             }
+            this.uniqueVariants.push(LatUtils.clone(this.currentVariant)); //save to the array
             searchGroup[index].restart();
+            this.currentVariant[searchGroup[index].index] = LatUtils.clone(LatConst.LAT_VALUE.DEFAULT); //so that the next iteration uses this default value
         }
     }
     /*
     if (searchGroup[index].hasNext()) {
         //the searchGroup[index].index is to keep the same variable in the same position, always, according to this.uniqueVariables
+        this.currentVariant[searchGroup[index].index].value = searchGroup[index].getNext();
+        this.currentVariant[searchGroup[index].index].type = searchGroup[index].type;
+        this.currentVariant[searchGroup[index].index].default = false;
         index++; //next LatVar in the searchGroup
         if (index < searchGroup.length) {
+            this.generateVariantsRecursive(searchGroup, index);
         } else {
             while (searchGroup[index].hasNext()) {
+                this.uniqueVariants.push(this.currentVariant); //save to the array
+                this.currentVariant[searchGroup[index].index].value = searchGroup[index].getNext(); //only update the value
             }
             searchGroup[index].restart();
+            this.currentVariant[searchGroup[index].index].default = true; //so that the next iteration uses this default value
         }
     }
     */
