@@ -91,14 +91,14 @@ The parent class for representing a named variable. This works like a Java Inter
 
 ##### Properties
  - `name` - the variable name in the scope specified, it must be unique.
- - `type` - [optional] the type of the variable in the code, this will be used when changing the ast so that there is no ambiguity when generating the variants. For instance, a char variable is not printed the same way a string is. Allowed values: ``LatConst.OUTPUT_TYPE.``(``AUTO``, ``STRING``, ``CHAR``), see [Global constants](#global-constants). Default is ``LatConst.OUTPUT_TYPE.AUTO``.
+ - `type` - [optional] the type of the variable in the code, this will be used when changing the ast so that there is no ambiguity when generating the variants. For instance, a char variable is not printed the same way a string is. Allowed values: `LatConst.OUTPUT_TYPE.`(`AUTO`, `STRING`, `CHAR`), see [Global constants](#global-constants). Default is `LatConst.OUTPUT_TYPE.AUTO`.
 
 ##### Methods
- - `getNext()` - private method used for obtaining the next value for the variable
- - `hasNext()` - private method used for checking if there are still elements to use.
- - `countElements()` - private method used to get the number of elements each LatVar produces
- - `restart()` - private method that restarts the variable to its first element
- - `setType(type)` - setter for type, it validates the supplied value, must be one of ``OUTPUT_TYPE``, see [Global constants](#global-constants);
+ - `getNext()` - private method used for obtaining the next value for the variable, it returns an object containing some useful information, which includes the next value for the variable, for example `{ type: LatConst.OUTPUT_TYPE.AUTO, value: 0, default: false }`;
+ - `hasNext()` - private method used for checking if there are still elements to use;
+ - `countElements()` - private method used to get the number of elements each LatVar produces;
+ - `restart()` - private method that restarts the variable to its first element;
+ - `setType(type)` - setter for type, it validates the supplied value, must be one of `OUTPUT_TYPE`, see [Global constants](#global-constants).
 
 It is not to be invoked on its own, choose one of the following **accessible** sub-classes, that inherit its properties and methods:
 
@@ -185,7 +185,9 @@ There are a few values that Lat requires that are grouped in the **LatConst** cl
 
 ## Ideas
 
- 1. Stop after a given usr condition is met, example: enough variations have been run and there is one that is x% above average or another measure
+ 1. Stop after a given user condition is met, example: enough variations have been run and there is one that is x% above average or another measure
  2. In LatVarList enable random access to the variables, if 1. is implemented as it does not make sense to use this when there is no ending condition
  3. How to support chars, does it need to insert the '' ?
  4. Identify irrelevant search Groups, example: `[[a, b], [a]]` - on the first search group, `a` will be run with the default value of `b` on the first iteration of this search group, meaning that the second search group, with `a` alone, will execute the same iteration (varying `a` and keeping all the other variables, in this case `b`)
+ 5. Create an index
+ 6. Create examples
