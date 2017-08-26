@@ -91,12 +91,14 @@ The parent class for representing a named variable. This works like a Java Inter
 
 ##### Properties
  - `name` - the variable name in the scope specified, it must be unique.
+ - `type` - [optional] the type of the variable in the code, this will be used when changing the ast so that there is no ambiguity when generating the variants. For instance, a char variable is not printed the same way a string is. Allowed values: ``LatConst.OUTPUT_TYPE.``(``AUTO``, ``STRING``, ``CHAR``), see [Global constants](#global-constants). Default is ``LatConst.OUTPUT_TYPE.AUTO``.
 
 ##### Methods
  - `getNext()` - private method used for obtaining the next value for the variable
  - `hasNext()` - private method used for checking if there are still elements to use.
  - `countElements()` - private method used to get the number of elements each LatVar produces
  - `restart()` - private method that restarts the variable to its first element
+ - `setType(type)` - setter for type, it validates the supplied value, must be one of ``OUTPUT_TYPE``, see [Global constants](#global-constants);
 
 It is not to be invoked on its own, choose one of the following **accessible** sub-classes, that inherit its properties and methods:
 
@@ -110,7 +112,7 @@ Used to define a variable that varies withtin a the values of a list;
  - `elementIndex` - The position of the next element to return, if `elementIndex > elements.size`. The default is 0.   
 
 ##### Methods
- - `LatVarList(name, elements)` - Constructor, elements is optional and can be changed through the property. 
+ - `LatVarList(name, elements, type)` - Constructor, elements is optional and can be changed through the property. 
     
 ---
     
@@ -125,7 +127,7 @@ Used to define a variable that has a starting value, a finish value, a step incr
  - `callback` - An optional function that generates the value of `next` and that receives the next element in the list. This is useful for mathematical expressions, returning non-numeric values, ...
 
 ##### Methods
- - `LatVarRange(name, start, stop, step, callback)` - Constructor, `step` and `callback` are optional.  
+ - `LatVarRange(name, start, stop, step, callback, type)` - Constructor, `step` and `callback` are optional.  
 
 ---
 ### LatVarOmp
@@ -156,6 +158,10 @@ There are a few values that Lat requires that are grouped in the **LatConst** cl
    - `LatConst.SEARCH_TYPE.INDEPENDENT`
    - `LatConst.SEARCH_TYPE.DEPENDENT`
    - `LatConst.SEARCH_TYPE.CUSTOM`
+2. OUTPUT_TYPE - An enum used to specify how to print the variable when generatin variants:
+   - `LatConst.OUTPUT_TYPE.AUTO` - will detect int, string, omp, ...
+   - `LatConst.OUTPUT_TYPE.CHAR` - force the output to be 'a' instead of "a"
+   - `LatConst.OUTPUT_TYPE.STRING` - force the output to be "1" instead of 1
 
 
 ## Examples
