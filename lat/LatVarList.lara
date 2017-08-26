@@ -1,5 +1,5 @@
-var LatVarList = function(name, elements) {
-    LatVar.call(this, name);
+var LatVarList = function(name, elements, type) {
+    LatVar.call(this, name, type);
     LatUtils.checkArray(elements, "LatVarList elements");
     if (elements.length <= 0) {
         LatUtils._error("LatVarList elements parameter only accepts non-empty element lists");

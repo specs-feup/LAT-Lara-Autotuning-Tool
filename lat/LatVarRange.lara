@@ -1,5 +1,5 @@
-var LatVarRange = function(name, start, stop, step, callback) {
-    LatVar.call(this, name);
+var LatVarRange = function(name, start, stop, step, callback, type) {
+    LatVar.call(this, name, type);
     LatUtils.checkNumber(start, "start");
     LatUtils.checkNumber(stop, "stop");
 
