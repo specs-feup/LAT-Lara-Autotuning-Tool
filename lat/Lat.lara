@@ -17,11 +17,11 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, clearC
 };
 
 Lat.prototype.tune = function() {
-    if(this.searchType === LatUtils.SEARCH_TYPE.DEPENDENT || this.searchType ===LatUtils.SEARCH_TYPE.INDEPENDENT){
+    if (this.searchType === LatConst.SEARCH_TYPE.DEPENDENT || this.searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
         this.variables = LatUtils.removeDuplicates(this.variables);
     }
-
     this.generateSearchGroups();
+    this.generateUniqueVariables();
 };
 
 
@@ -43,22 +43,22 @@ Lat.prototype.fromConfig = function(filename) {
 
 Lat.prototype.countVariants = function() {
     var count = 0;
-    if(this.searchType == LatConst.SEARCH_TYPE.DEPENDENT){
+    if (this.searchType == LatConst.SEARCH_TYPE.DEPENDENT) {
         //dependent search means for every var, every other's value will be used -> product
         count = 1;
-        for(var i = 0; i < this.variables.length; i++){
+        for (var i = 0; i < this.variables.length; i++) {
             count *= this.variables[i].countElements();
         }
-    }else if(this.searchType == LatConst.SEARCH_TYPE.INDEPENDENT){
+    } else if (this.searchType == LatConst.SEARCH_TYPE.INDEPENDENT) {
         //independent search iterates a single variable while keeping all the others constant -> sum
-        for(var i = 0; i < this.variables.length; i++){
+        for (var i = 0; i < this.variables.length; i++) {
             count += this.variables[i].countElements();
         }
-    }else if(this.searchType == LatConst.SEARCH_TYPE.CUSTOM){
+    } else if (this.searchType == LatConst.SEARCH_TYPE.CUSTOM) {
         //each search group acts as a dependent search, and between search groups the pattern is dependent
-        for(var i = 0; i < this.searchGroups.length; i++){
+        for (var i = 0; i < this.searchGroups.length; i++) {
             var temp = 1;
-            for(var j = 0; j < this.searchGroups[i].length; j++){
+            for (var j = 0; j < this.searchGroups[i].length; j++) {
                 temp *= this.searchGroups[i][j].countElements();
             }
             count += temp;
@@ -211,14 +211,85 @@ Lat.prototype.generateSearchGroups = function() {
     } else if (this.searchType === LatConst.SEARCH_TYPE.DEPENDENT) {
         this.searchGroups = this.variables;
     }
-    this.searchGroups = this.removeRedundancies();
+    return this;
+};
+/**
+ * create a list of unique variables from search groups for the custom searchtype, or return this.variables for the other cases 
+ */
+Lat.prototype.generateUniqueVariables = function() {
+    this.uniqueVariables = [];
+    if (this.searchType === LatConst.SEARCH_TYPE.CUSTOM) {
+        for (var i = 0; i < this.searchGroups.length; i++) { //iterate all search groups
+            for (var j = 0; j < this.searchGroups[i].length; j++) { //iterate all variables in a search group
+                this.uniqueVariables.push(this.searchGroups[i][j]);
+            }
+        }
+        this.uniqueVariables = LatUtils.removeDuplicates(this.uniqueVariables);
+    } else {
+        this.uniqueVariables = this.variables;
+    }
+    this.uniqueVariables = this.uniqueVariables.map( //back referencing the index
+        function(x, i) {
+            x.index = i;
+            return x;
+        });
     return this;
 };
 
 /**
- * remove redundant search groups
+ * Creates an array with the exact number of objects as there are unique variables, to be used as a stub further along the program
  */
-Lat.prototype.removeRedundancies = function() {
-    //TODO: complete this
+    for (var i = 0; i < this.uniqueVariables.length; i++) {
+    }
     return this;
+};
+
+/**
+ */
+    for (var i = 0; i < this.searchGroups.length; i++) {
+    }
+    print();
+                print("0 - ");
+            } else {
+            }
+        }
+        println();
+    }
+    return this;
+};
+
+/**
+ * 
+ * @param searchGroup a list with the LatVars of the current searchGroup
+ * @param current 
+ * @param index
+ */
+    //the searchGroup[index].index is to keep the same variable in the same position, always, according to this.uniqueVariables
+    while (searchGroup[index].hasNext()) {
+        return;
+        if ((index + 1) < searchGroup.length) {
+            println("next");
+        } else {
+            println("no next");
+            while (searchGroup[index].hasNext()) {
+            }
+            searchGroup[index].restart();
+        }
+    }
+    /*
+    if (searchGroup[index].hasNext()) {
+        //the searchGroup[index].index is to keep the same variable in the same position, always, according to this.uniqueVariables
+        index++; //next LatVar in the searchGroup
+        if (index < searchGroup.length) {
+        } else {
+            while (searchGroup[index].hasNext()) {
+            }
+            searchGroup[index].restart();
+        }
+    }
+    */
+};
+
+var outs = function(a) {
+    println(JSON.stringify(a));
 };
