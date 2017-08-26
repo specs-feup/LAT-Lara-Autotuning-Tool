@@ -1,6 +1,8 @@
-var LatVar = function(name) {
+var LatVar = function(name, type) {
     LatUtils.checkString(name, "LatVar*.name");
     this.name = name;
+    this.setType(type);
+    this.index = -1; /** used to avoid multiple searches, it records the position of this LatVar in an array of LatVars */
 };
 
 LatVar.prototype.equals = function(tester) {
@@ -18,4 +20,11 @@ LatVar.prototype.countElements = function() {
 };
 LatVar.prototype.restart = function() {
     LatUtils._error("function restart not implemented");
+};
+LatVar.prototype.setType = function(type) {
+    if (type === LatConst.OUTPUT_TYPE.STRING || type === LatConst.OUTPUT_TYPE.CHAR) {
+        this.type = type;
+    } else {
+        this.type = LatConst.OUTPUT_TYPE.AUTO;
+    }
 };
