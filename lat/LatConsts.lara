@@ -46,3 +46,18 @@ LatConst.TYPE = {
     OBJECT: "object",
     JOINPOINT: "Joinpoint 'type'"
 };
+
+/**
+ * The types of the LatVars, this will be used when changing the ast so that there is no ambiguity when generating the variants
+ */
+LatConst.OUTPUT_TYPE = {
+    AUTO: 1,
+    CHAR: 2,
+    STRING: 3
+};
+
+//common Lat combinations skeletons 
+LatConst.LAT_VALUE = {
+    DEFAULT: { type: LatConst.OUTPUT_TYPE.AUTO, value: 0, default: true },
+    EMPTY: { type: LatConst.OUTPUT_TYPE.AUTO, value: 0, default: false }
+};
