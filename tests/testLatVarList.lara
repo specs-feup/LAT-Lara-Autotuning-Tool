@@ -20,11 +20,11 @@ aspectdef TestLatVarList
 
 	var expectedElements = tempElements.length;
 
-	if(lvl.countElements() !== expectedElements){
+	if(lvl.countElements() !== expectedElements + 1){
 		LatUtils._error("LatVarList countElements should be " + expectedElements);
 	}
 	
-	for(var i = 0; i < expectedElements; i++){
+	for(var i = 0; i < lvl.countElements(); i++){
 		if(lvl.hasNext() !== true){
 			LatUtils._error("LatVarList hasNext should identify "+expectedElements+" elements, failed at: " + (i+1));
 		}
@@ -37,7 +37,7 @@ aspectdef TestLatVarList
 	if(lvl.hasNext() !== false){
 		LatUtils._error("LatVarList hasNext should not identify unexistent element");
 	}
-	if(lvl.getNext() !== undefined){
+	if(lvl.getNext().value !== undefined){
 		LatUtils._error("LatVarList getNext should not identify unexistent element");
 	}
 

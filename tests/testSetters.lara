@@ -83,6 +83,16 @@ aspectdef TestSetters
 			LatUtils._error("lat searchGroups.length should be equal to 0 after setting DEPENDENT");
 		}
 
+		//removeDuplicates
+		lat.setRemoveDuplicates(true);
+		if(lat.removeDuplicates !== true){
+			LatUtils._error("lat removeDuplicates should be equal to true");
+		}
+		lat.setRemoveDuplicates(false);
+		if(lat.removeDuplicates !== false){
+			LatUtils._error("lat removeDuplicates should be equal to false");
+		}
+
 		//Verbose
 		lat.setVerbose(true);
 		if(lat.verbose !== true){
@@ -112,6 +122,20 @@ aspectdef TestSetters
 		if(lat.abort !== false){
 			LatUtils._error("lat abort should be equal to false");
 		}
+		
+		//timeout
+		lat.setTimeout(10);
+		if(lat.timeout !== 10){
+			LatUtils._error("lat timeout should be equal to 10");
+		}
+		try{
+			lat.setTimeout(-1);
+			LatUtils._warn("lat setTimeout should not accept negative numbers");
+		}catch(e){}
+		try{
+			lat.setTimeout("a");
+			LatUtils._warn("lat setTimeout should only accept numbers");
+		}catch(e){}
 	end
 	println("DONE");
 end

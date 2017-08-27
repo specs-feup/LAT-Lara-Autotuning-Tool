@@ -18,7 +18,7 @@ The main class for the tool, this will represent a region to autotune and all th
  - `searchType` - Specify how to search for the best match with the given variables. The possibilities are _dependent_ and _independent_ or _custom_. _Dependent_ search will execute every combination of the variables whereas _independent_ search will execute each variable's variation while keeping every other variable to their default. See [Global constants](#global-constants) for more info. _Custom_ search will happen if you specify a value for the **searchGroups** variable;
  - `searchGroups` - A list of variable lists that will specify which variables to tune dependently. From 3 variables: `a`,`b` and `c`: `[a,b]` and `[a,c]` means that variables `a` and `b` will be tuned _dependently_ while keeping the value of `c`, and afterwars `a` and `c` will be tuned _dependently_ while keeping the value of `b`. In this example, `[a]`,`[b]`,`[c]` would be the same as _independent_ search and `[a,b,c]` would the same as _dependent_ search;
  - `numTests` - How many tests to perform for each variant;
- - `compiler` - (To be defined whether this will be mentioned, since it is automatically detected);
+ - `removeDuplicates` - If true, every variant generated will be tested to assert if it is unique, for large amounts of variants this becomes an expensive process as its time complexity is O^n, if you belive the number of duplicate variants is small and that the cost of creating and executing those variants is smaller than that of removing those duplicates then you should set it to false, its default value is true;
  - `clearCode` - Define whether the generated code variants will be deleted or not;
  - `verbose` - Turn verbose output on and off;
  - `abort` - Define if the tool will stop upon error from one of the variants;
@@ -34,21 +34,21 @@ Essentially, either you choose _dependent_ or _independent_ search or you specif
 
 ##### Defaults
 
-|    property    |   default   |        accepted        |
-|:--------------:|:-----------:|:----------------------:|
-|     `name`     |   required  |                        |
-|     `scope`    |   required  |        joinpoint       |
-|    `measure`   |    scope    |        joinpoint       |
-|   `variables`  |      []     |         LatVar         |
-| `searchGroups` |      []     |     lists of LatVar    |
-|  `searchType`  | independent |  LatConst.SEARCH_TYPE  |
-|   `numTests`   |      1      |      unsigned int      |
-|   `compiler`   |     auto    |          none          |
-|   `clearCode`  |     true    |         boolean        |
-|    `verbose`   |     true    |         boolean        |
-|     `abort`    |    false    |         boolean        |
-|    `timeout`   |      0      |      unsigned int      |
-|  `outputPath`  |  curent dir | absolute/relative path |
+|      property     |   default   |        accepted        |
+|:-----------------:|:-----------:|:----------------------:|
+|       `name`      |   required  |         string         |
+|      `scope`      |   required  |        joinpoint       |
+|     `measure`     |    scope    |        joinpoint       |
+|    `variables`    |      []     |         LatVar         |
+|   `searchGroups`  |      []     |     lists of Latvar    |
+|    `searchType`   | independent |  LatConst.SEARCH_TYPE  |
+|     `numTests`    |      1      |      unsigned int      |
+| `removeDuplicate` |     true    |         boolean        |
+|    `clearCode`    |     true    |         boolean        |
+|     `verbose`     |     true    |         boolean        |
+|      `abort`      |    false    |         boolean        |
+|     `timeout`     |      0      |      unsigned int      |
+|    `outputPath`   |  curent dir | absolute/relative path |
 
 ##### Methods
 
@@ -56,11 +56,11 @@ As for the **Lat** constructors you can specify as many parameters as you want, 
 
  - `Lat()` - Empty constructor, this creates an empty **Lat** that cannot be used until the required parameters are set: `name` and `scope`;
  - `Lat(name, scope)` - Constructor, with the required parameters only;
- - `Lat(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout)` - Constructor, apart from the first two parameters (`name` and `scope`) all the other variables are optional, but must be supplied in this order;
+ - `Lat(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout)` - Constructor, apart from the first two parameters (`name` and `scope`) all the other variables are optional, but must be supplied in this order;
  - `tune()` - Start the tuning of the code;
  - `toConfig()` - Save the current properties of the **Lat** instance to a `.json` file for future reuse, including the variables inside it;
  - `fromConfig(filename)` - Load a `.json` file into a Lat instance;
- - `countVariants()` - Returns an int with the number of variants the current configuration will execute;
+ - `countVariants()` - Returns an int with the number of variants the current configuration will execute, this is the value of running all possible combinations and duplicate instances may be accounted for;
  - `estimateTime()` - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds for all the variants; 
  - `printResults()` - Prints the results after a `tune` tuning has happened; 
  - `showGraphs()` - Displays the results in user-friendly charts, these are automatically generated and sabed under the `outputPath/results`. 
@@ -77,7 +77,7 @@ As for the **Lat** constructors you can specify as many parameters as you want, 
  - `addSearchGroup(searchGroup)` - a search group is a list of one or more LatVar variables that 
  - `setSearchType(searchType)` - only `LatConst.SEARCH_TYPE.INDEPENDENT` and `LatConst.SEARCH_TYPE.DEPENDENT` accepted. If you change this after you have set any `searchGroups`, the searchGroup specifications will be reset accordingly (see [properties](#properties)). If you have set any searchGroups, the value of searchType will be `LatConst.SEARCH_TYPE.CUSTOM`;
  - `setNumTests(numTests)`
- - `setCompiler(compiler)`
+ - `setRemoveDuplicates(removeDuplicates)`
  - `setClearCode(clearCode)`
  - `setVerbose(verbose)`
  - `setAbort(abort)`
@@ -91,14 +91,14 @@ The parent class for representing a named variable. This works like a Java Inter
 
 ##### Properties
  - `name` - the variable name in the scope specified, it must be unique.
- - `type` - [optional] the type of the variable in the code, this will be used when changing the ast so that there is no ambiguity when generating the variants. For instance, a char variable is not printed the same way a string is. Allowed values: ``LatConst.OUTPUT_TYPE.``(``AUTO``, ``STRING``, ``CHAR``), see [Global constants](#global-constants). Default is ``LatConst.OUTPUT_TYPE.AUTO``.
+ - `type` - [optional] the type of the variable in the code, this will be used when changing the ast so that there is no ambiguity when generating the variants. For instance, a char variable is not printed the same way a string is. Allowed values: `LatConst.OUTPUT_TYPE.`(`AUTO`, `STRING`, `CHAR`), see [Global constants](#global-constants). Default is `LatConst.OUTPUT_TYPE.AUTO`.
 
 ##### Methods
- - `getNext()` - private method used for obtaining the next value for the variable
- - `hasNext()` - private method used for checking if there are still elements to use.
- - `countElements()` - private method used to get the number of elements each LatVar produces
- - `restart()` - private method that restarts the variable to its first element
- - `setType(type)` - setter for type, it validates the supplied value, must be one of ``OUTPUT_TYPE``, see [Global constants](#global-constants);
+ - `getNext()` - private method used for obtaining the next value for the variable, it returns an object containing some useful information, which includes the next value for the variable, for example `{ type: LatConst.OUTPUT_TYPE.AUTO, value: 0, default: false }`;
+ - `hasNext()` - private method used for checking if there are still elements to use;
+ - `countElements()` - private method used to get the number of elements each LatVar produces;
+ - `restart()` - private method that restarts the variable to its first element;
+ - `setType(type)` - setter for type, it validates the supplied value, must be one of `OUTPUT_TYPE`, see [Global constants](#global-constants).
 
 It is not to be invoked on its own, choose one of the following **accessible** sub-classes, that inherit its properties and methods:
 
@@ -185,7 +185,9 @@ There are a few values that Lat requires that are grouped in the **LatConst** cl
 
 ## Ideas
 
- 1. Stop after a given usr condition is met, example: enough variations have been run and there is one that is x% above average or another measure
+ 1. Stop after a given user condition is met, example: enough variations have been run and there is one that is x% above average or another measure
  2. In LatVarList enable random access to the variables, if 1. is implemented as it does not make sense to use this when there is no ending condition
  3. How to support chars, does it need to insert the '' ?
  4. Identify irrelevant search Groups, example: `[[a, b], [a]]` - on the first search group, `a` will be run with the default value of `b` on the first iteration of this search group, meaning that the second search group, with `a` alone, will execute the same iteration (varying `a` and keeping all the other variables, in this case `b`)
+ 5. Create an index
+ 6. Create examples

@@ -3,6 +3,7 @@ var LatVar = function(name, type) {
     this.name = name;
     this.setType(type);
     this.index = -1; /** used to avoid multiple searches, it records the position of this LatVar in an array of LatVars */
+    this.first = true; //the first value getNext returns is always LatConst.LAT_VALUE.DEFAULT
 };
 
 LatVar.prototype.equals = function(tester) {
