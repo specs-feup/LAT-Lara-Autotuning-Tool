@@ -45,7 +45,7 @@ aspectdef TestLatVarRange
 	
 
 	var lvr = new LatVarRange("a", 0, 10);
-	if(lvr.countElements()!=10){
+	if(lvr.countElements()!=11){
 		LatUtils._error("LatVarRange wrong value returned by countElements, should be 10 and is " + lvr.countElements());
 	}
 	
@@ -61,11 +61,14 @@ aspectdef TestLatVarRange
 	
 	var lvr = new LatVarRange("a", 1, 6, 1, pow2);
 	var i = lvr.start;
+	if(JSON.stringify(lvr.getNext()) != JSON.stringify(LatConst.LAT_VALUE.DEFAULT)){
+		LatUtils._error("LatVarRange first element should be equal to LatConst.LAT_VALUE.DEFAULT");
+	}
 	while(lvr.hasNext()){
 		if(lvr.next != i){
 			LatUtils._error("LatVarRange next should be " + i + " but was " + lvr.next);
 		}
-		var tempNext = lvr.getNext();
+		var tempNext = lvr.getNext().value;
 		//println(i + " -> " + tempNext);
 		if(tempNext != pow2(i)){
 			LatUtils._error("LatVarRange getNext should be " + pow2(i) + " but was " + tempNext);
@@ -75,11 +78,14 @@ aspectdef TestLatVarRange
 	
 	var lvr = new LatVarRange("a", 10, 1, -1, pow10);
 	var i = lvr.start;
+	if(JSON.stringify(lvr.getNext()) != JSON.stringify(LatConst.LAT_VALUE.DEFAULT)){
+		LatUtils._error("LatVarRange first element should be equal to LatConst.LAT_VALUE.DEFAULT, step -1");
+	}
 	while(lvr.hasNext()){
 		if(lvr.next != i){
 			LatUtils._error("LatVarRange next should be " + i + " but was " + lvr.next);
 		}
-		var tempNext = lvr.getNext();
+		var tempNext = lvr.getNext().value;
 		//println(i + " -> " + tempNext);
 		if(tempNext != pow10(i)){
 			LatUtils._error("LatVarRange getNext should be " + pow10(i) + " but was " + tempNext);
