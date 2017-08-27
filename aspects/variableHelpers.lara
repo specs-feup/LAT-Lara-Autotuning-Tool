@@ -12,23 +12,29 @@ end
 
 aspectdef getJoinpointsToChange
     input jp, latvars end
-    output list end 
+    output latvarsOut end 
 
-    list = [];
+    latvarsOut = latvars;
+
+    //find vardecls
+    select jp.vardecl end
+    apply
+        for(var i = 0; i < latvarsOut.length; i++){
+            if(latvarsOut[i].name == $vardecl.name){
+                latvarsOut[i].vardecls.push($vardecl);
+                break;
+            }
+        }
+    end
+
+    //find varrefs
     select jp.varref end
     apply
-        if(findInList($varref, latvars)){
-            println("line: " + $varref.line + " - " + $varref.name + " - " + $varref.use);
-            list.push($varref);
+        for(var i = 0; i < latvarsOut.length; i++){
+            if(latvarsOut[i].name == $varref.name){
+                latvarsOut[i].varrefs.push($varref);
+                break;
+            }
         }
     end
 end
-
-function findInList(jp, latvars){
-    for(var i = 0; i < latvars.length; i++){
-        if(latvars[i].name == jp.name){
-            return true;
-        }
-    }
-    return false;
-}
