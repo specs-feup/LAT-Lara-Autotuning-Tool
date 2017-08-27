@@ -13,11 +13,14 @@ import clava.Clava;
 
 var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath) {
     this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath);
-    this.tunned = false; //set to true after a tuning execution
+    this._tunned = false; /** set to true after a tuning execution, used to block functions that require tune, such as printResults */
+    this._printIndentation = 0; /** indicates the hierarchy level of the print operations */
 };
 
 Lat.prototype.tune = function() {
     this.print("Starting tuning operation");
+    this.pushIndent();
+    this._tunned = false;
     if (this.searchType === LatConst.SEARCH_TYPE.DEPENDENT || this.searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
         this.variables = LatUtils.removeDuplicates(this.variables);
     }
@@ -25,6 +28,8 @@ Lat.prototype.tune = function() {
     this.generateUniqueVariables();
     this.generateBaseVariant(); //must come after generateUniqueVariables
     this.generateUniqueVariants();
+    this._tunned = true;
+    this.popIndent();
     this.print("Tuning operation complete");
 };
 
@@ -161,6 +166,7 @@ Lat.prototype.setAbort = function(abort) {
     return this;
 };
 Lat.prototype.setTimeout = function(timeout) {
+    LatUtils.checkNumber(timeout, "timeout");
     if (timeout < 0) {
         LatUtils._error("timeout has to be an unsigned int, invalid value (" + timeout + ")");
     }
@@ -215,7 +221,7 @@ Lat.prototype.validateProperty = function(propertyName, value, defaultValue) {
  * @param noNewLine if this is undefined or considered as false println will be used, if it is set to true print will be used to ouput the message
  */
 Lat.prototype.print = function(message, noNewLine) {
-    message = message === undefined ? "" : message;
+    message = message === undefined ? "" : this.getIndent() + message;
     if (this.verbose) {
         if (noNewLine) {
             print(message);
@@ -223,6 +229,33 @@ Lat.prototype.print = function(message, noNewLine) {
             println(message);
         }
     }
+};
+
+/**
+ * update indentation of prints, increase for hierarchy
+ */
+Lat.prototype.pushIndent = function() {
+    this._printIndentation++;
+    return this;
+};
+
+/**
+ * update indentation of prints, decrease for hierarchy
+ */
+Lat.prototype.popIndent = function() {
+    this._printIndentation--;
+    return this;
+};
+
+/**
+ * get current indentation of prints, decrease for hierarchy
+ */
+Lat.prototype.getIndent = function() {
+    var result = "";
+    for (var i = 0; i < this._printIndentation; i++) {
+        result += "  ";
+    }
+    return result;
 };
 
 //--------------------------------------------Core functions (variants generation)
@@ -285,6 +318,7 @@ Lat.prototype.generateBaseVariant = function() {
  */
 Lat.prototype.generateUniqueVariants = function() {
     this.print("Generating Unique Variants...", true);
+    this.pushIndent();
     this.uniqueVariants = []; // a list 
     for (var i = 0; i < this.searchGroups.length; i++) {
         this.currentVariant = LatUtils.clone(this.baseVariant); //if this is not clone it's values will be changed
@@ -292,8 +326,14 @@ Lat.prototype.generateUniqueVariants = function() {
     }
 
     if (this.removeDuplicates) {
+        this.print();
+        this.print("removing Duplicates from Generated Variants...");
+        var countInitial = this.uniqueVariants.length;
         this.uniqueVariants = LatUtils.removeDuplicatesCloned(this.uniqueVariants);
+
+        this.print("Done - " + (countInitial - this.uniqueVariants.length) + " unique variants removed - total: " + this.uniqueVariants.length);
     }
+    this.popIndent();
     this.print("Done - " + this.uniqueVariants.length + " unique variants generated", true);
     this.print();
     /*println("removed duplicates: " + this.uniqueVariants.length + " uniqueVariants: ");
