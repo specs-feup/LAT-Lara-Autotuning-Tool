@@ -60,7 +60,7 @@ As for the **Lat** constructors you can specify as many parameters as you want, 
  - `tune()` - Start the tuning of the code;
  - `toConfig()` - Save the current properties of the **Lat** instance to a `.json` file for future reuse, including the variables inside it;
  - `fromConfig(filename)` - Load a `.json` file into a Lat instance;
- - `countVariants()` - Returns an int with the number of variants the current configuration will execute;
+ - `countVariants()` - Returns an int with the number of variants the current configuration will execute, this is the value of running all possible combinations and duplicate instances may be accounted for;
  - `estimateTime()` - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds for all the variants; 
  - `printResults()` - Prints the results after a `tune` tuning has happened; 
  - `showGraphs()` - Displays the results in user-friendly charts, these are automatically generated and sabed under the `outputPath/results`. 
