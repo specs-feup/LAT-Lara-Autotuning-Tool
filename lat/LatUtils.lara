@@ -30,7 +30,7 @@ LatUtils.isJoinpoint = function(variable) {
 };
 LatUtils.checkJoinpoint = function(variable, name) {
     if (!LatUtils.isJoinpoint(variable)) {
-        LatUtils._error(name + "variable requires a joinpoint - invalid type supplied");
+        LatUtils._error(name + " variable requires a joinpoint - invalid type supplied");
     }
 };
 
