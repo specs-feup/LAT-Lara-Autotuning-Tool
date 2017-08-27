@@ -129,7 +129,9 @@ LatUtils.removeDuplicatesCloned = function(list) {
 
 LatUtils.indexOf = function(array, item) {
     for (var i = 0; i < array.length; i++) {
-        if (JSON.stringify(array[i]) === JSON.stringify(item)) return i;
+        if (JSON.stringify(array[i]) === JSON.stringify(item)) {
+            return i;
+        }
     }
     return -1;
 };
