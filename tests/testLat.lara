@@ -36,7 +36,7 @@ aspectdef TestLat
 	}
 	
 	//set searchGroups
-	var lvr2 = new LatVarRange("b", 1, 100, 2);
+	var lvr2 = new LatVarRange("c", 1, 100, 2);
 	lat.setSearchGroups([[lvr, lvr2], [lvl]]);
 	if(lat.countVariants() != (lvr.countElements() * lvr2.countElements()) + lvl.countElements()){
 		LatUtils._error("Lat countVariants is not working for the searchGroups");
