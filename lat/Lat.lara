@@ -106,6 +106,22 @@ Lat.prototype.setSearchGroups = function(searchGroups) {
     for (var i = 0; i < searchGroups.length; i++) {
         LatUtils.checkLatVars(searchGroups[i], "searchGroups[" + i + "]");
     }
+    /*
+    This check is unnecessary, as leaving it as it is allows for t
+    //checking for duplicate variables
+    var tempVars = [];
+    for (var i = 0; i < searchGroups.length; i++) {
+        for (var j = 0; j < searchGroups[i].length; j++) {
+            for (var k = 0; k < tempVars.length; k++) {
+                if (searchGroups[i][j].name == tempVars[k].name) {
+                    LatUtils._error("setSearchGroups failed due to two LatVars with the same name (" + searchGroups[i][j].name + ") and (" + tempVars[k].name + ").");
+                }
+            }
+            tempVars.push(searchGroups[i][j]);
+        }
+    }
+    //all is ok
+    */
     this.searchGroups = searchGroups;
     this.searchType = LatConst.SEARCH_TYPE.CUSTOM;
     return this;
@@ -230,7 +246,8 @@ Lat.prototype.generateUniqueVariables = function() {
     } else {
         this.uniqueVariables = this.variables;
     }
-    this.uniqueVariables = this.uniqueVariables.map( //back referencing the index
+
+    this.uniqueVariables = this.uniqueVariables.map( //back referencing the index, useful for generateUniqueVariants
         function(x, i) {
             x.index = i;
             return x;
@@ -256,7 +273,7 @@ Lat.prototype.generateBaseVariant = function() {
 Lat.prototype.generateUniqueVariants = function() {
     this.uniqueVariants = []; // a list 
     for (var i = 0; i < this.searchGroups.length; i++) {
-        this.currentVariant = this.baseVariant;
+        this.currentVariant = LatUtils.clone(this.baseVariant); //if this is not clone it's values will be changed
         this.generateVariantsRecursive(this.searchGroups[i], 0);
     }
     println("DONE: " + this.uniqueVariants.length + " uniqueVariants: ");
@@ -273,7 +290,7 @@ Lat.prototype.generateUniqueVariants = function() {
         }
         println();
     }
-    this.uniqueVariants.map(outs);
+    //this.uniqueVariants.map(outs);
     return this;
 };
 
@@ -286,21 +303,21 @@ Lat.prototype.generateUniqueVariants = function() {
 Lat.prototype.generateVariantsRecursive = function(searchGroup, index) {
     //the searchGroup[index].index is to keep the same variable in the same position, always, according to this.uniqueVariables
     while (searchGroup[index].hasNext()) {
-        this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext();
         if ((index + 1) < searchGroup.length) {
             println("next");
+            this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext();
             this.generateVariantsRecursive(searchGroup, index + 1); //next LatVar in the searchGroup
         } else {
             println("no next");
             //this.currentVariant[searchGroup[index].index].type = searchGroup[index].type;
             while (searchGroup[index].hasNext()) {
-                this.uniqueVariants.push(LatUtils.clone(this.currentVariant)); //save to the array
                 this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //only update the value
+                this.uniqueVariants.push(LatUtils.clone(this.currentVariant)); //save to the array
             }
-            this.uniqueVariants.push(LatUtils.clone(this.currentVariant)); //save to the array
-            searchGroup[index].restart();
+            //this.uniqueVariants.push(LatUtils.clone(this.currentVariant)); //save to the array
         }
     }
+    searchGroup[index].restart();
 };
 
 var outs = function(a) {
