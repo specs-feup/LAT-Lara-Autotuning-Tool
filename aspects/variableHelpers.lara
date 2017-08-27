@@ -1,0 +1,34 @@
+
+aspectdef findVariablesInJoinpoint
+    input jp end
+    output list end 
+
+    list = [];
+    select jp.vardecl end
+    apply
+        list.push($vardecl.name);
+    end
+end
+
+aspectdef getJoinpointsToChange
+    input jp, latvars end
+    output list end 
+
+    list = [];
+    select jp.varref end
+    apply
+        if(findInList($varref, latvars)){
+            println("line: " + $varref.line + " - " + $varref.name + " - " + $varref.use);
+            list.push($varref);
+        }
+    end
+end
+
+function findInList(jp, latvars){
+    for(var i = 0; i < latvars.length; i++){
+        if(latvars[i].name == jp.name){
+            return true;
+        }
+    }
+    return false;
+}
