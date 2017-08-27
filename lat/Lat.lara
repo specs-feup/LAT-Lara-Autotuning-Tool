@@ -11,12 +11,13 @@ import lara.Io;
 
 import clava.Clava;
 
-var Lat = function(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout, outputPath) {
-    this.loadDefaults(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout, outputPath);
+var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath) {
+    this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath);
     this.tunned = false; //set to true after a tuning execution
 };
 
 Lat.prototype.tune = function() {
+    this.print("Starting tuning operation");
     if (this.searchType === LatConst.SEARCH_TYPE.DEPENDENT || this.searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
         this.variables = LatUtils.removeDuplicates(this.variables);
     }
@@ -24,6 +25,7 @@ Lat.prototype.tune = function() {
     this.generateUniqueVariables();
     this.generateBaseVariant(); //must come after generateUniqueVariables
     this.generateUniqueVariants();
+    this.print("Tuning operation complete");
 };
 
 
@@ -104,33 +106,24 @@ Lat.prototype.addVariable = function(latVar) {
 };
 Lat.prototype.setSearchGroups = function(searchGroups) {
     for (var i = 0; i < searchGroups.length; i++) {
+        //checking for LatVar types
         LatUtils.checkLatVars(searchGroups[i], "searchGroups[" + i + "]");
-    }
-    /*
-    This check is unnecessary, as leaving it as it is allows for t
-    //checking for duplicate variables
-    var tempVars = [];
-    for (var i = 0; i < searchGroups.length; i++) {
+        //checking for duplicate variables in searchgroups, not allowed
+        var tempVars = [];
         for (var j = 0; j < searchGroups[i].length; j++) {
-            for (var k = 0; k < tempVars.length; k++) {
-                if (searchGroups[i][j].name == tempVars[k].name) {
-                    LatUtils._error("setSearchGroups failed due to two LatVars with the same name (" + searchGroups[i][j].name + ") and (" + tempVars[k].name + ").");
-                }
-            }
+            LatUtils.checkDuplicateLatVar(tempVars, searchGroups[i][j], "searchGroups[" + i + "][" + j + "] (name: '" + searchGroups[i][j].name + "')");
             tempVars.push(searchGroups[i][j]);
         }
     }
     //all is ok
-    */
     this.searchGroups = searchGroups;
     this.searchType = LatConst.SEARCH_TYPE.CUSTOM;
     return this;
 };
 Lat.prototype.addSearchGroup = function(searchGroup) {
-    LatUtils.checkLatVars(searchGroup, "searchGroup(addSearchGroup)");
-    this.searchGroups.push(searchGroup);
-    this.searchType = LatConst.SEARCH_TYPE.CUSTOM;
-    return this;
+    var tempSearchGroups = this.searchGroups;
+    tempSearchGroups.push(searchGroup);
+    return this.setSearchGroups(tempSearchGroups);
 };
 Lat.prototype.setSearchType = function(searchType) {
     if (searchType !== LatConst.SEARCH_TYPE.INDEPENDENT && searchType !== LatConst.SEARCH_TYPE.DEPENDENT) {
@@ -147,13 +140,11 @@ Lat.prototype.setNumTests = function(numTests) {
     this.numTests = numTests;
     return this;
 };
-
-//TODO: check if this will be exposed
-Lat.prototype.setCompiler = function(compiler) {
-    this.compiler = compiler;
+Lat.prototype.setRemoveDuplicates = function(removeDuplicates) {
+    LatUtils.checkBoolean(removeDuplicates, "removeDuplicates");
+    this.removeDuplicates = removeDuplicates;
     return this;
 };
-
 Lat.prototype.setClearCode = function(clearCode) {
     LatUtils.checkBoolean(clearCode, "clearCode");
     this.clearCode = clearCode;
@@ -170,7 +161,7 @@ Lat.prototype.setAbort = function(abort) {
     return this;
 };
 Lat.prototype.setTimeout = function(timeout) {
-    if (numTests < 0) {
+    if (timeout < 0) {
         LatUtils._error("timeout has to be an unsigned int, invalid value (" + timeout + ")");
     }
     this.timeout = timeout;
@@ -184,7 +175,7 @@ Lat.prototype.setOutputPath = function(outputPath) {
 
 //--------------------------------------------Helper functions (code compartimentalization)
 
-Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchType, numTests, clearCode, verbose, abort, timeout, outputPath) {
+Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath) {
     //requried values
     this.name = this.validateProperty("name", name);
     this.scope = this.validateProperty("scope", scope);
@@ -194,6 +185,7 @@ Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchTyp
     this.measure = this.validateProperty("measure", measure, scope);
     this.searchType = this.validateProperty("searchType", searchType, LatConst.SEARCH_TYPE.INDEPENDENT);
     this.numTests = this.validateProperty("numTests", numTests, 1);
+    this.removeDuplicates = this.validateProperty("removeDuplicates", removeDuplicates, true);
     this.clearCode = this.validateProperty("clearCode", clearCode, false);
     this.verbose = this.validateProperty("verbose", verbose, false);
     this.abort = this.validateProperty("abort", abort, false);
@@ -218,6 +210,24 @@ Lat.prototype.validateProperty = function(propertyName, value, defaultValue) {
 };
 
 /**
+ * Wrapper function to deal with verbosity level, only prints the message if this.verbose is true
+ * @param message the message tou output
+ * @param noNewLine if this is undefined or considered as false println will be used, if it is set to true print will be used to ouput the message
+ */
+Lat.prototype.print = function(message, noNewLine) {
+    message = message === undefined ? "" : message;
+    if (this.verbose) {
+        if (noNewLine) {
+            print(message);
+        } else {
+            println(message);
+        }
+    }
+};
+
+//--------------------------------------------Core functions (variants generation)
+
+/**
  * Generate the searchGroups for dependent and independent search
  */
 Lat.prototype.generateSearchGroups = function() {
@@ -235,6 +245,7 @@ Lat.prototype.generateSearchGroups = function() {
  * create a list of unique variables from search groups for the custom searchtype, or return this.variables for the other cases 
  */
 Lat.prototype.generateUniqueVariables = function() {
+    this.print("Searching for Unique Variables...", true);
     this.uniqueVariables = [];
     if (this.searchType === LatConst.SEARCH_TYPE.CUSTOM) {
         for (var i = 0; i < this.searchGroups.length; i++) { //iterate all search groups
@@ -252,6 +263,9 @@ Lat.prototype.generateUniqueVariables = function() {
             x.index = i;
             return x;
         });
+
+    this.print("Done - " + this.uniqueVariables.length + " unique variables found", true);
+    this.print();
     return this;
 };
 
@@ -263,7 +277,6 @@ Lat.prototype.generateBaseVariant = function() {
     for (var i = 0; i < this.uniqueVariables.length; i++) {
         this.baseVariant.push(LatUtils.clone(LatConst.LAT_VALUE.DEFAULT));
     }
-    outs(this.baseVariant);
     return this;
 };
 
@@ -271,14 +284,19 @@ Lat.prototype.generateBaseVariant = function() {
  * remove redundant search groups by maping the variants into an array of variants
  */
 Lat.prototype.generateUniqueVariants = function() {
+    this.print("Generating Unique Variants...", true);
     this.uniqueVariants = []; // a list 
     for (var i = 0; i < this.searchGroups.length; i++) {
         this.currentVariant = LatUtils.clone(this.baseVariant); //if this is not clone it's values will be changed
         this.generateVariantsRecursive(this.searchGroups[i], 0);
     }
-    println("DONE: " + this.uniqueVariants.length + " uniqueVariants: ");
-    this.uniqueVariants = LatUtils.removeDuplicatesCloned(this.uniqueVariants);
-    println("removed duplicates: " + this.uniqueVariants.length + " uniqueVariants: ");
+
+    if (this.removeDuplicates) {
+        this.uniqueVariants = LatUtils.removeDuplicatesCloned(this.uniqueVariants);
+    }
+    this.print("Done - " + this.uniqueVariants.length + " unique variants generated", true);
+    this.print();
+    /*println("removed duplicates: " + this.uniqueVariants.length + " uniqueVariants: ");
     print();
     for (var i = 0; i < this.uniqueVariants.length; i++) {
         for (var j = 0; j < this.uniqueVariants[i].length; j++) {
@@ -290,31 +308,25 @@ Lat.prototype.generateUniqueVariants = function() {
         }
         println();
     }
-    //this.uniqueVariants.map(outs);
+    //this.uniqueVariants.map(outs);*/
     return this;
 };
 
 /**
  * 
  * @param searchGroup a list with the LatVars of the current searchGroup
- * @param current 
- * @param index
+ * @param index the current index being delt with, of searchGroup
  */
 Lat.prototype.generateVariantsRecursive = function(searchGroup, index) {
-    //the searchGroup[index].index is to keep the same variable in the same position, always, according to this.uniqueVariables
     while (searchGroup[index].hasNext()) {
         if ((index + 1) < searchGroup.length) {
-            println("next");
             this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext();
             this.generateVariantsRecursive(searchGroup, index + 1); //next LatVar in the searchGroup
         } else {
-            println("no next");
-            //this.currentVariant[searchGroup[index].index].type = searchGroup[index].type;
             while (searchGroup[index].hasNext()) {
                 this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //only update the value
                 this.uniqueVariants.push(LatUtils.clone(this.currentVariant)); //save to the array
             }
-            //this.uniqueVariants.push(LatUtils.clone(this.currentVariant)); //save to the array
         }
     }
     searchGroup[index].restart();
