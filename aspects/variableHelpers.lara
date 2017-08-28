@@ -21,7 +21,7 @@ aspectdef getJoinpointsToChange
     apply
         for(var i = 0; i < latvarsOut.length; i++){
             if(latvarsOut[i].name == $vardecl.name){
-                latvarsOut[i].vardecls.push($vardecl);
+                latvarsOut[i].vardecl = $vardecl;
                 break;
             }
         }
