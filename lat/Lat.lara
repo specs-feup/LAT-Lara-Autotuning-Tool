@@ -11,6 +11,8 @@ import lara.Io;
 
 import clava.Clava;
 
+import aspects.variableHelpers;
+
 var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath) {
     this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath);
     this._tunned = false; /** set to true after a tuning execution, used to block functions that require tune, such as printResults */
@@ -21,6 +23,7 @@ Lat.prototype.tune = function() {
     this.print("Starting tuning operation");
     this.pushIndent();
     this._tunned = false;
+
     if (this.searchType === LatConst.SEARCH_TYPE.DEPENDENT || this.searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
         this.variables = LatUtils.removeDuplicates(this.variables);
     }
@@ -28,6 +31,10 @@ Lat.prototype.tune = function() {
     this.generateUniqueVariables();
     this.generateBaseVariant(); //must come after generateUniqueVariables
     this.generateUniqueVariants();
+
+    this.checkVariablesInScope();
+    this.generateSourceCode();
+
     this._tunned = true;
     this.popIndent();
     this.print("Tuning operation complete");
@@ -88,7 +95,7 @@ Lat.prototype.setName = function(name) {
     return this;
 };
 Lat.prototype.setScope = function(scope) {
-    LatUtils.checkJoinpoint(scope, "scope");
+    //LatUtils.checkJoinpoint(scope, "scope");
     this.scope = scope;
     return this;
 };
@@ -258,6 +265,9 @@ Lat.prototype.getIndent = function() {
     return result;
 };
 
+var outs = function(a) {
+    println(JSON.stringify(a));
+};
 //--------------------------------------------Core functions (variants generation)
 
 /**
@@ -326,6 +336,7 @@ Lat.prototype.generateUniqueVariants = function() {
     }
 
     if (this.removeDuplicates) {
+        this.print( this.uniqueVariants.length + " unique variants generated", true);
         this.print();
         this.print("removing Duplicates from Generated Variants...");
         var countInitial = this.uniqueVariants.length;
@@ -372,6 +383,52 @@ Lat.prototype.generateVariantsRecursive = function(searchGroup, index) {
     searchGroup[index].restart();
 };
 
-var outs = function(a) {
-    println(JSON.stringify(a));
+//--------------------------------------------Core functions (source code generation)
+
+Lat.prototype.generateSourceCode = function(){
+    call callOutput : getJoinpointsToChange(this.scope, this.uniqueVariables);
+    this.uniqueVariables = callOutput.latvarsOut;
+    /*
+    output purposes only
+    for(var i = 0; i < this.uniqueVariables.length; i++){
+        for(var j = 0; j < this.uniqueVariables[i].vardecls.length; j++){
+            println("vardecl: " + this.uniqueVariables[i].vardecls[j].name + ", line: " + this.uniqueVariables[i].vardecls[j].line);
+        }
+        for(var j = 0; j < this.uniqueVariables[i].varrefs.length; j++){
+            println("varref: " + this.uniqueVariables[i].varrefs[j].name + ", line: " + this.uniqueVariables[i].varrefs[j].line);
+        }
+    }*/
+	this.uniqueVariants.map(outs);
+    var countVarsPerVariant = this.uniqueVariables.length;//avoid multiple accesses
+    println("length: " + countVarsPerVariant);
+    for(var i = 0; i < this.uniqueVariants.length; i++){//foreach variant
+        for(var j = 0; j < countVarsPerVariant; j++){//foreach variable in the current variant
+            //clava.pushAst();//preserve the initial ast before changing it
+            println(i + ", " + j);
+            outs(this.uniqueVariants[i]);
+            this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i][j]);
+            //clava.popAst();//retrieve the initial ast after changing it, to allow multiple changes
+        }
+    }
+};
+
+
+Lat.prototype.checkVariablesInScope = function(){
+    call callOutput : findVariablesInJoinpoint(this.scope);
+    var foundVariables = callOutput.list;
+    if(foundVariables.length < this.uniqueVariables.length){
+        LatUtils._error("Not enough variables in the source code to match the supplied LatVars in this scope found: ["+foundVariables+"]");
+    }
+    for(var i = 0; i < this.uniqueVariables.length; i++){
+        var found = false;
+        for(var j = 0; j < foundVariables.length; j++){
+            if(this.uniqueVariables[i].name == foundVariables[j]){
+                found = true;
+            }
+        }
+        if(!found){
+            LatUtils._error("Variable '"+this.uniqueVariables[i].name+"' not found in the variables available in the current scope: ["+foundVariables+"]");
+        }
+    }
+
 };
