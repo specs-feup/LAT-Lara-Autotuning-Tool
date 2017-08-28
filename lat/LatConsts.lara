@@ -48,6 +48,15 @@ LatConst.TYPE = {
 };
 
 /**
+ * The uses of varref variables
+ */
+LatConst.VAR_USES = {
+    READ: "read",
+    WRITE: "write",
+    READWRITE: "readwrite"
+};
+
+/**
  * The types of the LatVars, this will be used when changing the ast so that there is no ambiguity when generating the variants
  */
 LatConst.OUTPUT_TYPE = {
