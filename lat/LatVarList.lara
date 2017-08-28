@@ -29,4 +29,32 @@ LatVarList.prototype.countElements = function() {
 LatVarList.prototype.restart = function() {
     this.elementIndex = 0;
     this.first = true;
+    return this;
+};
+LatVarList.prototype.changeVariantInAst = function(currentValue) {
+    var readOnly = true;
+    for(var i = 0; i < this.varrefs.length; i++){
+        if(this.varrefs[i].use == LatConst.VAR_USES.WRITE || this.varrefs[i].use == LatConst.VAR_USES.READWRITE){
+            readOnly = false;
+            break;
+        }
+    }
+    if(readOnly){
+        LatUtils._warn("only read option in changeVariantInAst is not yet implemented");
+        //TODO: basta alterar o vardecl
+        //var $temp = this.vardecl;
+        //$temp.replace(%{[[currentValue.value]]}%);
+    }else{
+        //TODO: move the for here after implementing readonly
+        println("continue");
+    }
+    for(var i = 0; i < this.varrefs.length; i++){
+        println("varref: " + this.varrefs[i].name);
+        println("this.varrefs["+i+"].use = " + this.varrefs[i].use);
+        if(this.varrefs[i].use == LatConst.VAR_USES.READ){
+            var $temp = this.varrefs[i];
+            $temp.replace(%{[[currentValue.value]]}%);
+        }
+    }
+    return this;
 };
