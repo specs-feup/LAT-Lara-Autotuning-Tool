@@ -20,8 +20,7 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
 };
 
 Lat.prototype.tune = function() {
-    this.print("Starting tuning operation");
-    this.pushIndent();
+    this.print("Starting tuning operation").pushIndent();
     this._tunned = false;
 
     if (this.searchType === LatConst.SEARCH_TYPE.DEPENDENT || this.searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
@@ -36,8 +35,7 @@ Lat.prototype.tune = function() {
     this.generateSourceCode();
 
     this._tunned = true;
-    this.popIndent();
-    this.print("Tuning operation complete");
+    this.popIndent().print("Tuning operation complete");
 };
 
 
@@ -236,6 +234,7 @@ Lat.prototype.print = function(message, noNewLine) {
             println(message);
         }
     }
+    return this;
 };
 
 /**
@@ -260,7 +259,7 @@ Lat.prototype.popIndent = function() {
 Lat.prototype.getIndent = function() {
     var result = "";
     for (var i = 0; i < this._printIndentation; i++) {
-        result += "  ";
+        result += "    ";
     }
     return result;
 };
@@ -307,8 +306,7 @@ Lat.prototype.generateUniqueVariables = function() {
             return x;
         });
 
-    this.print("Done - " + this.uniqueVariables.length + " unique variables found", true);
-    this.print();
+    this.print("Done - " + this.uniqueVariables.length + " unique variables found", true).print();
     return this;
 };
 
@@ -327,8 +325,7 @@ Lat.prototype.generateBaseVariant = function() {
  * remove redundant search groups by maping the variants into an array of variants
  */
 Lat.prototype.generateUniqueVariants = function() {
-    this.print("Generating Unique Variants...", true);
-    this.pushIndent();
+    this.print("Generating Unique Variants...", true).pushIndent();
     this.uniqueVariants = []; // a list 
     for (var i = 0; i < this.searchGroups.length; i++) {
         this.currentVariant = LatUtils.clone(this.baseVariant); //if this is not clone it's values will be changed
@@ -344,9 +341,7 @@ Lat.prototype.generateUniqueVariants = function() {
 
         this.print("Done - " + (countInitial - this.uniqueVariants.length) + " unique variants removed - total: " + this.uniqueVariants.length);
     }
-    this.popIndent();
-    this.print("Done - " + this.uniqueVariants.length + " unique variants generated", true);
-    this.print();
+    this.popIndent().print("Done - " + this.uniqueVariants.length + " unique variants generated", true).print();
     /*println("removed duplicates: " + this.uniqueVariants.length + " uniqueVariants: ");
     print();
     for (var i = 0; i < this.uniqueVariants.length; i++) {
@@ -386,10 +381,10 @@ Lat.prototype.generateVariantsRecursive = function(searchGroup, index) {
 //--------------------------------------------Core functions (source code generation)
 
 Lat.prototype.generateSourceCode = function(){
-    call callOutput : getJoinpointsToChange(this.scope, this.uniqueVariables);
-    this.uniqueVariables = callOutput.latvarsOut;
+    //call callOutput : getJoinpointsToChange(this.scope, this.uniqueVariables);
+    //this.uniqueVariables = callOutput.latvarsOut;
     /*
-    output purposes only
+    output purposes only:
     for(var i = 0; i < this.uniqueVariables.length; i++){
         for(var j = 0; j < this.uniqueVariables[i].vardecls.length; j++){
             println("vardecl: " + this.uniqueVariables[i].vardecls[j].name + ", line: " + this.uniqueVariables[i].vardecls[j].line);
@@ -398,22 +393,32 @@ Lat.prototype.generateSourceCode = function(){
             println("varref: " + this.uniqueVariables[i].varrefs[j].name + ", line: " + this.uniqueVariables[i].varrefs[j].line);
         }
     }*/
-	this.uniqueVariants.map(outs);
+	//this.uniqueVariants.map(outs);
     var countVarsPerVariant = this.uniqueVariables.length;//avoid multiple accesses
-    println("length: " + countVarsPerVariant);
     for(var i = 0; i < this.uniqueVariants.length; i++){//foreach variant
+        //1st alter  the value of all variables according to the current variant
         for(var j = 0; j < countVarsPerVariant; j++){//foreach variable in the current variant
-            //clava.pushAst();//preserve the initial ast before changing it
-            println(i + ", " + j);
-            outs(this.uniqueVariants[i]);
-            this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i][j]);
-            //clava.popAst();//retrieve the initial ast after changing it, to allow multiple changes
+            Clava.pushAst();//preserve the initial ast before changing it
+            if(!this.uniqueVariants[i][j].default){//only edit if the default value is not selected
+                call callOutput : getJoinpointsToChangeForSingleLatVar(this.scope, this.uniqueVariables[j]);//find the vardecl and all varref attributes of the current LatVar
+                this.uniqueVariables[j] = callOutput.latvarOut;
+                this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i][j]);//update the AST with the current value for this LatVar's variant
+            }
+            Clava.popAst();//retrieve the initial ast after changing it, to allow multiple changes
         }
+        //2nd include the timer prints
+
+        //3rd write the variant to the output folder
+
+        //4th execute the code
+
     }
+    //5th read the results file to retrieve
 };
 
 
 Lat.prototype.checkVariablesInScope = function(){
+    this.print("Checking the validity of the supplied variables...", true).pushIndent();
     call callOutput : findVariablesInJoinpoint(this.scope);
     var foundVariables = callOutput.list;
     if(foundVariables.length < this.uniqueVariables.length){
@@ -430,5 +435,5 @@ Lat.prototype.checkVariablesInScope = function(){
             LatUtils._error("Variable '"+this.uniqueVariables[i].name+"' not found in the variables available in the current scope: ["+foundVariables+"]");
         }
     }
-
+    this.popIndent().print("Done - no errors were found", true).print();
 };
