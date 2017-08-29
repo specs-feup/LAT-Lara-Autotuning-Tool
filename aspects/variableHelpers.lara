@@ -26,15 +26,43 @@ aspectdef getJoinpointsToChange
             }
         }
     end
-
+    for(var i = 0; i < latvarsOut.length; i++){
+        latvarsOut[i].varrefs = [];
+    }
     //find varrefs
     select jp.varref end
     apply
         for(var i = 0; i < latvarsOut.length; i++){
             if(latvarsOut[i].name == $varref.name){
                 latvarsOut[i].varrefs.push($varref);
+                println("Added " + $varref.name + " : " + $varref.code);
                 break;
             }
+        }
+    end
+end
+
+aspectdef getJoinpointsToChangeForSingleLatVar
+    input jp, latvar end
+    output latvarOut end 
+
+    latvarOut = latvar;
+
+    //find vardecls
+    select jp.vardecl end
+    apply
+        if(latvarOut.name == $vardecl.name){
+            latvarOut.vardecl = $vardecl;
+            break;
+        }
+    end
+
+    //find varrefs
+    latvarOut.varrefs = [];
+    select jp.varref end
+    apply
+        if(latvarOut.name == $varref.name){
+            latvarOut.varrefs.push($varref);
         }
     end
 end
