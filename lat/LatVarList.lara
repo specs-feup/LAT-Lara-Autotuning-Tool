@@ -34,7 +34,7 @@ LatVarList.prototype.restart = function() {
 LatVarList.prototype.changeVariantInAst = function(currentValue) {
     var readOnly = true;
     for(var i = 0; i < this.varrefs.length; i++){
-        if(this.varrefs[i].use == LatConst.VAR_USES.WRITE || this.varrefs[i].use == LatConst.VAR_USES.READWRITE){
+        if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.WRITE || this.varrefs[i].useExpr.use == LatConst.VAR_USES.READWRITE){
             readOnly = false;
             break;
         }
@@ -46,11 +46,9 @@ LatVarList.prototype.changeVariantInAst = function(currentValue) {
         //$temp.replace(%{[[currentValue.value]]}%);
     }else{
         //TODO: move the for here after implementing readonly
-        println("continue");
+        println("read only is not yet implemented, but when it is this message should not appear");
     }
     for(var i = 0; i < this.varrefs.length; i++){
-        println("varref: " + this.varrefs[i].name);
-        println("this.varrefs["+i+"].use = " + this.varrefs[i].use);
         if(this.varrefs[i].use == LatConst.VAR_USES.READ){
             var $temp = this.varrefs[i];
             $temp.replace(%{[[currentValue.value]]}%);
