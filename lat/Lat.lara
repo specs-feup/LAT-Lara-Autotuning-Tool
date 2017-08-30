@@ -11,12 +11,15 @@ import lara.Io;
 
 import clava.Clava;
 
+import lara.code.Timer;
+
 import aspects.variableHelpers;
 
 var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath) {
     this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath);
     this._tunned = false; /** set to true after a tuning execution, used to block functions that require tune, such as printResults */
     this._printIndentation = 0; /** indicates the hierarchy level of the print operations */
+    this._tuneCounts = 0; /** at each tuning operation the name that is output is changed automatically so that there is no confusion between diferent tuning operations */
 };
 
 Lat.prototype.tune = function() {
@@ -32,7 +35,12 @@ Lat.prototype.tune = function() {
     this.generateUniqueVariants();
 
     this.checkVariablesInScope();
-    this.generateSourceCode();
+    for(var i = 0; i < this.numTests; i++){
+        this.print("Starting test " + (i + 1) +" of " + this.numTests + "...").pushIndent();
+        this.generateSourceCode();
+        this._tuneCounts++; //update the current index of the tuning operation
+        this.popIndent().print("Done test " + (i + 1) +" of " + this.numTests);
+    }
 
     this._tunned = true;
     this.popIndent().print("Tuning operation complete");
@@ -93,8 +101,12 @@ Lat.prototype.setName = function(name) {
     return this;
 };
 Lat.prototype.setScope = function(scope) {
+    //TODO: validate joinpoint
     //LatUtils.checkJoinpoint(scope, "scope");
     this.scope = scope;
+    if (this.measure === undefined) {
+        this.measure = scope;
+    }
     return this;
 };
 Lat.prototype.setMeasure = function(measure) {
@@ -178,9 +190,20 @@ Lat.prototype.setTimeout = function(timeout) {
     this.timeout = timeout;
     return this;
 };
-//TODO: validate path
 Lat.prototype.setOutputPath = function(outputPath) {
+    //TODO: validate path
     this.outputPath = outputPath;
+    this.updatePathVariables();
+    return this;
+};
+
+Lat.prototype.updatePathVariables = function() {
+    this._resultsFolder = this.outputPath + "/results"; /** the folder that will contain the results of compiling the and executing the variants */
+    this._variantsFolder = this.outputPath + "/variants"; /** the folder that will contain the generated code (variants) and also the compiled versions that will be executed */
+    this._graphsFolder = this._resultsFolder + "/graphs"; /** the folder that will hold the charts */
+    this._timerFile = this._resultsFolder + "/times.txt"; /** the file where the executed variants will write to */
+    this._bestResult = this._resultsFolder + "/best"; /** the folder that will hold the best variant source code without timer prints */
+
     return this;
 };
 
@@ -203,6 +226,7 @@ Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchTyp
     this.timeout = this.validateProperty("timeout", timeout, 0);
     //TODO: fill with correct default value
     this.outputPath = this.validateProperty("outputPath", outputPath, ".");
+    this.updatePathVariables();
 };
 
 /**
@@ -228,9 +252,9 @@ Lat.prototype.validateProperty = function(propertyName, value, defaultValue) {
 Lat.prototype.print = function(message, noNewLine) {
     message = message === undefined ? "" : this.getIndent() + message;
     if (this.verbose) {
-        if (noNewLine) {
+        if (noNewLine) { //no new line, no indent
             print(message);
-        } else {
+        } else { //new line with indent
             println(message);
         }
     }
@@ -333,13 +357,13 @@ Lat.prototype.generateUniqueVariants = function() {
     }
 
     if (this.removeDuplicates) {
-        this.print( this.uniqueVariants.length + " unique variants generated", true);
+        this.print(this.uniqueVariants.length + " unique variants generated", true);
         this.print();
         this.print("removing Duplicates from Generated Variants...");
         var countInitial = this.uniqueVariants.length;
         this.uniqueVariants = LatUtils.removeDuplicatesCloned(this.uniqueVariants);
 
-        this.print("Done - " + (countInitial - this.uniqueVariants.length) + " unique variants removed - total: " + this.uniqueVariants.length);
+        this.print("Done - " + (countInitial - this.uniqueVariants.length) + " redundant variants removed - total: " + this.uniqueVariants.length);
     }
     this.popIndent().print("Done - " + this.uniqueVariants.length + " unique variants generated", true).print();
     /*println("removed duplicates: " + this.uniqueVariants.length + " uniqueVariants: ");
@@ -380,59 +404,73 @@ Lat.prototype.generateVariantsRecursive = function(searchGroup, index) {
 
 //--------------------------------------------Core functions (source code generation)
 
-Lat.prototype.generateSourceCode = function(){
-    //call callOutput : getJoinpointsToChange(this.scope, this.uniqueVariables);
-    //this.uniqueVariables = callOutput.latvarsOut;
-    /*
-    output purposes only:
-    for(var i = 0; i < this.uniqueVariables.length; i++){
-        for(var j = 0; j < this.uniqueVariables[i].vardecls.length; j++){
-            println("vardecl: " + this.uniqueVariables[i].vardecls[j].name + ", line: " + this.uniqueVariables[i].vardecls[j].line);
-        }
-        for(var j = 0; j < this.uniqueVariables[i].varrefs.length; j++){
-            println("varref: " + this.uniqueVariables[i].varrefs[j].name + ", line: " + this.uniqueVariables[i].varrefs[j].line);
-        }
-    }*/
-	//this.uniqueVariants.map(outs);
-    var countVarsPerVariant = this.uniqueVariables.length;//avoid multiple accesses
-    for(var i = 0; i < this.uniqueVariants.length; i++){//foreach variant
+Lat.prototype.generateSourceCode = function() {
+    this.print("Generating Source Code...", true).pushIndent().print();
+    var countVarsPerVariant = this.uniqueVariables.length; //avoid multiple accesses
+    for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
+        this.print("Generating for Variant " + i + "...", true).pushIndent();
+        Clava.pushAst(); //preserve the initial ast before changing it
         //1st alter  the value of all variables according to the current variant
-        for(var j = 0; j < countVarsPerVariant; j++){//foreach variable in the current variant
-            Clava.pushAst();//preserve the initial ast before changing it
-            if(!this.uniqueVariants[i][j].default){//only edit if the default value is not selected
-                call callOutput : getJoinpointsToChangeForSingleLatVar(this.scope, this.uniqueVariables[j]);//find the vardecl and all varref attributes of the current LatVar
+        for (var j = 0; j < countVarsPerVariant; j++) { //foreach variable in the current variant
+            if (!this.uniqueVariants[i][j].default) { //only edit if the default value is not selected
+                call callOutput: getJoinpointsToChangeForSingleLatVar(this.scope, this.uniqueVariables[j]); //find the vardecl and all varref attributes of the current LatVar
                 this.uniqueVariables[j] = callOutput.latvarOut;
-                this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i][j]);//update the AST with the current value for this LatVar's variant
+                this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i][j]); //update the AST with the current value for this LatVar's variant
             }
-            Clava.popAst();//retrieve the initial ast after changing it, to allow multiple changes
         }
         //2nd include the timer prints
-
+        var timer = new Timer("NANOSECONDS", this._timerFile);
+        timer.time(this.measure, this.name + "_" + this._tuneCounts + " variant_" + i + " ");
         //3rd write the variant to the output folder
+        //this.ouputPath + "/variants/" + i;
 
         //4th execute the code
 
+        Clava.popAst(); //retrieve the initial ast after changing it, to allow multiple changes
+        this.popIndent().print("Done", true).print();
     }
+    this.popIndent().print("Done", true).print();
     //5th read the results file to retrieve
+    this.parseResults();
 };
 
+Lat.prototype.parseResults = function() {
+    this.print("Parsing the results...", true).pushIndent();
 
-Lat.prototype.checkVariablesInScope = function(){
-    this.print("Checking the validity of the supplied variables...", true).pushIndent();
-    call callOutput : findVariablesInJoinpoint(this.scope);
-    var foundVariables = callOutput.list;
-    if(foundVariables.length < this.uniqueVariables.length){
-        LatUtils._error("Not enough variables in the source code to match the supplied LatVars in this scope found: ["+foundVariables+"]");
+    //reading the results
+    var contents = Io.readFile(this._timerFile); // contents of txt file
+    var lines = contents.split("\n"); // split into an array in which each line is an array element
+    var results = {}; // a named object, the name is the tune name and the content is an array of time measures
+    for (var i = 0; i < lines.length; i++) {
+        var parts = lines[i].split(" "); // 0 -> [name]_[index], 1->[variant]_[index], 2->[time]ns
+        if(parts.length != 3){continue;}
+        if(!results[parts[0]]){results[parts[0]] = {};}
+        if(!results[parts[0]][parts[1]]){results[parts[0]][parts[1]] = [];}
+        results[parts[0]][parts[1]].push(parseInt(parts[2].slice(0, -1)));
     }
-    for(var i = 0; i < this.uniqueVariables.length; i++){
+    outs(results);
+
+
+
+    this.popIndent().print("Done", true).print();
+};
+
+Lat.prototype.checkVariablesInScope = function() {
+    this.print("Checking the validity of the supplied variables...", true).pushIndent();
+    call callOutput: findVariablesInJoinpoint(this.scope);
+    var foundVariables = callOutput.list;
+    if (foundVariables.length < this.uniqueVariables.length) {
+        LatUtils._error("Not enough variables in the source code to match the supplied LatVars in this scope found: [" + foundVariables + "]");
+    }
+    for (var i = 0; i < this.uniqueVariables.length; i++) {
         var found = false;
-        for(var j = 0; j < foundVariables.length; j++){
-            if(this.uniqueVariables[i].name == foundVariables[j]){
+        for (var j = 0; j < foundVariables.length; j++) {
+            if (this.uniqueVariables[i].name == foundVariables[j]) {
                 found = true;
             }
         }
-        if(!found){
-            LatUtils._error("Variable '"+this.uniqueVariables[i].name+"' not found in the variables available in the current scope: ["+foundVariables+"]");
+        if (!found) {
+            LatUtils._error("Variable '" + this.uniqueVariables[i].name + "' not found in the variables available in the current scope: [" + foundVariables + "]");
         }
     }
     this.popIndent().print("Done - no errors were found", true).print();
