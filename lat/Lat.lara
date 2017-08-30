@@ -15,11 +15,14 @@ import lara.code.Timer;
 
 import aspects.variableHelpers;
 
+import lara.Strings;
+
 var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath) {
     this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath);
     this._tunned = false; /** set to true after a tuning execution, used to block functions that require tune, such as printResults */
     this._printIndentation = 0; /** indicates the hierarchy level of the print operations */
     this._tuneCounts = 0; /** at each tuning operation the name that is output is changed automatically so that there is no confusion between diferent tuning operations */
+    this.results = undefined; /** This variable will hold the results of each parseResults operation */
 };
 
 Lat.prototype.tune = function() {
@@ -35,12 +38,13 @@ Lat.prototype.tune = function() {
     this.generateUniqueVariants();
 
     this.checkVariablesInScope();
-    for(var i = 0; i < this.numTests; i++){
-        this.print("Starting test " + (i + 1) +" of " + this.numTests + "...").pushIndent();
+    //Io.writeFile(this._timerFile, "");//empty the previous timer files
+    for (var i = 0; i < this.numTests; i++) {
+        this.print("Starting test " + (i + 1) + " of " + this.numTests + "...").pushIndent();
         this.generateSourceCode();
-        this._tuneCounts++; //update the current index of the tuning operation
-        this.popIndent().print("Done test " + (i + 1) +" of " + this.numTests);
+        this.popIndent().print("Done test " + (i + 1) + " of " + this.numTests);
     }
+    this._tuneCounts++; //update the current index of the tuning operation
 
     this._tunned = true;
     this.popIndent().print("Tuning operation complete");
@@ -97,6 +101,10 @@ Lat.prototype.estimateTime = function() {
 
 Lat.prototype.setName = function(name) {
     LatUtils.checkString(name, "name");
+    name = name.toString();
+    //var replacer = Strings.NewReplacer("/v1.0/", "", "/", "_", "emp_1", "");
+    //name.replacer(/[^a-z0-9]/gi, '_');
+    //name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     this.name = name;
     return this;
 };
@@ -198,12 +206,13 @@ Lat.prototype.setOutputPath = function(outputPath) {
 };
 
 Lat.prototype.updatePathVariables = function() {
-    this._resultsFolder = this.outputPath + "/results"; /** the folder that will contain the results of compiling the and executing the variants */
-    this._variantsFolder = this.outputPath + "/variants"; /** the folder that will contain the generated code (variants) and also the compiled versions that will be executed */
+    this._basePath = this.outputPath + "/" + this.name;
+    this._resultsFolder = this._basePath + "/results"; /** the folder that will contain the results of compiling the and executing the variants */
+    this._variantsFolder = this._basePath + "/variants"; /** the folder that will contain the generated code (variants) and also the compiled versions that will be executed */
     this._graphsFolder = this._resultsFolder + "/graphs"; /** the folder that will hold the charts */
     this._timerFile = this._resultsFolder + "/times.txt"; /** the file where the executed variants will write to */
+    this._reportFile = this._resultsFolder + "/times.txt"; /** the file where the executed variants will write to */
     this._bestResult = this._resultsFolder + "/best"; /** the folder that will hold the best variant source code without timer prints */
-
     return this;
 };
 
@@ -224,7 +233,6 @@ Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchTyp
     this.verbose = this.validateProperty("verbose", verbose, false);
     this.abort = this.validateProperty("abort", abort, false);
     this.timeout = this.validateProperty("timeout", timeout, 0);
-    //TODO: fill with correct default value
     this.outputPath = this.validateProperty("outputPath", outputPath, ".");
     this.updatePathVariables();
 };
@@ -410,6 +418,7 @@ Lat.prototype.generateSourceCode = function() {
     for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
         this.print("Generating for Variant " + i + "...", true).pushIndent();
         Clava.pushAst(); //preserve the initial ast before changing it
+
         //1st alter  the value of all variables according to the current variant
         for (var j = 0; j < countVarsPerVariant; j++) { //foreach variable in the current variant
             if (!this.uniqueVariants[i][j].default) { //only edit if the default value is not selected
@@ -418,11 +427,13 @@ Lat.prototype.generateSourceCode = function() {
                 this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i][j]); //update the AST with the current value for this LatVar's variant
             }
         }
+
         //2nd include the timer prints
         var timer = new Timer("NANOSECONDS", this._timerFile);
-        timer.time(this.measure, this.name + "_" + this._tuneCounts + " variant_" + i + " ");
+        timer.time(this.measure, this.name + "_" + this._tuneCounts + " " + i + " ");
+
         //3rd write the variant to the output folder
-        //this.ouputPath + "/variants/" + i;
+        //this._variantsFolder + "/" + i;// name for the i'th variant folder
 
         //4th execute the code
 
@@ -430,30 +441,58 @@ Lat.prototype.generateSourceCode = function() {
         this.popIndent().print("Done", true).print();
     }
     this.popIndent().print("Done", true).print();
-    //5th read the results file to retrieve
-    this.parseResults();
 };
 
+Lat.prototype.displayResults = function() {
+    if (!this._tunned) { LatUtils._warn("A .tune() invocation is required before calling .displayResults()"); }
+    this.parseResults();
+    //this. show charts, produce report
+}
 Lat.prototype.parseResults = function() {
     this.print("Parsing the results...", true).pushIndent();
 
     //reading the results
     var contents = Io.readFile(this._timerFile); // contents of txt file
+    if (!contents) { LatUtils._warn("Unable to find file: " + this._timerFile + ". Aborting..."); return; }
     var lines = contents.split("\n"); // split into an array in which each line is an array element
-    var results = {}; // a named object, the name is the tune name and the content is an array of time measures
+    this.results = {}; // a named object, the name is the tune name and the content is an array of time measures
     for (var i = 0; i < lines.length; i++) {
         var parts = lines[i].split(" "); // 0 -> [name]_[index], 1->[variant]_[index], 2->[time]ns
-        if(parts.length != 3){continue;}
-        if(!results[parts[0]]){results[parts[0]] = {};}
-        if(!results[parts[0]][parts[1]]){results[parts[0]][parts[1]] = [];}
-        results[parts[0]][parts[1]].push(parseInt(parts[2].slice(0, -1)));
+        if (parts.length != 3) { continue; }
+        if (!this.results[parts[0]]) { this.results[parts[0]] = { "overall": [], "per_variant": {} }; } //create if not existsariant: {} }; } //create if not exists
+        if (!this.results[parts[0]]["per_variant"][parts[1]]) { this.results[parts[0]]["per_variant"][parts[1]] = []; } //create if not exists
+        //this.results[parts[0]]["overall"].push({ variant: parts[1], avg: 0 });
+        this.results[parts[0]]["per_variant"][parts[1]].push(parseInt(parts[2].slice(0, -1)));
     }
-    outs(results);
+    outs(this.results);
 
+    //sorting the tests
+    //Todo: uncomment when test phase is completed
+    //if(this.numTests > 1){//sort is only required if there is more than one test per variant
+    for (var test in this.results) { //result contains the named tests
+        for (var variant in this.results[test]["per_variant"]) { //test contains the variants
+            this.results[test]["per_variant"][variant] = this.results[test]["per_variant"][variant].sort();
+            this.results[test]["overall"] = {
+                variant: variant,
+                avg: 0,
+                lowest: this.results[test]["per_variant"][variant][0]
+            };
+        }
+    }
+    //}
+    outs(this.results);
 
+    //sort the variants per tests
+    for (var test in this.results) { //result contains the named tests
+
+    }
 
     this.popIndent().print("Done", true).print();
 };
+
+Lat.prototype.getResults = function() {
+    return LatUtils.clone(this.results);
+}
 
 Lat.prototype.checkVariablesInScope = function() {
     this.print("Checking the validity of the supplied variables...", true).pushIndent();
