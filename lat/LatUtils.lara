@@ -144,3 +144,25 @@ LatUtils.indexOf = function(array, item) {
 LatUtils.clone = function(obj) {
     return JSON.parse(JSON.stringify(obj));
 };
+
+/**
+ * calculate the sum of an array of integers
+ * @param list the array of integers
+ * @return the sum of all the elements in list
+ */
+LatUtils.sum = function(list) {
+    var sum = 0;
+    for (var i = 0; i < list.length; i++) {
+        sum += parseInt(list[i], 10); //don't forget to add the base
+    }
+    return sum;
+};
+
+/**
+ * calculate the average of an array of integers
+ * @param list the array of integers
+ * @return the avgerage of all the elements in list
+ */
+LatUtils.avg = function(list) {
+    return LatUtils.sum(list) / list.length;
+};
