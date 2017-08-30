@@ -4,7 +4,7 @@ var LatVarList = function(name, elements, type) {
     if (elements.length <= 0) {
         LatUtils._error("LatVarList elements parameter only accepts non-empty element lists");
     }
-    this.elements = elements;
+    this.elements = LatUtils.removeDuplicates(elements);
     this.restart();
 };
 
