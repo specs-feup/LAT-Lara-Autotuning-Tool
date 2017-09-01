@@ -474,7 +474,7 @@ Lat.prototype.parseResults = function(emptyFileAfterwards) {
 
         if (!this.results[parts[0]]) {
             this.results[parts[0]] = {
-                "overall": { "best_variant": -1, "shortest_time": -1, "times" : [] },
+                "overall": { "best_variant": -1, "best_time": -1, "times" : [] },
                 "per_variant": {}
             };
         } //create result var for the tune operation, if not exists
@@ -484,39 +484,22 @@ Lat.prototype.parseResults = function(emptyFileAfterwards) {
             this.results[parts[0]]["per_variant"][parts[1]] = { "avg": -1, "sum": 0, "times" : [] };
         } //create new variant in the tune operation, if not exists
         var time = parseInt(parts[2].slice(0, -1));
-        this.results[parts[0]]["overall"]["times"].push({"variant": parts[1], "value" : time});
+        this.results[parts[0]]["overall"]["times"].push({"variant": parts[1], "time" : time});
         this.results[parts[0]]["per_variant"][parts[1]]["times"].push(time);
         this.results[parts[0]]["per_variant"][parts[1]]["sum"] += time; //update the sum
     }
     
-    for (var tuneResult in this.results) { //result contains the named tests
+    for (var tuneResult in this.results) { //result contains the named tune operations
         this.results[tuneResult]["overall"]["times"].sort(LatUtils.sortResultOverallTimes);
+        this.results[tuneResult]["overall"]["best_variant"] = this.results[tuneResult]["overall"]["times"][0]["variant"];
+        this.results[tuneResult]["overall"]["best_time"] = this.results[tuneResult]["overall"]["times"][0]["time"];
+        for (var variant in this.results[tuneResult]["per_variant"]) { //tuneResult contains the variants
+            this.results[tuneResult]["per_variant"][variant]["avg"] = this.results[tuneResult]["per_variant"][variant]["sum"] / this.results[tuneResult]["per_variant"][variant]["times"].length;//calculate the average time for this variant
+            delete this.results[tuneResult]["per_variant"][variant]["sum"];
+        }
     }
     outs(this.results);
     return;
-
-
-    //sorting the tests
-    //Todo: uncomment when test phase is completed
-    //if(this.numTests > 1){//sort is only required if there is more than one test per variant
-    for (var test in this.results) { //result contains the named tests
-        for (var variant in this.results[test]["per_variant"]) { //test contains the variants
-            this.results[test]["per_variant"][variant] = this.results[test]["per_variant"][variant].sort();
-            if (!this.results[test]["overall"]) { this.results[test]["overall"] = {}; }
-            this.results[test]["overall"].push({
-                variant: variant,
-                avg: LatUtils.avg(this.results[test]["per_variant"][variant]),
-                lowest: this.results[test]["per_variant"][variant][0]
-            });
-        }
-    }
-    //}
-    outs(this.results);
-
-    //sort the variants per tests
-    for (var test in this.results) { //result contains the named tests
-
-    }
 
     if (emptyFileAfterwards) { //delete the processed contents of the file
         Io.writeFile(this._timerFile, "");
