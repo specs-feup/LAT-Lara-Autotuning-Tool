@@ -64,6 +64,38 @@ As for the **Lat** constructors you can specify as many parameters as you want, 
  - `estimateTime()` - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds for all the variants; 
  - `printResults()` - Prints the results after a `tune` tuning has happened; 
  - `showGraphs()` - Displays the results in user-friendly charts, these are automatically generated and sabed under the `outputPath/results`. 
+ - `getResults` - returns a copy of the processed results, to process them call `parseResults`, here is an example of the output of the results variable, in case you want to perform some sort of operation on it:
+
+ ```json
+ {
+    "blocks_0": {
+        "overall": {
+            "best_variant": -1,
+            "shortest_time": -1,
+            "times": [
+                {"variant":"1","value":400},{"variant":"1","value":400},{"variant":"1","value":500},{"variant":"1","value":500},{"variant":"1","value":900},{"variant":"0","value":42800},{"variant":"0","value":42800},{"variant":"0","value":42800},{"variant":"0","value":43200},{"variant":"0","value":43700}
+            ]
+        },
+        "per_variant": {
+            "0": { "avg": -1, "sum": 215300, "times": [43700, 42800, 42800, 42800, 43200] },
+            "1": { "avg": -1, "sum": 2700, "times": [400, 900, 500, 400, 500] }
+        }
+    },
+    "blocks_1": {
+        "overall": {
+            "best_variant": -1,
+            "shortest_time": -1,
+            "times": [
+                {"variant":"1","value":400},{"variant":"1","value":500},{"variant":"0","value":42400},{"variant":"0","value":42800}
+            ]
+        },
+        "per_variant": {
+            "0": { "avg": -1, "sum": 85200, "times": [42800, 42400] },
+            "1": { "avg": -1, "sum": 900, "times": [500, 400] }
+        }
+    }
+}
+ ```
  
  #### Setters
  Return a reference to the object so you can have chained calls:
