@@ -166,3 +166,18 @@ LatUtils.sum = function(list) {
 LatUtils.avg = function(list) {
     return LatUtils.sum(list) / list.length;
 };
+
+/**
+ * Helper function for custom comparison between elements objects like: {"variant": 1, "value" : 1000}
+ * @param a the first element to compare
+ * @param b the second element to compare
+ */
+LatUtils.sortResultOverallTimes = function(a, b) {
+    if (a.value < b.value) {
+        return -1;
+    }
+    if (a.value > b.value) {
+        return 1;
+    }
+    return 0;
+};
