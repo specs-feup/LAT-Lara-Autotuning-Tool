@@ -103,10 +103,7 @@ Lat.prototype.estimateTime = function() {
 Lat.prototype.setName = function(name) {
     LatUtils.checkString(name, "name");
     name = name.toString();
-    //TODO: fix replace to always make name with no special chars
-    //println(Strings.replacer("aaaaaa&!'áer´f´fr´ºref~ç034  a", /[^a-z0-9]/gi, "1"));
-    //name.replacer(/[^a-z0-9]/gi, '_');
-    //name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    name = Strings.replacer(name, "[^a-z0-9]", "_").toLowerCase(); //replace to always make name with no special chars
     this.name = name;
     return this;
 };
@@ -212,8 +209,9 @@ Lat.prototype.updatePathVariables = function() {
     this._resultsFolder = this._basePath + "/results"; /** the folder that will contain the results of compiling the and executing the variants */
     this._variantsFolder = this._basePath + "/variants"; /** the folder that will contain the generated code (variants) and also the compiled versions that will be executed */
     this._graphsFolder = this._resultsFolder + "/graphs"; /** the folder that will hold the charts */
-    this._timerFile = this._resultsFolder + "/times.txt"; /** the file where the executed variants will write to */
-    this._reportFile = this._resultsFolder + "/times.txt"; /** the file where the executed variants will write to */
+    this._timerFileName = "/times.txt"; /** the filename where the executed variants will write to */
+    this._timerFile = this._resultsFolder + this._timerFileName; /** the complete file path for _timerFileName */
+    this._reportFile = this._resultsFolder + "/report.html"; /** the file that will contain each tuning operation's report */
     this._bestResult = this._resultsFolder + "/best"; /** the folder that will hold the best variant source code without timer prints */
     return this;
 };
@@ -422,22 +420,29 @@ Lat.prototype.generateSourceCode = function() {
         //println("SCOPE1: " + LowLevelApi.getNode(this.scope).hashCode());
         Clava.pushAst(); //preserve the initial ast before changing it
 
+        var $eqScope = Clava.findJp(this.scope);
+        var $eqMeasure = Clava.findJp(this.measure);
+        if ($eqScope === undefined) { LatUtils._error("Could not find the provided scope"); }
+        if ($eqMeasure === undefined) { LatUtils._error("Could not find the provided measure"); }
         //1st alter  the value of all variables according to the current variant
         for (var j = 0; j < countVarsPerVariant; j++) { //foreach variable in the current variant
             if (!this.uniqueVariants[i][j].default) { //only edit if the default value is not selected
-                call callOutput: getJoinpointsToChangeForSingleLatVar(this.scope, this.uniqueVariables[j]); //find the vardecl and all varref attributes of the current LatVar
+                // Find equivalent join point
+
+                call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]); //find the vardecl and all varref attributes of the current LatVar
+                println(LowLevelApi.getNode(this.uniqueVariables[j].vardecl).hashCode());
                 this.uniqueVariables[j] = callOutput.latvarOut;
                 this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i][j]); //update the AST with the current value for this LatVar's variant
             }
         }
 
         //2nd include the timer prints
-        var timer = new Timer("NANOSECONDS", this._timerFile);
-        timer.time(this.measure, this.name + "_" + this._tuneCounts + " " + i + " ");
+        var timer = new Timer("NANOSECONDS", "../results" + this._timerFileName);
+        timer.time($eqMeasure, this.name + "_" + this._tuneCounts + " " + i + " ");
+        //call printCode();
 
         //3rd write the variant to the output folder
-        //TODO: write the code to the respective folder
-        //Clava.writeCode(this._variantsFolder + "/" + i);
+        Clava.writeCode(this._variantsFolder + "/" + i);
 
         Clava.popAst(); //retrieve the initial ast after changing it, to allow multiple changes
         this.popIndent().print("Done", true).print();
@@ -453,6 +458,7 @@ Lat.prototype.executeSourceCode = function() {
         this.print("Starting test " + (i + 1) + " of " + this.numTests + "...").pushIndent();
 
         //TODO: execute code generated
+        //System.execute = function(command, workingDir, printToConsole, outputFile, append, timeout, timeunit)
 
         this.popIndent().print("Done test " + (i + 1) + " of " + this.numTests);
     }
@@ -460,9 +466,11 @@ Lat.prototype.executeSourceCode = function() {
     if (this.clearCode) { //remove all the created files
         this.print("Clearing generated variants from your system...").pushIndent();
         for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
-            this.print("Clearing Cariant " + (i + 1) + " of " + this.uniqueVariants.length + "...").pushIndent();
-            
+            this.print("Clearing Variant " + (i + 1) + " of " + this.uniqueVariants.length + "...").pushIndent();
+
             //TODO: remove the generated files
+            println("deleting: " + this._variantsFolder + "/" + i);
+            Io.deleteFile(this._variantsFolder + "/" + i);
 
             this.popIndent().print("Done");
         }
