@@ -70,6 +70,6 @@ end
 aspectdef printCode
     select program end
     apply
-        println("Pushed AST:\n" + $program.code);
+        println("AST:\n" + $program.code);
     end
 end
