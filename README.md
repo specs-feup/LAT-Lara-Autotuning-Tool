@@ -64,7 +64,7 @@ As for the **Lat** constructors you can specify as many parameters as you want, 
  - `estimateTime()` - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds for all the variants; 
  - `printResults()` - Prints the results after a `tune` tuning has happened; 
  - `showGraphs()` - Displays the results in user-friendly charts, these are automatically generated and sabed under the `outputPath/results`. 
- - `getResults` - returns a copy of the processed results, to process them call `parseResults`, here is an example of the output of the results variable, in case you want to perform some sort of operation on it:
+ - `getResults` - returns a copy of the processed results, to process them call `parseResults`, here is an example of the output of the results variable, in case you want to perform some sort of operation on it (the array `tuneOperation->overall->times` is always sorted from the best to the worst result):
 
  ```json
 {

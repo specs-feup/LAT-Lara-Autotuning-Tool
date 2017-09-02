@@ -7,6 +7,8 @@ import lat.LatVarOmp;
 import lat.LatConsts;
 import lat.LatUtils;
 
+import lat.LatCharts;
+
 import lara.Io;
 
 import clava.Clava;
@@ -101,7 +103,8 @@ Lat.prototype.estimateTime = function() {
 Lat.prototype.setName = function(name) {
     LatUtils.checkString(name, "name");
     name = name.toString();
-    //var replacer = Strings.NewReplacer("/v1.0/", "", "/", "_", "emp_1", "");
+    //TODO: fix replace to always make name with no special chars
+    //println(Strings.replacer("aaaaaa&!'áer´f´fr´ºref~ç034  a", /[^a-z0-9]/gi, "1"));
     //name.replacer(/[^a-z0-9]/gi, '_');
     //name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     this.name = name;
@@ -416,6 +419,7 @@ Lat.prototype.generateSourceCode = function() {
     var countVarsPerVariant = this.uniqueVariables.length; //avoid multiple accesses
     for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
         this.print("Generating for Variant " + i + " of " + this.uniqueVariants.length + "...", true).pushIndent();
+        //println("SCOPE1: " + LowLevelApi.getNode(this.scope).hashCode());
         Clava.pushAst(); //preserve the initial ast before changing it
 
         //1st alter  the value of all variables according to the current variant
@@ -432,7 +436,8 @@ Lat.prototype.generateSourceCode = function() {
         timer.time(this.measure, this.name + "_" + this._tuneCounts + " " + i + " ");
 
         //3rd write the variant to the output folder
-        //this._variantsFolder + "/" + i;// name for the i'th variant folder
+        //TODO: write the code to the respective folder
+        //Clava.writeCode(this._variantsFolder + "/" + i);
 
         Clava.popAst(); //retrieve the initial ast after changing it, to allow multiple changes
         this.popIndent().print("Done", true).print();
@@ -451,13 +456,20 @@ Lat.prototype.executeSourceCode = function() {
 
         this.popIndent().print("Done test " + (i + 1) + " of " + this.numTests);
     }
+
+    if (this.clearCode) { //remove all the created files
+        this.print("Clearing generated variants from your system...").pushIndent();
+        for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
+            this.print("Clearing Cariant " + (i + 1) + " of " + this.uniqueVariants.length + "...").pushIndent();
+            
+            //TODO: remove the generated files
+
+            this.popIndent().print("Done");
+        }
+        this.popIndent().print("Done");
+    }
 };
 
-Lat.prototype.displayResults = function() {
-    if (!this._tunned) { LatUtils._warn("A .tune() invocation is required before calling .displayResults()"); }
-    this.parseResults();
-    //this. show charts, produce report
-}
 Lat.prototype.parseResults = function(emptyFileAfterwards) {
     this.print("Parsing the results...", true).pushIndent();
 
@@ -474,32 +486,31 @@ Lat.prototype.parseResults = function(emptyFileAfterwards) {
 
         if (!this.results[parts[0]]) {
             this.results[parts[0]] = {
-                "overall": { "best_variant": -1, "best_time": -1, "times" : [] },
+                "overall": { "best_variant": -1, "best_time": -1, "times": [] },
                 "per_variant": {}
             };
         } //create result var for the tune operation, if not exists
 
         if (!this.results[parts[0]]["per_variant"][parts[1]]) {
             //this.results[parts[0]]["per_variant"] = { "variant": parts[1], "avg": -1, "sum": 0, "times" : [] };
-            this.results[parts[0]]["per_variant"][parts[1]] = { "avg": -1, "sum": 0, "times" : [] };
+            this.results[parts[0]]["per_variant"][parts[1]] = { "avg": -1, "sum": 0, "times": [] };
         } //create new variant in the tune operation, if not exists
         var time = parseInt(parts[2].slice(0, -1));
-        this.results[parts[0]]["overall"]["times"].push({"variant": parts[1], "time" : time});
+        this.results[parts[0]]["overall"]["times"].push({ "variant": parts[1], "time": time });
         this.results[parts[0]]["per_variant"][parts[1]]["times"].push(time);
         this.results[parts[0]]["per_variant"][parts[1]]["sum"] += time; //update the sum
     }
-    
+
     for (var tuneResult in this.results) { //result contains the named tune operations
         this.results[tuneResult]["overall"]["times"].sort(LatUtils.sortResultOverallTimes);
         this.results[tuneResult]["overall"]["best_variant"] = this.results[tuneResult]["overall"]["times"][0]["variant"];
         this.results[tuneResult]["overall"]["best_time"] = this.results[tuneResult]["overall"]["times"][0]["time"];
         for (var variant in this.results[tuneResult]["per_variant"]) { //tuneResult contains the variants
-            this.results[tuneResult]["per_variant"][variant]["avg"] = this.results[tuneResult]["per_variant"][variant]["sum"] / this.results[tuneResult]["per_variant"][variant]["times"].length;//calculate the average time for this variant
+            this.results[tuneResult]["per_variant"][variant]["avg"] = this.results[tuneResult]["per_variant"][variant]["sum"] / this.results[tuneResult]["per_variant"][variant]["times"].length; //calculate the average time for this variant
             delete this.results[tuneResult]["per_variant"][variant]["sum"];
         }
     }
     outs(this.results);
-    return;
 
     if (emptyFileAfterwards) { //delete the processed contents of the file
         Io.writeFile(this._timerFile, "");
@@ -512,6 +523,11 @@ Lat.prototype.getResults = function() {
     return LatUtils.clone(this.results);
 }
 
+Lat.prototype.displayResults = function() {
+    if (!this._tunned) { LatUtils._warn("A .tune() invocation is required before calling .displayResults()"); }
+    this.parseResults();
+    //this. show charts, produce report
+}
 Lat.prototype.checkVariablesInScope = function() {
     this.print("Checking the validity of the supplied variables...", true).pushIndent();
     call callOutput: findVariablesInJoinpoint(this.scope);
