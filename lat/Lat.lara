@@ -1,3 +1,11 @@
+import lara.Io;
+import lara.code.Timer;
+import lara.util.Replacer;
+import lara.Strings;
+
+import clava.Clava;
+
+import weaver.Weaver;
 import lat.LatVar;
 
 import lat.LatVarList;
@@ -7,17 +15,7 @@ import lat.LatVarOmp;
 import lat.LatConsts;
 import lat.LatUtils;
 
-import lat.LatCharts;
-
-import lara.Io;
-
-import clava.Clava;
-
-import lara.code.Timer;
-
 import aspects.variableHelpers;
-
-import lara.Strings;
 
 var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath) {
     this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath);
@@ -25,6 +23,7 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
     this._printIndentation = 0; /** indicates the hierarchy level of the print operations */
     this._tuneCounts = 0; /** at each tuning operation the name that is output is changed automatically so that there is no confusion between diferent tuning operations */
     this.results = undefined; /** This variable will hold the results of each parseResults operation */
+    Weaver.setVerboseLevel(0); /** 0 to 3, increasing the verbosity */
 };
 
 Lat.prototype.tune = function() {
@@ -44,6 +43,8 @@ Lat.prototype.tune = function() {
 
     this.generateSourceCode();
     this.executeSourceCode();
+    this.parseResults();
+    this.generateReport();
 
     this._tuneCounts++; //update the current index of the tuning operation
 
@@ -212,6 +213,7 @@ Lat.prototype.updatePathVariables = function() {
     this._timerFileName = "/times.txt"; /** the filename where the executed variants will write to */
     this._timerFile = this._resultsFolder + this._timerFileName; /** the complete file path for _timerFileName */
     this._reportFile = this._resultsFolder + "/report.html"; /** the file that will contain each tuning operation's report */
+    this._reporterTemplate = "../lat/templates/report.html"; /** the file that will contain each tuning operation's report */
     this._bestResult = this._resultsFolder + "/best"; /** the folder that will hold the best variant source code without timer prints */
     return this;
 };
@@ -416,30 +418,24 @@ Lat.prototype.generateSourceCode = function() {
     this.print("Generating Source Code...", true).pushIndent().print();
     var countVarsPerVariant = this.uniqueVariables.length; //avoid multiple accesses
     for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
-        this.print("Generating for Variant " + i + " of " + this.uniqueVariants.length + "...", true).pushIndent();
-        //println("SCOPE1: " + LowLevelApi.getNode(this.scope).hashCode());
-        Clava.pushAst(); //preserve the initial ast before changing it
+        this.print("Generating for Variant " + (i + 1) + " of " + this.uniqueVariants.length + "...", true).pushIndent();
+        Clava.pushAst(); //preserve the initial ast before changing it : LowLevelApi.getNode(this.scope).hashCode()
+        // Find equivalent join points
+        var $eqScope = LatUtils.findNewJp(this.scope);
+        var $eqMeasure = LatUtils.findNewJp(this.measure);
 
-        var $eqScope = Clava.findJp(this.scope);
-        var $eqMeasure = Clava.findJp(this.measure);
-        if ($eqScope === undefined) { LatUtils._error("Could not find the provided scope"); }
-        if ($eqMeasure === undefined) { LatUtils._error("Could not find the provided measure"); }
         //1st alter  the value of all variables according to the current variant
         for (var j = 0; j < countVarsPerVariant; j++) { //foreach variable in the current variant
             if (!this.uniqueVariants[i][j].default) { //only edit if the default value is not selected
-                // Find equivalent join point
 
                 call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]); //find the vardecl and all varref attributes of the current LatVar
-                println(LowLevelApi.getNode(this.uniqueVariables[j].vardecl).hashCode());
                 this.uniqueVariables[j] = callOutput.latvarOut;
                 this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i][j]); //update the AST with the current value for this LatVar's variant
             }
         }
-
         //2nd include the timer prints
         var timer = new Timer("NANOSECONDS", "../results" + this._timerFileName);
         timer.time($eqMeasure, this.name + "_" + this._tuneCounts + " " + i + " ");
-        //call printCode();
 
         //3rd write the variant to the output folder
         Clava.writeCode(this._variantsFolder + "/" + i);
@@ -455,25 +451,26 @@ Lat.prototype.generateSourceCode = function() {
  */
 Lat.prototype.executeSourceCode = function() {
     for (var i = 0; i < this.numTests; i++) {
-        this.print("Starting test " + (i + 1) + " of " + this.numTests + "...").pushIndent();
-
+        //this.print("Starting test " + (i + 1) + " of " + this.numTests + "...").pushIndent();
+        this.print("Starting test " + (i + 1) + " of " + this.numTests + "...", true).pushIndent();
         //TODO: execute code generated
         //System.execute = function(command, workingDir, printToConsole, outputFile, append, timeout, timeunit)
 
-        this.popIndent().print("Done test " + (i + 1) + " of " + this.numTests);
+        //this.popIndent().print("Done test " + (i + 1) + " of " + this.numTests);
+        this.popIndent().print("Done");
     }
 
     if (this.clearCode) { //remove all the created files
-        this.print("Clearing generated variants from your system...").pushIndent();
-        for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
+        this.print("Clearing generated variants from your system...", true).pushIndent();
+        Io.deleteFolder(this._variantsFolder);
+        /*for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
             this.print("Clearing Variant " + (i + 1) + " of " + this.uniqueVariants.length + "...").pushIndent();
 
             //TODO: remove the generated files
-            println("deleting: " + this._variantsFolder + "/" + i);
-            Io.deleteFile(this._variantsFolder + "/" + i);
+            Io.deleteFolder(this._variantsFolder + "/" + i);
 
             this.popIndent().print("Done");
-        }
+        }*/
         this.popIndent().print("Done");
     }
 };
@@ -528,14 +525,15 @@ Lat.prototype.parseResults = function(emptyFileAfterwards) {
 };
 
 Lat.prototype.getResults = function() {
+    if(!this._tunned){LatUtils._error("A tuning operation is required before calling getResutls()");}
     return LatUtils.clone(this.results);
 }
 
-Lat.prototype.displayResults = function() {
-    if (!this._tunned) { LatUtils._warn("A .tune() invocation is required before calling .displayResults()"); }
-    this.parseResults();
-    //this. show charts, produce report
+Lat.prototype.generateReport = function() {
+    //perhaps copy css and js folders to results folder
+    var reporter = Replacer.fromFilename(this._reporterTemplate);
 }
+
 Lat.prototype.checkVariablesInScope = function() {
     this.print("Checking the validity of the supplied variables...", true).pushIndent();
     call callOutput: findVariablesInJoinpoint(this.scope);
