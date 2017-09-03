@@ -67,9 +67,9 @@ aspectdef getJoinpointsToChangeForSingleLatVar
     end
 end
 
-aspectdef printCode
+/*aspectdef printCode
     select program end
     apply
         println("AST:\n" + $program.code);
     end
-end
+end*/
