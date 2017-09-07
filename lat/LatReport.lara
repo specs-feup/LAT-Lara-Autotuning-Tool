@@ -3,6 +3,10 @@ import lara.util.Replacer;
 
 import lat.LatConsts;
 import lat.LatUtils;
+import lat.templates;
+import lat.templates_css;
+import lat.templates_js;
+
 
 var LatReport = function(lat) {
     this.lat = lat;
@@ -12,10 +16,29 @@ var LatReport = function(lat) {
 
 LatReport.prototype.generateReport = function() {
     //replace the values in the template for the real ones
+
+    //tables in the template
+    this.replaceConfigurations();
+    this.replaceSystemConstants();
+    this.replaceOverallResults();
+
+    this.replaceSearchGroupLinks();
+    this.replaceSearchGroupDivs();
+
+    this.replacer.replaceAll("[[consoleOutput]]", this.lat._printLog + "    Done\nTuning operation complete");
+
+    this.replaceFooter();
+
+    Io.writeFile(this.lat.getReportTuneName(), this.replacer.getString()); //write the replaced template
+    this.includeResources(); //include necessary css and js files
+};
+
+
+LatReport.prototype.replaceConfigurations = function() {
     this.replacer.replaceAll("[[name]]", this.lat.name);
-    this.replacer.replaceAll("[[scope]]", this.lat.scope.code);
-    this.replacer.replaceAll("[[measure]]", this.lat.measure.code);
-    this.replacer.replaceAll("[[variables]]", this.lat.uniqueVariables.map(function(v){return v.name;}).join(", "));
+    this.replacer.replaceAll("[[scope]]", LatUtils.escapeHtmlCharacters(this.lat.scope.code));
+    this.replacer.replaceAll("[[measure]]", LatUtils.escapeHtmlCharacters(this.lat.measure.code));
+    this.replacer.replaceAll("[[variables]]", this.lat.uniqueVariables.map(function(v) { return v.name; }).join(", "));
     this.replacer.replaceAll("[[numTests]]", this.lat.numTests);
     this.replacer.replaceAll("[[searchType]]", LatConst.getSearchType(this.lat.searchType));
     this.replacer.replaceAll("[[clearCode]]", this.lat.clearCode);
@@ -24,8 +47,9 @@ LatReport.prototype.generateReport = function() {
     this.replacer.replaceAll("[[timeout]]", this.lat.timeout);
     this.replacer.replaceAll("[[outputPath]]", this.lat.outputPath);
 
+};
 
-
+LatReport.prototype.replaceOverallResults = function() {
     this.replacer.replaceAll("[[tuneName]]", this.lat.getTuneName());
     this.replacer.replaceAll("[[tuneCount]]", this.lat._tuneCounts + 1);
     this.replacer.replaceAll("[[numSearchGroups]]", this.lat.searchGroups.length);
@@ -36,16 +60,17 @@ LatReport.prototype.generateReport = function() {
     this.replacer.replaceAll("[[bestVariant]]", this.lat.results[this.lat.getTuneName()].overall.best_variant);
     this.replacer.replaceAll("[[bestTime]]", this.lat.results[this.lat.getTuneName()].overall.best_time);
     this.replacer.replaceAll("[[numSearchGroups]]", this.lat.uniqueVariants.length);
-
-    this.replaceSearchGroupLinks();
-    this.replaceSearchGroupDivs();
-
-    this.replacer.replaceAll("[[timestampGeneration]]", LatUtils.getTime() + " on the " + LatUtils.getDate());
-
-    Io.writeFile(this.lat.getReportTuneName(), this.replacer.getString()); //write the replaced template
-    this.includeResources(); //include necessary css and js files
+    this.replacer.replaceAll("[[executionTime]]", this.lat._executionTime);
 };
 
+LatReport.prototype.replaceSystemConstants = function() {
+    this.replacer.replaceAll("[[NUM_CPU_THREADS]]", LatConst.NUM_CPU_THREADS);
+    this.replacer.replaceAll("[[L1_CACHE_LINESIZE]]", LatConst.L1_CACHE_LINESIZE);
+};
+
+LatReport.prototype.replaceFooter = function() {
+    this.replacer.replaceAll("[[timestampGeneration]]", LatUtils.getTime() + " on the " + LatUtils.getDate());
+};
 
 LatReport.prototype.replaceSearchGroupLinks = function() {
     var searchGroupLinks = "";
@@ -69,9 +94,32 @@ LatReport.prototype.replaceSearchGroupDivs = function() {
 
 LatReport.prototype.includeResources = function() {
     //copy the css and js files
-    var filesToCopy = ["css/uikit.min.css", "js/jquery.min.js", "js/plotly.min.js", "js/uikit.min.js", "js/uikit-icons.min.js"];
+
+    println(templates_css.getFileList().type);
+    println(typeof templates_js.getFileList());
+
+    var filesToCopy = [];
+    var cssFiles = templates_css.getFileList();
+    for (var i = 0; i < cssFiles.length; i++) {
+        var c = String(cssFiles[i]);
+        filesToCopy.push({
+            path: c,
+            outputTo: "css/" + c.split("\\").pop()
+        });
+    }
+    var jsFiles = templates_js.getFileList();
+    for (var i = 0; i < jsFiles.length; i++) {
+        var c = String(jsFiles[i]);
+        filesToCopy.push({
+            path: c,
+            outputTo: "js/" + c.split("\\").pop()
+        });
+    }
+
+    //var filesToCopy = ["css/uikit.min.css", "js/jquery.min.js", "js/plotly.min.js", "js/uikit.min.js", "js/uikit-icons.min.js"];
     filesToCopy.map(function(element, index) {
-        Io.copyFile(this.lat._templateFolder + "/" + element, this.lat._resultsFolder + "/" + element);
+        println("Copy " + element.path + " to " + element.outputTo);
+        Io.copyFile(element.path, this.lat._resultsFolder + "/" + element.outputTo);
     }, this);
 
 };
