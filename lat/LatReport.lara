@@ -1,0 +1,77 @@
+import lara.Io;
+import lara.util.Replacer;
+
+import lat.LatConsts;
+import lat.LatUtils;
+
+var LatReport = function(lat) {
+    this.lat = lat;
+    this.replacer = Replacer.fromFilename(this.lat._reporterTemplate);
+
+};
+
+LatReport.prototype.generateReport = function() {
+    //replace the values in the template for the real ones
+    this.replacer.replaceAll("[[name]]", this.lat.name);
+    this.replacer.replaceAll("[[scope]]", this.lat.scope.code);
+    this.replacer.replaceAll("[[measure]]", this.lat.measure.code);
+    this.replacer.replaceAll("[[variables]]", this.lat.uniqueVariables.map(function(v){return v.name;}).join(", "));
+    this.replacer.replaceAll("[[numTests]]", this.lat.numTests);
+    this.replacer.replaceAll("[[searchType]]", LatConst.getSearchType(this.lat.searchType));
+    this.replacer.replaceAll("[[clearCode]]", this.lat.clearCode);
+    this.replacer.replaceAll("[[verbose]]", this.lat.verbose);
+    this.replacer.replaceAll("[[abort]]", this.lat.abort);
+    this.replacer.replaceAll("[[timeout]]", this.lat.timeout);
+    this.replacer.replaceAll("[[outputPath]]", this.lat.outputPath);
+
+
+
+    this.replacer.replaceAll("[[tuneName]]", this.lat.getTuneName());
+    this.replacer.replaceAll("[[tuneCount]]", this.lat._tuneCounts + 1);
+    this.replacer.replaceAll("[[numSearchGroups]]", this.lat.searchGroups.length);
+    this.replacer.replaceAll("[[numVariants]]", this.lat.uniqueVariants.length);
+    this.replacer.replaceAll("[[numUniqueVariants]]", this.lat.numUniqueVariants);
+    this.replacer.replaceAll("[[removeDuplicates]]", this.lat.removeDuplicates);
+    this.replacer.replaceAll("[[numVariables]]", this.lat.uniqueVariables.length);
+    this.replacer.replaceAll("[[bestVariant]]", this.lat.results[this.lat.getTuneName()].overall.best_variant);
+    this.replacer.replaceAll("[[bestTime]]", this.lat.results[this.lat.getTuneName()].overall.best_time);
+    this.replacer.replaceAll("[[numSearchGroups]]", this.lat.uniqueVariants.length);
+
+    this.replaceSearchGroupLinks();
+    this.replaceSearchGroupDivs();
+
+    this.replacer.replaceAll("[[timestampGeneration]]", LatUtils.getTime() + " on the " + LatUtils.getDate());
+
+    Io.writeFile(this.lat.getReportTuneName(), this.replacer.getString()); //write the replaced template
+    this.includeResources(); //include necessary css and js files
+};
+
+
+LatReport.prototype.replaceSearchGroupLinks = function() {
+    var searchGroupLinks = "";
+    for (var i = 0; i < this.lat.searchGroups.length; i++) {
+        searchGroupLinks += '<li><a href="\#">[' + this.lat.searchGroups[i].map(function(e) { return e.name; }).join(",") + ']</a></li>';
+    }
+    this.replacer.replaceAll("[[searchGroupLinks]]", searchGroupLinks);
+};
+
+LatReport.prototype.replaceSearchGroupDivs = function() {
+    var searchGroupDivs = "";
+    for (var i = 0; i < this.lat.searchGroups.length; i++) {
+        searchGroupDivs += '<div>' + this.lat.searchGroups[i].length + ' elements</div>';
+    }
+    this.replacer.replaceAll("[[searchGroupDivs]]", searchGroupDivs);
+
+};
+
+
+
+
+LatReport.prototype.includeResources = function() {
+    //copy the css and js files
+    var filesToCopy = ["css/uikit.min.css", "js/jquery.min.js", "js/plotly.min.js", "js/uikit.min.js", "js/uikit-icons.min.js"];
+    filesToCopy.map(function(element, index) {
+        Io.copyFile(this.lat._templateFolder + "/" + element, this.lat._resultsFolder + "/" + element);
+    }, this);
+
+};
