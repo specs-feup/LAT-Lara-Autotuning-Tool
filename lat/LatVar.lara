@@ -25,7 +25,29 @@ LatVar.prototype.restart = function() {
     LatUtils._error("function restart not implemented");
 };
 LatVar.prototype.changeVariantInAst = function(currentValue) {
-    LatUtils._error("function changeVariantInAst not implemented");
+    var readOnly = true;
+    for(var i = 0; i < this.varrefs.length; i++){
+        if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.WRITE || this.varrefs[i].useExpr.use == LatConst.VAR_USES.READWRITE){
+            readOnly = false;
+            break;
+        }
+    }
+    if(readOnly){
+        LatUtils._warn("only read option in changeVariantInAst is not yet implemented");
+        //TODO: basta alterar o vardecl
+        //var $temp = this.vardecl;
+        //$temp.replace(%{[[currentValue.value]]}%);
+    }else{
+        //TODO: move the for here after implementing readonly
+        println("read only is not yet implemented, but when it is this message should not appear");
+    }
+    for(var i = 0; i < this.varrefs.length; i++){
+        if(this.varrefs[i].use == LatConst.VAR_USES.READ){
+            var $temp = this.varrefs[i];
+            $temp.replace(%{[[currentValue.value]]}%);
+        }
+    }
+    return this;
 };
 LatVar.prototype.setType = function(type) {
     if (type === LatConst.OUTPUT_TYPE.STRING || type === LatConst.OUTPUT_TYPE.CHAR) {
