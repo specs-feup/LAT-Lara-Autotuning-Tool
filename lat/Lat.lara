@@ -6,14 +6,14 @@ import lara.Strings;
 import clava.Clava;
 
 import weaver.Weaver;
-import lat.LatVar;
 
+import lat.LatVar;
 import lat.LatVarList;
 import lat.LatVarRange;
 import lat.LatVarOmp;
-
 import lat.LatConsts;
 import lat.LatUtils;
+import lat.LatReport;
 
 import aspects.variableHelpers;
 
@@ -46,7 +46,7 @@ Lat.prototype.tune = function() {
     this.parseResults();
     this.generateReport();
 
-    this._tuneCounts++; //update the current index of the tuning operation
+    this._tuneCounts++; //update the current index of the tuning operation after the report generation
 
     this._tunned = true;
     this.popIndent().print("Tuning operation complete");
@@ -212,9 +212,9 @@ Lat.prototype.updatePathVariables = function() {
     this._graphsFolder = this._resultsFolder + "/graphs"; /** the folder that will hold the charts */
     this._timerFileName = "/times.txt"; /** the filename where the executed variants will write to */
     this._timerFile = this._resultsFolder + this._timerFileName; /** the complete file path for _timerFileName */
-    this._reportFile = this._resultsFolder + "/report.html"; /** the file that will contain each tuning operation's report */
-    this._reporterTemplate = "../lat/templates/report.html"; /** the file that will contain each tuning operation's report */
     this._bestResult = this._resultsFolder + "/best"; /** the folder that will hold the best variant source code without timer prints */
+    this._templateFolder = "../lat/templates/"; /** the file that will contain each tuning operation's report */
+    this._reporterTemplate = "../lat/templates/report.html"; /** the file that will contain each tuning operation's report */
     return this;
 };
 
@@ -301,6 +301,13 @@ Lat.prototype.getIndent = function() {
 var outs = function(a) {
     println(JSON.stringify(a));
 };
+
+Lat.prototype.getTuneName = function(){
+    return this.name + "_" + this._tuneCounts;
+}
+Lat.prototype.getReportTuneName = function(){
+    return this._resultsFolder + "/report_" + this.getTuneName() + ".html";
+}
 //--------------------------------------------Core functions (variants generation)
 
 /**
@@ -367,13 +374,13 @@ Lat.prototype.generateUniqueVariants = function() {
     }
 
     if (this.removeDuplicates) {
-        this.print(this.uniqueVariants.length + " unique variants generated", true);
+        this.numUniqueVariants = this.uniqueVariants.length;
+        this.print(this.numUniqueVariants + " unique variants generated", true);
         this.print();
-        this.print("removing Duplicates from Generated Variants...");
-        var countInitial = this.uniqueVariants.length;
+        this.print("Removing Duplicates from Generated Variants...");
         this.uniqueVariants = LatUtils.removeDuplicatesCloned(this.uniqueVariants);
 
-        this.print("Done - " + (countInitial - this.uniqueVariants.length) + " redundant variants removed - total: " + this.uniqueVariants.length);
+        this.print("Done - " + (this.numUniqueVariants - this.uniqueVariants.length) + " redundant variant(s) removed - total: " + this.uniqueVariants.length);
     }
     this.popIndent().print("Done - " + this.uniqueVariants.length + " unique variants generated", true).print();
     /*println("removed duplicates: " + this.uniqueVariants.length + " uniqueVariants: ");
@@ -435,7 +442,7 @@ Lat.prototype.generateSourceCode = function() {
         }
         //2nd include the timer prints
         var timer = new Timer("NANOSECONDS", "../results" + this._timerFileName);
-        timer.time($eqMeasure, this.name + "_" + this._tuneCounts + " " + i + " ");
+        timer.time($eqMeasure, this.getTuneName() + " " + i + " ");
 
         //3rd write the variant to the output folder
         Clava.writeCode(this._variantsFolder + "/" + i);
@@ -525,13 +532,17 @@ Lat.prototype.parseResults = function(emptyFileAfterwards) {
 };
 
 Lat.prototype.getResults = function() {
-    if(!this._tunned){LatUtils._error("A tuning operation is required before calling getResutls()");}
+    if (!this._tunned) { LatUtils._error("A tuning operation is required before calling getResutls()"); }
     return LatUtils.clone(this.results);
 }
 
 Lat.prototype.generateReport = function() {
-    //perhaps copy css and js folders to results folder
-    var reporter = Replacer.fromFilename(this._reporterTemplate);
+    this.print("Generating the report...", true).pushIndent();
+
+    var reporter = new LatReport(this);
+    reporter.generateReport();
+
+    this.popIndent().print("Done", true).print();
 }
 
 Lat.prototype.checkVariablesInScope = function() {
