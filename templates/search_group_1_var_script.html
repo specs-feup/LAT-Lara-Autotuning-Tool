@@ -1,0 +1,18 @@
+var searchGroup_[[searchGroupIndex]] = {
+    x: [[xValues]],
+    y: [[yValues]],
+    mode: 'lines+markers'
+};
+
+var data_[[searchGroupIndex]] = [searchGroup_[[searchGroupIndex]]];
+
+var layout_[[searchGroupIndex]] = {
+    title: 'Variable [[searchGroupVariables]] impact on time',
+    xaxis: {
+        title: 'Variant'
+    },
+    yaxis: {
+        title: 'Time (ns)'
+    }
+};
+Plotly.newPlot('chartSearchGroup_[[searchGroupIndex]]', data_[[searchGroupIndex]], layout_[[searchGroupIndex]]);
