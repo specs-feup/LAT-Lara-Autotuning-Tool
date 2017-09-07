@@ -29,6 +29,16 @@ LatConst.getCacheLineSize = function() {
     return 10;
 };
 
+LatConst.getSearchType = function(searchType) {
+    if (searchType == LatConst.SEARCH_TYPE.DEPENDENT) {
+        return "dependent";
+    } else if (searchType == LatConst.SEARCH_TYPE.INDEPENDENT) {
+        return "indepenedent";
+    } else if (searchType == LatConst.SEARCH_TYPE.CUSTOM) {
+        return "custom";
+    }
+};
+
 //CONSTANTS
 LatConst.NUM_CPU_THREADS = LatConst.getNumCpuThreads();
 LatConst.L1_CACHE_LINESIZE = LatConst.getCacheLineSize();
