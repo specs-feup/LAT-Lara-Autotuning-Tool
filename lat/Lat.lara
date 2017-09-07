@@ -27,6 +27,7 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
 };
 
 Lat.prototype.tune = function() {
+    this.restartPrintLog();
     this.print("Starting tuning operation").pushIndent();
     this._tunned = false;
 
@@ -254,6 +255,10 @@ Lat.prototype.validateProperty = function(propertyName, value, defaultValue) {
     return value;
 };
 
+Lat.prototype.restartPrintLog = function(){
+    this._printLog = "";
+}
+
 /**
  * Wrapper function to deal with verbosity level, only prints the message if this.verbose is true
  * @param message the message tou output
@@ -263,8 +268,10 @@ Lat.prototype.print = function(message, noNewLine) {
     message = message === undefined ? "" : this.getIndent() + message;
     if (this.verbose) {
         if (noNewLine) { //no new line, no indent
+            this._printLog+=message;
             print(message);
         } else { //new line with indent
+            this._printLog+=message+"\n";
             println(message);
         }
     }
