@@ -18,6 +18,7 @@ LatConst.getAvailable = function() {
  */
 LatConst.getNumCpuThreads = function() {
     //TODO: read from the system
+    //System.getNumLogicalCores();
     return 10;
 };
 
