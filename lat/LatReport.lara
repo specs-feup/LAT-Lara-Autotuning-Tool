@@ -10,7 +10,8 @@ import lat.templates_js;
 
 var LatReport = function(lat) {
     this.lat = lat;
-    this.replacer = Replacer.fromFilename(this.lat._reporterTemplate);
+    this.replacer = new Replacer(templates.getString("report.html"));
+    //this.replacer = Replacer.fromFilename(this.lat._reporterTemplate);
 
 };
 
@@ -24,6 +25,7 @@ LatReport.prototype.generateReport = function() {
 
     this.replaceSearchGroupLinks();
     this.replaceSearchGroupDivs();
+
 
     this.replacer.replaceAll("[[consoleOutput]]", this.lat._printLog + "    Done\nTuning operation complete");
 
@@ -82,21 +84,32 @@ LatReport.prototype.replaceSearchGroupLinks = function() {
 
 LatReport.prototype.replaceSearchGroupDivs = function() {
     var searchGroupDivs = "";
+    var searchGroupsScript = "";
     for (var i = 0; i < this.lat.searchGroups.length; i++) {
-        searchGroupDivs += '<div>' + this.lat.searchGroups[i].length + ' elements</div>';
+        var replacerChart = this.getSearchGroupReplacer(this.lat.searchGroups[i].length);
+        replacerChart.replaceAll("[[searchGroupIndex]]", i);
+        replacerChart.replaceAll("[[xValues]]", "[1, 2, 3, 4, 5]");
+        replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
+        replacerChart.replaceAll("[[searchGroupVariables]]", this.lat.searchGroups[i].map(function(e) { return e.name; }).join(","));
+        searchGroupsScript += replacerChart.getString();
+
+        searchGroupDivs += '<li class="uk-container uk-container-center" id="chartSearchGroup_' + i + '"></li>';
+        //searchGroupDivs += '<div>' + this.lat.searchGroups[i].length + ' elements</div>';
     }
     this.replacer.replaceAll("[[searchGroupDivs]]", searchGroupDivs);
+    this.replacer.replaceAll("[[searchGroupsScript]]", searchGroupsScript);
 
 };
 
 
+LatReport.prototype.getSearchGroupReplacer = function(numElements) {
+    var templateName = "search_group_"+numElements+"_var_script.html";
+    return  new Replacer(templates.getString(templateName));
+};
 
 
 LatReport.prototype.includeResources = function() {
     //copy the css and js files
-
-    println(templates_css.getFileList().type);
-    println(typeof templates_js.getFileList());
 
     var filesToCopy = [];
     var cssFiles = templates_css.getFileList();
@@ -118,7 +131,6 @@ LatReport.prototype.includeResources = function() {
 
     //var filesToCopy = ["css/uikit.min.css", "js/jquery.min.js", "js/plotly.min.js", "js/uikit.min.js", "js/uikit-icons.min.js"];
     filesToCopy.map(function(element, index) {
-        println("Copy " + element.path + " to " + element.outputTo);
         Io.copyFile(element.path, this.lat._resultsFolder + "/" + element.outputTo);
     }, this);
 
