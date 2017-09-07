@@ -1,3 +1,5 @@
+import lara.util.Replacer;
+
 var LatUtils = {};
 
 LatUtils._error = function(message) {
@@ -182,4 +184,16 @@ LatUtils.getTime = function() {
     return d.getHours() + "h" +
         d.getMinutes() + "m" +
         d.getSeconds() + "s";
+};
+
+LatUtils.escapeHtmlCharacters = function(original){
+    //return original;
+    //TODO: htmlentities for a string
+    var replacer = new Replacer(original);
+    replacer.replaceAll("<", "&lt;");
+    replacer.replaceAll(">", "&gt;");
+    replacer.replaceAll("&", "&amp;");
+    replacer.replaceAll("\"", "&quot;");
+    replacer.replaceAll("'", "&#039");
+    return replacer.getString();
 };
