@@ -1,4 +1,6 @@
 var LatVarOmp = function(name, scheduleTypes, LatVarScheduleChunkSize, LatVarnumThreads, type) {
+    println("Constructor");
+
     LatVar.call(this, name, type);
     //types allowed: dynamic, static, guided, auto, runtime
     this.scheduleTypes = scheduleTypes;
@@ -63,6 +65,8 @@ LatVarOmp.prototype.generateOmpVariants = function() {
 };
 
 LatVarOmp.prototype.changeVariantInAst = function(currentValue) {
+    currentValue = currentValue.value;
+    println(JSON.stringify(currentValue));
     var newContent = this.pragma.content;
 
     if (currentValue.scheduleChunkSize === undefined) {
@@ -73,7 +77,6 @@ LatVarOmp.prototype.changeVariantInAst = function(currentValue) {
     if (currentValue.numThreads > 0) {
         newContent += " num_threads("+currentValue.numThreads+")";
     }
-    println("new_content: " + newContent);
-    //this.pragma.replaceContent();
-    //this.pragma.replaceName("omp");
+    this.pragma.setContent(newContent);
+    this.pragma.setName("omp");
 };
