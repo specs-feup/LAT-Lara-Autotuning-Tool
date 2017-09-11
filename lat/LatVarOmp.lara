@@ -1,5 +1,21 @@
-var LatVarOmp = function(name, type) {
+var LatVarOmp = function(name, scheduleTypes, LatVarScheduleChunkSize, LatVarnumThreads, type) {
     LatVar.call(this, name, type);
+    //types allowed: dynamic, static, guided, auto, runtime
+    this.scheduleTypes = scheduleTypes;
+    //check these are LatVarRange or LatVarList
+    if (LatVarScheduleChunkSize === undefined) {
+        LatVarScheduleChunkSize = new LatVarList("", [undefined]);
+    }
+    LatUtils.checkLatVarRangeOrList(LatVarScheduleChunkSize, "LatVarScheduleChunkSize");
+    if (LatVarnumThreads === undefined) {
+        LatVarnumThreads = new LatVarList("", [0]);
+    }
+    LatUtils.checkLatVarRangeOrList(LatVarnumThreads, "LatVarnumThreads");
+    this.LatVarScheduleChunkSize = LatVarScheduleChunkSize;
+    this.LatVarnumThreads = LatVarnumThreads;
+    this.pragma = undefined; //specific for each variant so it is only loaded inside .puhs/.pop
+    this.generateOmpVariants();
+    this.restart();
 };
 
 LatVarOmp.prototype = Object.create(LatVar.prototype);
@@ -7,14 +23,57 @@ LatVarOmp.prototype.constructor = LatVarOmp;
 
 //Functions overloaded from LatVar
 LatVarOmp.prototype.getNext = function() {
-    LatUtils._error("function getNext not implemented");
+    if (this.first) {
+        this.first = false;
+        return LatUtils.clone(LatConst.LAT_VALUE.DEFAULT);
+    }
+    return { type: this.type, value: this.variants[this.elementIndex++], default: false };
 };
 LatVarOmp.prototype.hasNext = function() {
-    LatUtils._error("function hasNext not implemented");
+    return this.elementIndex < this.variants.length;
 };
 LatVarOmp.prototype.countElements = function() {
-    LatUtils._error("function countElements not implemented");
+    return this.variants.length;
 };
 LatVarOmp.prototype.restart = function() {
-    LatUtils._error("function restart not implemented");
+    this.elementIndex = 0;
+    this.first = true;
+    return this;
+};
+
+//specific functions
+LatVarOmp.prototype.generateOmpVariants = function() {
+    this.variants = [];
+    //{scheduleType: , scheduleChunkSize: , numThreads: }
+    for (var i = 0; i < this.scheduleTypes.length; i++) {
+        while (this.LatVarScheduleChunkSize.hasNext()) {
+            var chunkSize = this.LatVarScheduleChunkSize.getNext().value;
+            while (this.LatVarnumThreads.hasNext()) {
+                this.variants.push({
+                    scheduleType: this.scheduleTypes[i],
+                    scheduleChunkSize: chunkSize,
+                    numThreads: this.LatVarnumThreads.getNext().value
+                });
+            }
+            this.LatVarnumThreads.restart();
+        }
+        this.LatVarScheduleChunkSize.restart();
+    }
+    return this;
+};
+
+LatVarOmp.prototype.changeVariantInAst = function(currentValue) {
+    var newContent = this.pragma.content;
+
+    if (currentValue.scheduleChunkSize === undefined) {
+        newContent += " schedule(" + currentValue.scheduleType + ")";
+    } else {
+        newContent += " schedule(" + currentValue.scheduleType + "," + currentValue.scheduleChunkSize + ")";
+    }
+    if (currentValue.numThreads > 0) {
+        newContent += " num_threads("+currentValue.numThreads+")";
+    }
+    println("new_content: " + newContent);
+    //this.pragma.replaceContent();
+    //this.pragma.replaceName("omp");
 };

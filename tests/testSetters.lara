@@ -10,7 +10,7 @@ aspectdef TestSetters
 		var lv = new LatVar("LatVar");
 		var lvl = new LatVarList("LatVarList", [1,2]);
 		var lvr = new LatVarRange("LatVarRange", 1, 10);
-		var lvo = new LatVarOmp("LatVarOmp");
+		var lvo = new LatVarOmp("LatVarOmp", ["dynamic", "static"], lvl, lvr);
 
 		//prevent user from using LatVar instead of one of the others
 		
