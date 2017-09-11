@@ -1,4 +1,5 @@
 //NOTE: When adding constants and methods, make sure constants start with UPPERCASE and methods with lowercase
+import lara.System;
 
 var LatConst = {};
 
@@ -17,9 +18,7 @@ LatConst.getAvailable = function() {
  * Read the total number of hardware threads on the CPU for the current machine
  */
 LatConst.getNumCpuThreads = function() {
-    //TODO: read from the system
-    //System.getNumLogicalCores();
-    return 10;
+    return System.getNumLogicalCores();
 };
 
 /**
