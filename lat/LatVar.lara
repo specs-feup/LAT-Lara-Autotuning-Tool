@@ -42,7 +42,7 @@ LatVar.prototype.changeVariantInAst = function(currentValue) {
         println("read only is not yet implemented, but when it is this message should not appear");
     }
     for(var i = 0; i < this.varrefs.length; i++){
-        if(this.varrefs[i].use == LatConst.VAR_USES.READ){
+        if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.READ){
             var $temp = this.varrefs[i];
             $temp.replace(%{[[currentValue.value]]}%);
         }
