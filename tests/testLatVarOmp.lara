@@ -4,8 +4,8 @@ aspectdef TestLatVarOmp
 	print("----------------------Testing LatVarOmp...   ");
 	
 	try{
-		var lvo = new LatVarOmp();
-		LatUtils._warn("LatVarOmp elements should not accept undefined");
+		//var lvo = new LatVarOmp();
+		//LatUtils._warn("LatVarOmp elements should not accept undefined");
 	}catch(e){}
 	
 
