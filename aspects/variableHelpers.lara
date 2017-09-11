@@ -66,6 +66,34 @@ aspectdef getJoinpointsToChangeForSingleLatVar
         }
     end
 end
+aspectdef getJoinpointsToChangeForLatVarOmp
+    input latvar end
+    output latvarOut end 
+
+    latvarOut = latvar;
+    latvarOut.pragma = undefined;
+    //find pragma with the same name as the LatVarOmp passed
+    select pragma end
+    apply
+        if(latvarOut.name == $pragma.name){
+            latvarOut.pragma = $pragma;
+            break;
+        }
+    end
+    
+
+end
+
+aspectdef getFile
+    output thisFile end 
+    
+    select file end
+    apply
+        thisFile = $file;
+    end
+
+end
+
 
 /*aspectdef printCode
     select program end
