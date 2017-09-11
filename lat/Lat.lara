@@ -24,6 +24,9 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
     this._tuneCounts = 0; /** at each tuning operation the name that is output is changed automatically so that there is no confusion between diferent tuning operations */
     this.results = undefined; /** This variable will hold the results of each parseResults operation */
     Weaver.setVerboseLevel(0); /** 0 to 3, increasing the verbosity */
+    //get current file
+    call callFile: getFile();
+    this.file = callFile.thisFile;
 };
 
 Lat.prototype.tune = function() {
@@ -430,6 +433,9 @@ Lat.prototype.generateVariantsRecursive = function(searchGroup, index) {
 
 Lat.prototype.generateSourceCode = function() {
     this.print("Generating Source Code...", true).pushIndent().print();
+    //0 check if any includes are necessary
+    this.checkIncludes();
+
     var countVarsPerVariant = this.uniqueVariables.length; //avoid multiple accesses
     for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
         this.print("Generating for Variant " + (i + 1) + " of " + this.uniqueVariants.length + "...", true).pushIndent();
@@ -442,7 +448,12 @@ Lat.prototype.generateSourceCode = function() {
         for (var j = 0; j < countVarsPerVariant; j++) { //foreach variable in the current variant
             if (!this.uniqueVariants[i][j].default) { //only edit if the default value is not selected
 
-                call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]); //find the vardecl and all varref attributes of the current LatVar
+                var callOutput = undefined;
+                if(!LatUtils.isLatVarOmp(this.uniqueVariables[j])){//omp does not use vardecl nor varref
+                    call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]); //find the vardecl and all varref attributes of the current LatVar
+                }else{
+                    call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[j]);
+                }
                 this.uniqueVariables[j] = callOutput.latvarOut;
                 this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i][j]); //update the AST with the current value for this LatVar's variant
             }
@@ -571,4 +582,19 @@ Lat.prototype.checkVariablesInScope = function() {
         }
     }
     this.popIndent().print("Done - no errors were found", true).print();
+};
+
+Lat.prototype.checkIncludes = function(){
+    //omp.h include
+    var ompInclude = false;
+    for(var i = 0; i < this.uniqueVariables.length; i++){
+        if(LatUtils.isLatVarOmp(this.uniqueVariables[i])){
+            ompInclude = true;
+            break;
+        }
+    }
+    if(ompInclude){
+        this.file.addInclude("omp.h");
+    }
+
 };
