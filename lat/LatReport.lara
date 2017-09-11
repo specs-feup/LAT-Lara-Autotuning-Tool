@@ -71,7 +71,7 @@ LatReport.prototype.replaceSystemConstants = function() {
 };
 
 LatReport.prototype.replaceFooter = function() {
-    this.replacer.replaceAll("[[timestampGeneration]]", LatUtils.getTime() + " on the " + LatUtils.getDate());
+    this.replacer.replaceAll("[[timestampGeneration]]", LatUtils.getTime() + " - " + LatUtils.getDate());
 };
 
 LatReport.prototype.replaceSearchGroupLinks = function() {
