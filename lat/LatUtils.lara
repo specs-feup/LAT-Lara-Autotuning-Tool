@@ -1,5 +1,5 @@
 import lara.util.Replacer;
-
+import lara.Strings;
 var LatUtils = {};
 
 LatUtils._error = function(message) {
@@ -87,6 +87,20 @@ LatUtils.checkLatVars = function(variables, name) {
     }
 };
 
+LatUtils.isLatVarRange = function(variable) {
+    return variable instanceof LatVarRange;
+};
+LatUtils.isLatVarList = function(variable) {
+    return variable instanceof LatVarList;
+};
+LatUtils.isLatVarOmp = function(variable) {
+    return variable instanceof LatVarOmp;
+};
+LatUtils.checkLatVarRangeOrList = function(variable, name) {
+    if (!LatUtils.isLatVarRange(variable) && !LatUtils.isLatVarList(variable)) {
+        LatUtils._error("element " + name + " has to be a LatVarList or a LatVarRange - invalid value supplied");
+    }
+};
 LatUtils.checkDuplicateLatVar = function(latVars, latVar, listName) {
     for (var i = 0; i < latVars.length; i++) {
         if (latVar.equals(latVars[i])) {
@@ -189,6 +203,8 @@ LatUtils.getTime = function() {
 LatUtils.escapeHtmlCharacters = function(original){
     //return original;
     //TODO: htmlentities for a string
+    return Strings.escapeHtml(original);
+
     var replacer = new Replacer(original);
     replacer.replaceAll("<", "&lt;");
     replacer.replaceAll(">", "&gt;");
