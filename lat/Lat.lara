@@ -571,14 +571,16 @@ Lat.prototype.checkVariablesInScope = function() {
         LatUtils._error("Not enough variables in the source code to match the supplied LatVars in this scope found: [" + foundVariables + "]");
     }
     for (var i = 0; i < this.uniqueVariables.length; i++) {
-        var found = false;
-        for (var j = 0; j < foundVariables.length; j++) {
-            if (this.uniqueVariables[i].name == foundVariables[j]) {
-                found = true;
+        if(!LatUtils.isLatVarOmp(this.uniqueVariables[i])){
+            var found = false;
+            for (var j = 0; j < foundVariables.length; j++) {
+                if (this.uniqueVariables[i].name == foundVariables[j]) {
+                    found = true;
+                }
             }
-        }
-        if (!found) {
-            LatUtils._error("Variable '" + this.uniqueVariables[i].name + "' not found in the variables available in the current scope: [" + foundVariables + "]");
+            if (!found) {
+                LatUtils._error("Variable '" + this.uniqueVariables[i].name + "' not found in the variables available in the current scope: [" + foundVariables + "]");
+            }
         }
     }
     this.popIndent().print("Done - no errors were found", true).print();
