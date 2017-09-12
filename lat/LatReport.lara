@@ -86,14 +86,11 @@ LatReport.prototype.replaceSearchGroupDivs = function() {
     var searchGroupDivs = "";
     var searchGroupsScript = "";
     for (var i = 0; i < this.lat.searchGroups.length; i++) {
-        var replacerChart = this.getSearchGroupReplacer(this.lat.searchGroups[i].length);
-        replacerChart.replaceAll("[[searchGroupIndex]]", i);
-        replacerChart.replaceAll("[[xValues]]", "[1, 2, 3, 4, 5]");
-        replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
-        replacerChart.replaceAll("[[searchGroupVariables]]", this.lat.searchGroups[i].map(function(e) { return e.name; }).join(","));
-        searchGroupsScript += replacerChart.getString();
+       
 
-        searchGroupDivs += '<li class="uk-container uk-container-center" id="chartSearchGroup_' + i + '"></li>';
+        searchGroupsScript += this.getSearchGroupScript(i);
+
+        searchGroupDivs += '<div class="uk-container uk-container-center" id="chartSearchGroup_' + i + '"></div>\n';
         //searchGroupDivs += '<div>' + this.lat.searchGroups[i].length + ' elements</div>';
     }
     this.replacer.replaceAll("[[searchGroupDivs]]", searchGroupDivs);
@@ -101,6 +98,24 @@ LatReport.prototype.replaceSearchGroupDivs = function() {
 
 };
 
+LatReport.prototype.getSearchGroupScript = function(index){
+    var searchGroup = this.lat.searchGroups[index];
+    var replacerChart = this.getSearchGroupReplacer(searchGroup.length);
+
+    replacerChart.replaceAll("[[searchGroupIndex]]", index);
+    
+    replacerChart.replaceAll("[[xValues]]", "[1, 2, 3, 4, 5]");
+    replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
+    if(searchGroup.length == 1){
+
+    }else if(searchGroup.length == 2){
+
+    }else if(searchGroup.length == 3){
+
+    }
+    replacerChart.replaceAll("[[searchGroupVariables]]", searchGroup.map(function(e) { return e.name; }).join(","));
+    return replacerChart.getString();
+};
 
 LatReport.prototype.getSearchGroupReplacer = function(numElements) {
     var templateName = "search_group_"+numElements+"_var_script.html";
