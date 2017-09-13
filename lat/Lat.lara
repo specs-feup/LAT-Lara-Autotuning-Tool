@@ -17,8 +17,8 @@ import lat.LatReport;
 
 import aspects.variableHelpers;
 
-var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath) {
-    this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath);
+var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder) {
+    this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder);
     this._tunned = false; /** set to true after a tuning execution, used to block functions that require tune, such as printResults */
     this._printIndentation = 0; /** indicates the hierarchy level of the print operations */
     this._tuneCounts = 0; /** at each tuning operation the name that is output is changed automatically so that there is no confusion between diferent tuning operations */
@@ -202,15 +202,15 @@ Lat.prototype.setTimeout = function(timeout) {
     this.timeout = timeout;
     return this;
 };
-Lat.prototype.setOutputPath = function(outputPath) {
+Lat.prototype.setOutputFolder = function(outputFolder) {
     //TODO: validate path
-    this.outputPath = outputPath;
+    this.outputFolder = outputFolder;
     this.updatePathVariables();
     return this;
 };
 
 Lat.prototype.updatePathVariables = function() {
-    this._basePath = this.outputPath + "/" + this.name;
+    this._basePath = this.outputFolder + "/" + this.name;
     this._resultsFolder = this._basePath + "/results"; /** the folder that will contain the results of compiling the and executing the variants */
     this._variantsFolder = this._basePath + "/variants"; /** the folder that will contain the generated code (variants) and also the compiled versions that will be executed */
     this._graphsFolder = this._resultsFolder + "/graphs"; /** the folder that will hold the charts */
@@ -224,7 +224,7 @@ Lat.prototype.updatePathVariables = function() {
 
 //--------------------------------------------Helper functions (code compartimentalization)
 
-Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputPath) {
+Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder) {
     //requried values
     this.name = this.validateProperty("name", name);
     this.scope = this.validateProperty("scope", scope);
@@ -239,7 +239,7 @@ Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchTyp
     this.verbose = this.validateProperty("verbose", verbose, false);
     this.abort = this.validateProperty("abort", abort, false);
     this.timeout = this.validateProperty("timeout", timeout, 0);
-    this.outputPath = this.validateProperty("outputPath", outputPath, ".");
+    this.outputFolder = this.validateProperty("outputFolder", outputFolder, ".");
     this.updatePathVariables();
 };
 

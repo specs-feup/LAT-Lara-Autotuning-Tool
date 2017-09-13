@@ -23,7 +23,7 @@ The main class for the tool, this will represent a region to autotune and all th
  - `verbose` - Turn verbose output on and off;
  - `abort` - Define if the tool will stop upon error from one of the variants;
  - `timeout` - Define the maximum amount of time the execution of the tool can take before stopping, in seconds. 0 means there is no timeout;
- - `outputPath` - The directory where the output code and results appear. The generated code will appear in that folder under the folder `/output` and the results under the folder `/results`. Inside the `/output` folder there will be a folder for each variant source code named accordingly to its index in execution: the first variant will be in the folder `/output/1` and so forth.
+ - `outputFolder` - The directory where the output code and results appear. The generated code will appear in that folder under the folder `/output` and the results under the folder `/results`. Inside the `/output` folder there will be a folder for each variant source code named accordingly to its index in execution: the first variant will be in the folder `/output/1` and so forth.
 
 ###### Variables, searchGroups and searchType behaviour
 If the `searchType` is set to either _dependent_ or _independent_, the `searchGroups` will be created accordingly with the supplied variables; the content of `searchGroups` will be cleared immediately, but the groups generation is done when `tune()` is called, since more variables can be added in the meantime. 
@@ -48,7 +48,7 @@ Essentially, either you choose _dependent_ or _independent_ search or you specif
 |     `verbose`     |     true    |         boolean        |
 |      `abort`      |    false    |         boolean        |
 |     `timeout`     |      0      |      unsigned int      |
-|    `outputPath`   |  curent dir | absolute/relative path |
+|    `outputFolder`   |  curent dir | absolute/relative path |
 
 ##### Methods
 
@@ -63,7 +63,7 @@ As for the **Lat** constructors you can specify as many parameters as you want, 
  - `countVariants()` - Returns an int with the number of variants the current configuration will execute, this is the value of running all possible combinations and duplicate instances may be accounted for;
  - `estimateTime()` - This function builds and executes the default src with the values and then returns the estimated amount of time in seconds for all the variants; 
  - `printResults()` - Prints the results after a `tune` tuning has happened; 
- - `showGraphs()` - Displays the results in user-friendly charts, these are automatically generated and sabed under the `outputPath/results`. 
+ - `showGraphs()` - Displays the results in user-friendly charts, these are automatically generated and sabed under the `outputFolder/results`. 
  - `getResults` - returns a copy of the processed results, to process them call `parseResults`, here is an example of the output of the results variable, in case you want to perform some sort of operation on it (the array `tuneOperation->overall->times` is always sorted from the best to the worst result):
 
  ```json
@@ -110,7 +110,7 @@ As for the **Lat** constructors you can specify as many parameters as you want, 
  - `setVerbose(verbose)`
  - `setAbort(abort)`
  - `setTimeout(timeout)`
- - `setOutputPath(outputPath)`
+ - `setOutputFolder(outputFolder)`
 
 ---
 
