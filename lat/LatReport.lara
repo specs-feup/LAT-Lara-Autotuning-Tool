@@ -47,11 +47,12 @@ LatReport.prototype.replaceConfigurations = function() {
     this.replacer.replaceAll("[[verbose]]", this.lat.verbose);
     this.replacer.replaceAll("[[abort]]", this.lat.abort);
     this.replacer.replaceAll("[[timeout]]", this.lat.timeout);
-    this.replacer.replaceAll("[[outputPath]]", this.lat.outputPath);
+    this.replacer.replaceAll("[[outputFolder]]", this.lat.outputFolder);
 
 };
 
 LatReport.prototype.replaceOverallResults = function() {
+    println(this.lat.results);
     this.replacer.replaceAll("[[tuneName]]", this.lat.getTuneName());
     this.replacer.replaceAll("[[tuneCount]]", this.lat._tuneCounts + 1);
     this.replacer.replaceAll("[[numSearchGroups]]", this.lat.searchGroups.length);
@@ -86,12 +87,8 @@ LatReport.prototype.replaceSearchGroupDivs = function() {
     var searchGroupDivs = "";
     var searchGroupsScript = "";
     for (var i = 0; i < this.lat.searchGroups.length; i++) {
-       
-
         searchGroupsScript += this.getSearchGroupScript(i);
-
         searchGroupDivs += '<div class="uk-container uk-container-center" id="chartSearchGroup_' + i + '"></div>\n';
-        //searchGroupDivs += '<div>' + this.lat.searchGroups[i].length + ' elements</div>';
     }
     this.replacer.replaceAll("[[searchGroupDivs]]", searchGroupDivs);
     this.replacer.replaceAll("[[searchGroupsScript]]", searchGroupsScript);
