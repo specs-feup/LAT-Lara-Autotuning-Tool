@@ -95,19 +95,30 @@ LatReport.prototype.replaceSearchGroupDivs = function() {
 
 };
 
-LatReport.prototype.getSearchGroupScript = function(index){
+LatReport.prototype.getSearchGroupScript = function(index) {
     var searchGroup = this.lat.searchGroups[index];
     var replacerChart = this.getSearchGroupReplacer(searchGroup.length);
 
     replacerChart.replaceAll("[[searchGroupIndex]]", index);
-    
-    replacerChart.replaceAll("[[xValues]]", "[1, 2, 3, 4, 5]");
-    replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
-    if(searchGroup.length == 1){
 
-    }else if(searchGroup.length == 2){
+    if (searchGroup.length == 1) {
+        var variableValues = [];
+        for (var i = 0; i < this.lat.uniqueVariants.length; i++) {
+            if (this.lat.uniqueVariants[i].searchGroupIndex == index) {//this variant matches this searchGroup
+                //TODO: make this more readable and include .default
+                //variableValues.push("<a href='"+(JSON.stringify(this.lat.uniqueVariants[i].variant))+"'>Cool</a>");
+                variableValues.push("'<a href=\"#\">Cool</a>'");
+                println(JSON.stringify(this.lat.uniqueVariants[i].variant));
+            }
+        }
 
-    }else if(searchGroup.length == 3){
+        replacerChart.replaceAll("[[xValues]]", "["+variableValues.join(", ")+"]");
+        replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
+
+    } else if (searchGroup.length == 2) {
+        replacerChart.replaceAll("[[xValues]]", "[1, 2, 3, 4, 5]");
+        replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
+    } else if (searchGroup.length == 3) {
 
     }
     replacerChart.replaceAll("[[searchGroupVariables]]", searchGroup.map(function(e) { return e.name; }).join(","));
@@ -115,8 +126,8 @@ LatReport.prototype.getSearchGroupScript = function(index){
 };
 
 LatReport.prototype.getSearchGroupReplacer = function(numElements) {
-    var templateName = "search_group_"+numElements+"_var_script.html";
-    return  new Replacer(templates.getString(templateName));
+    var templateName = "search_group_" + numElements + "_var_script.html";
+    return new Replacer(templates.getString(templateName));
 };
 
 
