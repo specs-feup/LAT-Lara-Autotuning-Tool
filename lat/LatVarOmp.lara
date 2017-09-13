@@ -48,8 +48,10 @@ LatVarOmp.prototype.generateOmpVariants = function() {
     this.variants = [];
     //{scheduleType: , scheduleChunkSize: , numThreads: }
     for (var i = 0; i < this.scheduleTypes.length; i++) {
+        this.LatVarScheduleChunkSize.getNext();//ignore default chunk size
         while (this.LatVarScheduleChunkSize.hasNext()) {
             var chunkSize = this.LatVarScheduleChunkSize.getNext().value;
+            this.LatVarnumThreads.getNext();//ignore num threads default
             while (this.LatVarnumThreads.hasNext()) {
                 this.variants.push({
                     scheduleType: this.scheduleTypes[i],
