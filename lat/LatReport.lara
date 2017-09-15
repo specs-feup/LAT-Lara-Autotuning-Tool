@@ -52,7 +52,6 @@ LatReport.prototype.replaceConfigurations = function() {
 };
 
 LatReport.prototype.replaceOverallResults = function() {
-    println(this.lat.results);
     this.replacer.replaceAll("[[tuneName]]", this.lat.getTuneName());
     this.replacer.replaceAll("[[tuneCount]]", this.lat._tuneCounts + 1);
     this.replacer.replaceAll("[[numSearchGroups]]", this.lat.searchGroups.length);
@@ -88,11 +87,28 @@ LatReport.prototype.replaceSearchGroupDivs = function() {
     var searchGroupsScript = "";
     for (var i = 0; i < this.lat.searchGroups.length; i++) {
         searchGroupsScript += this.getSearchGroupScript(i);
-        searchGroupDivs += '<div class="uk-container uk-container-center" id="chartSearchGroup_' + i + '"></div>\n';
+        searchGroupDivs += this.getSearchGroupDiv(i);
     }
     this.replacer.replaceAll("[[searchGroupDivs]]", searchGroupDivs);
     this.replacer.replaceAll("[[searchGroupsScript]]", searchGroupsScript);
 
+};
+
+LatReport.prototype.transformVariantToText = function(variant) {
+    var result = [];
+    for (var i = 0; i < variant.length; i++) { //iterate all variables in this variant
+        if (!variant[i].default) { //if this is the default value
+            var name = this.lat.uniqueVariables[i].name;
+            if (!LatUtils.isLatVarOmp(this.lat.uniqueVariables[i])) {
+                value = variant[i].value;
+            } else {
+                value = "..." + this.uniqueVariables[i].generateContent(variant[i]);
+            }
+            result.push(name + " = " + value);
+        }
+
+    }
+    return result.join(", ");
 };
 
 LatReport.prototype.getSearchGroupScript = function(index) {
@@ -102,27 +118,51 @@ LatReport.prototype.getSearchGroupScript = function(index) {
     replacerChart.replaceAll("[[searchGroupIndex]]", index);
 
     if (searchGroup.length == 1) {
-        var variableValues = [];
+        var variableValuesX = [];
+        var variablesLabel = [];
+        var variableTimes = [];
         for (var i = 0; i < this.lat.uniqueVariants.length; i++) {
-            if (this.lat.uniqueVariants[i].searchGroupIndex == index) {//this variant matches this searchGroup
-                //TODO: make this more readable and include .default
-                //variableValues.push("<a href='"+(JSON.stringify(this.lat.uniqueVariants[i].variant))+"'>Cool</a>");
-                variableValues.push("'<a href=\"#\">Cool</a>'");
-                println(JSON.stringify(this.lat.uniqueVariants[i].variant));
+            if (this.lat.uniqueVariants[i].searchGroupIndex == index) { //this variant matches this searchGroup
+                variableValuesX.push(this.lat.uniqueVariants[i].variant[searchGroup[0].index].value);
+                variablesLabel.push(this.transformVariantToText(this.lat.uniqueVariants[i].variant));
+                //TODO: change index to i (index is just for tests while cmaker is not ready)
+                //variableTimes.push(this.lat.results[this.lat.getTuneName()].per_variant[i].avg);
+                variableTimes.push(this.lat.results[this.lat.getTuneName()].per_variant[index].avg);
             }
         }
 
-        replacerChart.replaceAll("[[xValues]]", "["+variableValues.join(", ")+"]");
-        replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
+        replacerChart.replaceAll("[[xValues]]", variableValuesX.map(function(ele, index) { return ele; }).join(", "));
+        replacerChart.replaceAll("[[variantsLabel]]", variablesLabel.map(function(ele) { return "'" + ele + "'"; }).join(", "));
+        replacerChart.replaceAll("[[yValues]]", variableTimes.join(", "));
+        replacerChart.replaceAll("[[varName]]", this.lat.uniqueVariables[searchGroup[0].index].name);
 
     } else if (searchGroup.length == 2) {
         replacerChart.replaceAll("[[xValues]]", "[1, 2, 3, 4, 5]");
         replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
     } else if (searchGroup.length == 3) {
-
+        replacerChart.replaceAll("[[xValues]]", "[1, 2, 3, 4, 5]");
+        replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
     }
     replacerChart.replaceAll("[[searchGroupVariables]]", searchGroup.map(function(e) { return e.name; }).join(","));
     return replacerChart.getString();
+};
+
+LatReport.prototype.getSearchGroupDiv = function(index) {
+    var replacerDiv = new Replacer(templates.getString("search_group_variants.html"));
+    replacerDiv.replaceAll("[[searchGroupIndex]]", index);
+    var variantsRows = "";
+    var numVariantsSearchGroup = 0;
+    for (var i = 0; i < this.lat.uniqueVariants.length; i++) {
+        if (this.lat.uniqueVariants[i].searchGroupIndex == index) { //this variant matches this searchGroup
+            numVariantsSearchGroup++;
+            /*
+            TODO: uncomment when compilation and execution is ready
+            variantsRows+='<tr><td>'+i+'</td><td class="uk-text-break">'+this.transformVariantToText(this.lat.uniqueVariants[i].variant)+'</td><td class="uk-text-break" title="Variant '+i+' times: '+this.lat.results[this.lat.getTuneName()].per_variant[i].times.join(", ")+'" uk-tooltip>'+this.lat.results[this.lat.getTuneName()].per_variant[i].avg+'</td></tr>';*/
+        }
+    }
+    replacerDiv.replaceAll("[[numVariantsSearchGroup]]", numVariantsSearchGroup);
+    replacerDiv.replaceAll("[[variantsRows]]", variantsRows);
+    return replacerDiv.getString();
 };
 
 LatReport.prototype.getSearchGroupReplacer = function(numElements) {
@@ -152,7 +192,7 @@ LatReport.prototype.includeResources = function() {
         });
     }
 
-    //var filesToCopy = ["css/uikit.min.css", "js/jquery.min.js", "js/plotly.min.js", "js/uikit.min.js", "js/uikit-icons.min.js"];
+    //var filesToCopy = ["css/uikit.min.css", "css/dataTables.uikit.css", "js/jquery.min.js", "js/plotly.min.js", "js/uikit.min.js", "js/uikit-icons.min.js", "js/dataTables.uikit.js", "js/jquery.dataTables.js"];
     filesToCopy.map(function(element, index) {
         Io.copyFile(element.path, this.lat._resultsFolder + "/" + element.outputTo);
     }, this);
