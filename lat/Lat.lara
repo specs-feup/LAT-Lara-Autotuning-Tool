@@ -258,7 +258,7 @@ Lat.prototype.validateProperty = function(propertyName, value, defaultValue) {
     return value;
 };
 
-Lat.prototype.restartPrintLog = function(){
+Lat.prototype.restartPrintLog = function() {
     this._printLog = "";
 }
 
@@ -271,10 +271,10 @@ Lat.prototype.print = function(message, noNewLine) {
     message = message === undefined ? "" : this.getIndent() + message;
     if (this.verbose) {
         if (noNewLine) { //no new line, no indent
-            this._printLog+=message;
+            this._printLog += message;
             print(message);
         } else { //new line with indent
-            this._printLog+=message+"\n";
+            this._printLog += message + "\n";
             println(message);
         }
     }
@@ -312,13 +312,13 @@ var outs = function(a) {
     println(JSON.stringify(a));
 };
 
-Lat.prototype.getTuneName = function(){
+Lat.prototype.getTuneName = function() {
     return this.name + "_" + this._tuneCounts;
 }
-Lat.prototype.getReportTuneName = function(){
-    return this._resultsFolder + "/report_" + this.getTuneName() + ".html";
-}
-//--------------------------------------------Core functions (variants generation)
+Lat.prototype.getReportTuneName = function() {
+        return this._resultsFolder + "/report_" + this.getTuneName() + ".html";
+    }
+    //--------------------------------------------Core functions (variants generation)
 
 /**
  * Generate the searchGroups for dependent and independent search
@@ -380,7 +380,7 @@ Lat.prototype.generateUniqueVariants = function() {
     this.uniqueVariants = []; // a list 
     for (var i = 0; i < this.searchGroups.length; i++) {
         this.currentVariant = LatUtils.clone(this.baseVariant); //if this is not clone it's values will be changed
-        this.generateVariantsRecursive(this.searchGroups[i], 0);
+        this.generateVariantsRecursive(this.searchGroups[i], 0, i);
     }
 
     if (this.removeDuplicates) {
@@ -396,11 +396,11 @@ Lat.prototype.generateUniqueVariants = function() {
     /*println("removed duplicates: " + this.uniqueVariants.length + " uniqueVariants: ");
     print();
     for (var i = 0; i < this.uniqueVariants.length; i++) {
-        for (var j = 0; j < this.uniqueVariants[i].length; j++) {
-            if (this.uniqueVariants[i][j].default) {
+        for (var j = 0; j < this.uniqueVariants[i].variant.length; j++) {
+            if (this.uniqueVariants[i].variant[j].default) {
                 print("0 - ");
             } else {
-                print(this.uniqueVariants[i][j].value + " - ");
+                print(this.uniqueVariants[i].variant[j].value + " - ");
             }
         }
         println();
@@ -414,15 +414,18 @@ Lat.prototype.generateUniqueVariants = function() {
  * @param searchGroup a list with the LatVars of the current searchGroup
  * @param index the current index being delt with, of searchGroup
  */
-Lat.prototype.generateVariantsRecursive = function(searchGroup, index) {
+Lat.prototype.generateVariantsRecursive = function(searchGroup, index, searchGroupIndex) {
     while (searchGroup[index].hasNext()) {
         if ((index + 1) < searchGroup.length) {
-            this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext();
-            this.generateVariantsRecursive(searchGroup, index + 1); //next LatVar in the searchGroup
+            this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //keep uniqueVariants order of elements the same as the order of unique Variants
+            this.generateVariantsRecursive(searchGroup, index + 1), searchGroupIndex; //next LatVar in the searchGroup
         } else {
             while (searchGroup[index].hasNext()) {
                 this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //only update the value
-                this.uniqueVariants.push(LatUtils.clone(this.currentVariant)); //save to the array
+                this.uniqueVariants.push({
+                    variant: LatUtils.clone(this.currentVariant),
+                    searchGroupIndex: searchGroupIndex
+                }); //save to the array the format {variant:,searchGroupIndex}
             }
         }
     }
@@ -446,16 +449,16 @@ Lat.prototype.generateSourceCode = function() {
 
         //1st alter  the value of all variables according to the current variant
         for (var j = 0; j < countVarsPerVariant; j++) { //foreach variable in the current variant
-            if (!this.uniqueVariants[i][j].default) { //only edit if the default value is not selected
+            if (!this.uniqueVariants[i].variant[j].default) { //only edit if the default value is not selected
 
                 var callOutput = undefined;
-                if(!LatUtils.isLatVarOmp(this.uniqueVariables[j])){//omp does not use vardecl nor varref
+                if (!LatUtils.isLatVarOmp(this.uniqueVariables[j])) { //omp does not use vardecl nor varref
                     call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]); //find the vardecl and all varref attributes of the current LatVar
-                }else{
+                } else {
                     call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[j]);
                 }
                 this.uniqueVariables[j] = callOutput.latvarOut;
-                this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i][j]); //update the AST with the current value for this LatVar's variant
+                this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i].variant[j]); //update the AST with the current value for this LatVar's variant
             }
         }
         //2nd include the timer prints
@@ -505,7 +508,7 @@ Lat.prototype.parseResults = function(emptyFileAfterwards) {
 
     //reading the results
     var contents = Io.readFile(this._timerFile); // contents of txt file
-    if (!contents) { LatUtils._warn("Unable to find file: " + this._timerFile + ". Aborting..."); return; }
+    if (!contents) { LatUtils._error("Lat.parseResults: Unable to find file: " + this._timerFile + ". (this should be created automatically bu running each variant's source code) Aborting..."); return; }
     var lines = contents.split("\n"); // split into an array in which each line is an array element
     this.results = {}; // a named object, the name is the tune name and the content is an array of time measures
     for (var i = 0; i < lines.length; i++) {
@@ -571,7 +574,7 @@ Lat.prototype.checkVariablesInScope = function() {
         LatUtils._error("Not enough variables in the source code to match the supplied LatVars in this scope found: [" + foundVariables + "]");
     }
     for (var i = 0; i < this.uniqueVariables.length; i++) {
-        if(!LatUtils.isLatVarOmp(this.uniqueVariables[i])){
+        if (!LatUtils.isLatVarOmp(this.uniqueVariables[i])) {
             var found = false;
             for (var j = 0; j < foundVariables.length; j++) {
                 if (this.uniqueVariables[i].name == foundVariables[j]) {
@@ -586,16 +589,16 @@ Lat.prototype.checkVariablesInScope = function() {
     this.popIndent().print("Done - no errors were found", true).print();
 };
 
-Lat.prototype.checkIncludes = function(){
+Lat.prototype.checkIncludes = function() {
     //omp.h include
     var ompInclude = false;
-    for(var i = 0; i < this.uniqueVariables.length; i++){
-        if(LatUtils.isLatVarOmp(this.uniqueVariables[i])){
+    for (var i = 0; i < this.uniqueVariables.length; i++) {
+        if (LatUtils.isLatVarOmp(this.uniqueVariables[i])) {
             ompInclude = true;
             break;
         }
     }
-    if(ompInclude){
+    if (ompInclude) {
         this.file.addInclude("omp.h");
     }
 
