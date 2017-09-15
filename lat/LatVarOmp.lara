@@ -48,10 +48,10 @@ LatVarOmp.prototype.generateOmpVariants = function() {
     this.variants = [];
     //{scheduleType: , scheduleChunkSize: , numThreads: }
     for (var i = 0; i < this.scheduleTypes.length; i++) {
-        this.LatVarScheduleChunkSize.getNext();//ignore default chunk size
+        this.LatVarScheduleChunkSize.getNext(); //ignore default chunk size
         while (this.LatVarScheduleChunkSize.hasNext()) {
             var chunkSize = this.LatVarScheduleChunkSize.getNext().value;
-            this.LatVarnumThreads.getNext();//ignore num threads default
+            this.LatVarnumThreads.getNext(); //ignore num threads default
             while (this.LatVarnumThreads.hasNext()) {
                 this.variants.push({
                     scheduleType: this.scheduleTypes[i],
@@ -65,9 +65,7 @@ LatVarOmp.prototype.generateOmpVariants = function() {
     }
     return this;
 };
-
-LatVarOmp.prototype.changeVariantInAst = function(currentValue) {
-    currentValue = currentValue.value;
+LatVarOmp.prototype.generateContent = function(currentValue) {
     println(JSON.stringify(currentValue));
     var newContent = this.pragma.content;
 
@@ -77,8 +75,13 @@ LatVarOmp.prototype.changeVariantInAst = function(currentValue) {
         newContent += " schedule(" + currentValue.scheduleType + "," + currentValue.scheduleChunkSize + ")";
     }
     if (currentValue.numThreads > 0) {
-        newContent += " num_threads("+currentValue.numThreads+")";
+        newContent += " num_threads(" + currentValue.numThreads + ")";
     }
-    this.pragma.setContent(newContent);
+    return newContent;
+};
+
+LatVarOmp.prototype.changeVariantInAst = function(currentValue) {
+    currentValue = currentValue.value;
+    this.pragma.setContent(this.generateContent(currentValue));
     this.pragma.setName("omp");
 };
