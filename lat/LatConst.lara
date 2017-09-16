@@ -33,7 +33,7 @@ LatConst.getSearchType = function(searchType) {
     if (searchType == LatConst.SEARCH_TYPE.DEPENDENT) {
         return "dependent";
     } else if (searchType == LatConst.SEARCH_TYPE.INDEPENDENT) {
-        return "indepenedent";
+        return "independent";
     } else if (searchType == LatConst.SEARCH_TYPE.CUSTOM) {
         return "custom";
     }
