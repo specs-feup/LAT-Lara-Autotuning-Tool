@@ -45,7 +45,9 @@ Lat.prototype.tune = function() {
     this.generateUniqueVariants();
 
     this.checkVariablesInScope();
-    //Io.writeFile(this._timerFile, "");//empty the previous timer files
+    if(Io.readFile(this._timerFile) == ""){
+        Io.writeFile(this._timerFile, "\n"); //create the file if it does not exist
+    }
 
     this.generateSourceCode();
     this.executeSourceCode();
@@ -515,14 +517,6 @@ Lat.prototype.executeSourceCode = function() {
     if (this.clearCode) { //remove all the created files
         this.print("Clearing generated variants from your system...", true).pushIndent();
         Io.deleteFolder(this._variantsFolder);
-        /*for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
-            this.print("Clearing Variant " + (i + 1) + " of " + this.uniqueVariants.length + "...").pushIndent();
-
-            //TODO: remove the generated files
-            Io.deleteFolder(this._variantsFolder + "/" + i);
-
-            this.popIndent().print("Done");
-        }*/
         this.popIndent().print("Done");
     }
 };
