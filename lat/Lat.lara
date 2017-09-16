@@ -462,7 +462,7 @@ Lat.prototype.generateVariantsRecursive = function(searchGroup, index, searchGro
     while (searchGroup[index].hasNext()) {
         if ((index + 1) < searchGroup.length) {
             this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //keep uniqueVariants order of elements the same as the order of unique Variants
-            this.generateVariantsRecursive(searchGroup, index + 1), searchGroupIndex; //next LatVar in the searchGroup
+            this.generateVariantsRecursive(searchGroup, index + 1, searchGroupIndex); //next LatVar in the searchGroup
         } else {
             while (searchGroup[index].hasNext()) {
                 this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //only update the value
