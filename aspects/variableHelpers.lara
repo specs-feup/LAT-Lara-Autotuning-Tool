@@ -21,38 +21,6 @@ aspectdef findVariablesInJoinpointScope
     end
 end
 
-aspectdef getJoinpointsToChange
-    input $jp, latvars end
-    output latvarsOut end 
-
-    latvarsOut = latvars;
-
-    //find vardecls
-    select $jp.vardecl end
-    apply
-        for(var i = 0; i < latvarsOut.length; i++){
-            if(latvarsOut[i].name == $vardecl.name){
-                latvarsOut[i].vardecl = $vardecl;
-                break;
-            }
-        }
-    end
-    for(var i = 0; i < latvarsOut.length; i++){
-        latvarsOut[i].varrefs = [];
-    }
-    //find varrefs
-    select $jp.varref end
-    apply
-        for(var i = 0; i < latvarsOut.length; i++){
-            if(latvarsOut[i].name == $varref.name){
-                latvarsOut[i].varrefs.push($varref);
-                println("Added " + $varref.name + " : " + $varref.code);
-                break;
-            }
-        }
-    end
-end
-
 aspectdef getJoinpointsToChangeForSingleLatVar
     input $jp, latvar end
     output latvarOut end 
