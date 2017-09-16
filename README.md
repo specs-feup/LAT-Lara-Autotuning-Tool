@@ -6,7 +6,7 @@
 
 **Lat** mimics [Intel Software Autotuning Tool (ISAT)](https://software.intel.com/en-us/articles/intel-software-autotuning-tool) behaviour for testing multiple instances of the same code. However, it is build entirely on LARA. Because of this it is platform agnostic and can be more flexible and easier to expand, both in functionalities and languages (not only C and C++).
 
-### For details and instructions visit the [Lat Wiki](https://github.com/specs-feup/LAT-Lara-Autotuning-Tool/wiki)
+### For details and instructions visit the :notebook: [Lat Wiki](https://github.com/specs-feup/LAT-Lara-Autotuning-Tool/wiki) 
 
 ### Folder Structure:
 
@@ -16,4 +16,3 @@
  - :file_folder: [templates](https://github.com/specs-feup/LAT-Lara-Autotuning-Tool/tree/master/templates) - html, css and js (extensionless) files that Lat uses to produce the LatReport;
  - :file_folder: [tests](https://github.com/specs-feup/LAT-Lara-Autotuning-Tool/tree/master/tests) - LARA aspect files that contain some tests for lat methods and properties
  
-
