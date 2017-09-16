@@ -11,7 +11,7 @@ import lat.LatVar;
 import lat.LatVarList;
 import lat.LatVarRange;
 import lat.LatVarOmp;
-import lat.LatConsts;
+import lat.LatConst;
 import lat.LatUtils;
 import lat.LatReport;
 

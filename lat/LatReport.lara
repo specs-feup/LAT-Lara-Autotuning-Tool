@@ -1,7 +1,7 @@
 import lara.Io;
 import lara.util.Replacer;
 
-import lat.LatConsts;
+import lat.LatConst;
 import lat.LatUtils;
 import lat.templates;
 import lat.templates_css;
