@@ -10,7 +10,7 @@ import lat.templates_js;
 
 var LatReport = function(lat) {
     this.lat = lat;
-    this.replacer = new Replacer(templates.getString("report.html"));
+    this.replacer = new Replacer(templates.getString("report"));
     //this.replacer = Replacer.fromFilename(this.lat._reporterTemplate);
 
 };
@@ -146,7 +146,7 @@ LatReport.prototype.getSearchGroupScript = function(index) {
 };
 
 LatReport.prototype.getSearchGroupDiv = function(index) {
-    var replacerDiv = new Replacer(templates.getString("search_group_variants.html"));
+    var replacerDiv = new Replacer(templates.getString("search_group_variants"));
     replacerDiv.replaceAll("[[searchGroupIndex]]", index);
     var variantsRows = "";
     var numVariantsSearchGroup = 0;
@@ -162,7 +162,7 @@ LatReport.prototype.getSearchGroupDiv = function(index) {
 };
 
 LatReport.prototype.getSearchGroupReplacer = function(numElements) {
-    var templateName = "search_group_" + numElements + "_var_script.html";
+    var templateName = "search_group_" + numElements + "_var_script";
     return new Replacer(templates.getString(templateName));
 };
 
@@ -176,7 +176,7 @@ LatReport.prototype.includeResources = function() {
         var c = String(cssFiles[i]);
         filesToCopy.push({
             path: c,
-            outputTo: "css/" + c.split("\\").pop()
+            outputTo: "css/" + c.split("\\").pop() + ".css"
         });
     }
     var jsFiles = templates_js.getFileList();
@@ -184,7 +184,7 @@ LatReport.prototype.includeResources = function() {
         var c = String(jsFiles[i]);
         filesToCopy.push({
             path: c,
-            outputTo: "js/" + c.split("\\").pop()
+            outputTo: "js/" + c.split("\\").pop() + ".js"
         });
     }
 
