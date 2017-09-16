@@ -38,6 +38,15 @@ LatConst.getSearchType = function(searchType) {
         return "custom";
     }
 };
+LatConst.getOutputType = function(ouputType) {
+    if (ouputType == LatConst.OUTPUT_TYPE.AUTO) {
+        return "auto";
+    } else if (ouputType == LatConst.OUTPUT_TYPE.CHAR) {
+        return "char";
+    } else if (ouputType == LatConst.OUTPUT_TYPE.STRING) {
+        return "string";
+    }
+};
 
 //CONSTANTS
 LatConst.NUM_CPU_THREADS = LatConst.getNumCpuThreads();
