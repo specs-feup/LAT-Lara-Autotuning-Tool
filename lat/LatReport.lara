@@ -26,7 +26,7 @@ LatReport.prototype.generateReport = function() {
     this.replaceSearchGroupLinks();
     this.replaceSearchGroupDivs();
 
-
+    this.replacer.replaceAll("[[completeVariants]]", this.getCompleteVariantsTable()); //complete variants table
     this.replacer.replaceAll("[[consoleOutput]]", this.lat._printLog + "    Done\nTuning operation complete");
 
     this.replaceFooter();
@@ -52,6 +52,7 @@ LatReport.prototype.replaceConfigurations = function() {
 };
 
 LatReport.prototype.replaceOverallResults = function() {
+    var bestVariantNumber = this.lat.results[this.lat.getTuneName()].overall.best_variant;
     this.replacer.replaceAll("[[tuneName]]", this.lat.getTuneName());
     this.replacer.replaceAll("[[tuneCount]]", this.lat._tuneCounts + 1);
     this.replacer.replaceAll("[[numSearchGroups]]", this.lat.searchGroups.length);
@@ -59,7 +60,8 @@ LatReport.prototype.replaceOverallResults = function() {
     this.replacer.replaceAll("[[numUniqueVariants]]", this.lat.numUniqueVariants);
     this.replacer.replaceAll("[[removeDuplicates]]", this.lat.removeDuplicates);
     this.replacer.replaceAll("[[numVariables]]", this.lat.uniqueVariables.length);
-    this.replacer.replaceAll("[[bestVariant]]", this.lat.results[this.lat.getTuneName()].overall.best_variant);
+    this.replacer.replaceAll("[[bestVariantNumber]]", bestVariantNumber);
+    this.replacer.replaceAll("[[bestVariant]]", this.transformVariantToText(this.lat.uniqueVariants[bestVariantNumber].variant));
     this.replacer.replaceAll("[[bestTime]]", this.lat.results[this.lat.getTuneName()].overall.best_time);
     this.replacer.replaceAll("[[numSearchGroups]]", this.lat.uniqueVariants.length);
     this.replacer.replaceAll("[[executionTime]]", this.lat._executionTime);
@@ -94,6 +96,11 @@ LatReport.prototype.replaceSearchGroupDivs = function() {
 
 };
 
+/**
+ * Convert a variant into a readable string - hiding default values
+ * @param {} variant the variant to convert into a readable format
+ * @return the string to display - comma separated list of <name> = <value>
+ */
 LatReport.prototype.transformVariantToText = function(variant) {
     var result = [];
     for (var i = 0; i < variant.length; i++) { //iterate all variables in this variant
@@ -135,8 +142,26 @@ LatReport.prototype.getSearchGroupScript = function(index) {
         replacerChart.replaceAll("[[varName]]", this.lat.uniqueVariables[searchGroup[0].index].name);
 
     } else if (searchGroup.length == 2) {
-        replacerChart.replaceAll("[[xValues]]", "[1, 2, 3, 4, 5]");
-        replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
+        var variableValuesX = [];
+        var variableValuesY = [];
+        var variablesLabel = [];
+        var variableTimes = [];
+        for (var i = 0; i < this.lat.uniqueVariants.length; i++) {
+            outs(this.lat.uniqueVariants[i]);
+            if (this.lat.uniqueVariants[i].searchGroupIndex == index) { //this variant matches this searchGroup
+                variableValuesX.push(this.lat.uniqueVariants[i].variant[searchGroup[0].index].value);
+                variableValuesY.push(this.lat.uniqueVariants[i].variant[searchGroup[1].index].value);
+                variablesLabel.push(this.transformVariantToText(this.lat.uniqueVariants[i].variant));
+                variableTimes.push(this.lat.results[this.lat.getTuneName()].per_variant[i].avg);
+            }
+        }
+
+        replacerChart.replaceAll("[[xValues]]", variableValuesX.map(function(ele, index) { return ele; }).join(", "));
+        replacerChart.replaceAll("[[yValues]]", variableValuesY.map(function(ele, index) { return ele; }).join(", "));
+        replacerChart.replaceAll("[[variantsLabel]]", variablesLabel.map(function(ele) { return "'" + ele + "'"; }).join(", "));
+        replacerChart.replaceAll("[[zValues]]", variableTimes.join(", "));
+        replacerChart.replaceAll("[[varName1]]", this.lat.uniqueVariables[searchGroup[0].index].name);
+        replacerChart.replaceAll("[[varName2]]", this.lat.uniqueVariables[searchGroup[1].index].name);
     } else if (searchGroup.length == 3) {
         replacerChart.replaceAll("[[xValues]]", "[1, 2, 3, 4, 5]");
         replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
@@ -153,7 +178,7 @@ LatReport.prototype.getSearchGroupDiv = function(index) {
     for (var i = 0; i < this.lat.uniqueVariants.length; i++) {
         if (this.lat.uniqueVariants[i].searchGroupIndex == index) { //this variant matches this searchGroup
             numVariantsSearchGroup++;
-            variantsRows+='<tr><td>'+i+'</td><td class="uk-text-break">'+this.transformVariantToText(this.lat.uniqueVariants[i].variant)+'</td><td class="uk-text-break" title="Variant '+i+' times: '+this.lat.results[this.lat.getTuneName()].per_variant[i].times.join(", ")+'" uk-tooltip>'+this.lat.results[this.lat.getTuneName()].per_variant[i].avg+'</td></tr>';
+            variantsRows += this.getVariantTableRow(i);
         }
     }
     replacerDiv.replaceAll("[[numVariantsSearchGroup]]", numVariantsSearchGroup);
@@ -161,6 +186,23 @@ LatReport.prototype.getSearchGroupDiv = function(index) {
     return replacerDiv.getString();
 };
 
+LatReport.prototype.getCompleteVariantsTable = function() {
+    var replacerDiv = new Replacer(templates.getString("search_group_variants"));
+    replacerDiv.replaceAll("[[searchGroupIndex]]", "all");
+    var variantsRows = "";
+    var numVariantsSearchGroup = 0;
+    for (var i = 0; i < this.lat.uniqueVariants.length; i++) {
+        numVariantsSearchGroup++;
+        variantsRows += this.getVariantTableRow(i);
+    }
+    replacerDiv.replaceAll("[[numVariantsSearchGroup]]", numVariantsSearchGroup);
+    replacerDiv.replaceAll("[[variantsRows]]", variantsRows);
+    return replacerDiv.getString();
+};
+
+LatReport.prototype.getVariantTableRow = function(i) {
+    return '<tr><td>' + i + '</td><td class="uk-text-break">' + this.transformVariantToText(this.lat.uniqueVariants[i].variant) + '</td><td class="uk-text-break" title="Variant ' + i + ' times: ' + this.lat.results[this.lat.getTuneName()].per_variant[i].times.join(", ") + '" uk-tooltip>' + this.lat.results[this.lat.getTuneName()].per_variant[i].avg + '</td></tr>';
+};
 LatReport.prototype.getSearchGroupReplacer = function(numElements) {
     var templateName = "search_group_" + numElements + "_var_script";
     return new Replacer(templates.getString(templateName));
