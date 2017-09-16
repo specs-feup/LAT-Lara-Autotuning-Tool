@@ -275,7 +275,7 @@ Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchTyp
 Lat.prototype.loadCmaker = function() {
     this.cmaker = new CMaker("tempName")
         .setMinimumVersion("3.0.2")
-        .setMakeCommand("make")
+        //.setMakeCommand("make")
         .addCxxFlags("-O3", "-std=c++11")
         .addLibs("stdc++")
         .setGenerator("MinGW Makefiles");
