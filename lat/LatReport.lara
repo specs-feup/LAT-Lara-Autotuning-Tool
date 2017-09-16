@@ -23,6 +23,8 @@ LatReport.prototype.generateReport = function() {
     this.replaceSystemConstants();
     this.replaceOverallResults();
 
+    this.replaceVariablesCards();
+
     this.replaceSearchGroupLinks();
     this.replaceSearchGroupDivs();
 
@@ -35,6 +37,34 @@ LatReport.prototype.generateReport = function() {
     this.includeResources(); //include necessary css and js files
 };
 
+LatReport.prototype.replaceVariablesCards = function(){
+    var variableCards = "";
+    for(var i = 0; i < this.uniqueVariables.length; i++){
+        variableCards += this.getVariableCard(this.uniqueVariables[i]);
+    }
+    this.replacer.replaceAll("[[variableCards]]", variableCards);
+
+};
+LatReport.prototype.getVariableCard = function(variable){
+    var replacerCard;
+    if(LatUtils.isLatVarList(variable)){
+        replacerCard = new Replacer(templates.getString("var_list"));
+    } else if(LatUtils.isLatVarRange(variable)){
+        replacerCard = new Replacer(templates.getString("var_range"));
+        replacerCard.replaceAll("[[start]]", variable.start);
+        replacerCard.replaceAll("[[stop]]", variable.stop);
+        replacerCard.replaceAll("[[step]]", variable.step);
+    } else if(LatUtils.isLatVarOmp(variable)){
+        replacerCard = new Replacer(templates.getString("var_omp"));
+        replacerCard.replaceAll("[[ompTypes]]", variable.scheduleTypes.join(", "));
+        replacerCard.replaceAll("[[ompChunks]]", variable.scheduleChunkSize.countElements());
+        replacerCard.replaceAll("[[ompNumThreads]]", variable.numThreads.countElements());
+    }
+    replacerCard.replaceAll("[[varName]]", variable.name);
+    replacerCard.replaceAll("[[countElements]]", variable.countElements());
+    replacerCard.replaceAll("[[varType]]", LatConst.getOutputType(variable.type));
+    return replacerCard.getString();
+};
 
 LatReport.prototype.replaceConfigurations = function() {
     this.replacer.replaceAll("[[name]]", this.lat.name);
