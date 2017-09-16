@@ -1,5 +1,4 @@
 # LAT - LARA Autotuning Tool
-# See [Lat Wiki](https://github.com/specs-feup/LAT-Lara-Autotuning-Tool/wiki)
 ## Context
 
 **LAT** is a tool for code autotuning, built using LARA (an AOP language). It is designed for C/C++. With it, coders may test multilple **variants** of their code dynamically and then choose the best variant to ship their code. (Maybe add some more information about clava and links to these mentions)
@@ -9,8 +8,7 @@
 
 **Lat** mimics [Intel Software Autotuning Tool (ISAT)](https://software.intel.com/en-us/articles/intel-software-autotuning-tool) behaviour for testing multiple instances of the same code. However, it is build entirely on LARA. Because of this it is platform agnostic and can be more flexible and easier to expand, both in functionalities and languages (not only C and C++).
 
-## How to begin
-Start by looking at our [Examples](https://github.com/specs-feup/LAT-Lara-Autotuning-Tool/wiki/Examples), once you get a grip of how Lat works, you can read the [Setup Guide](https://github.com/specs-feup/LAT-Lara-Autotuning-Tool/wiki/Setup) and then check the [API](https://github.com/specs-feup/LAT-Lara-Autotuning-Tool/wiki/Lat) reference. 
+## For details visit the [Lat Wiki](https://github.com/specs-feup/LAT-Lara-Autotuning-Tool/wiki)
 
 ## Design Flow
 
