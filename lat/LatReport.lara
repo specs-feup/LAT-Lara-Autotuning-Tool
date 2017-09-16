@@ -125,9 +125,7 @@ LatReport.prototype.getSearchGroupScript = function(index) {
             if (this.lat.uniqueVariants[i].searchGroupIndex == index) { //this variant matches this searchGroup
                 variableValuesX.push(this.lat.uniqueVariants[i].variant[searchGroup[0].index].value);
                 variablesLabel.push(this.transformVariantToText(this.lat.uniqueVariants[i].variant));
-                //TODO: change index to i (index is just for tests while cmaker is not ready)
                 variableTimes.push(this.lat.results[this.lat.getTuneName()].per_variant[i].avg);
-                //variableTimes.push(this.lat.results[this.lat.getTuneName()].per_variant[index].avg);
             }
         }
 
@@ -155,8 +153,6 @@ LatReport.prototype.getSearchGroupDiv = function(index) {
     for (var i = 0; i < this.lat.uniqueVariants.length; i++) {
         if (this.lat.uniqueVariants[i].searchGroupIndex == index) { //this variant matches this searchGroup
             numVariantsSearchGroup++;
-            /*
-            TODO: uncomment when compilation and execution is ready*/
             variantsRows+='<tr><td>'+i+'</td><td class="uk-text-break">'+this.transformVariantToText(this.lat.uniqueVariants[i].variant)+'</td><td class="uk-text-break" title="Variant '+i+' times: '+this.lat.results[this.lat.getTuneName()].per_variant[i].times.join(", ")+'" uk-tooltip>'+this.lat.results[this.lat.getTuneName()].per_variant[i].avg+'</td></tr>';
         }
     }
