@@ -1,7 +1,5 @@
 # LAT - LARA Autotuning Tool
-## Context
 
-**LAT** is a tool for code autotuning, built using LARA (an AOP language). It is designed for C/C++. With it, coders may test multilple **variants** of their code dynamically and then choose the best variant to ship their code. (Maybe add some more information about clava and links to these mentions)
 ## What is Lat
 
 **Lat** is a tool for code autotuning, built using [LARA](https://web.fe.up.pt/~specs/projects/lara/doku.php) (a Javascript based language that support source code transformations) and applied using the [Clava](https://github.com/specs-feup/clava/tree/master/ClavaWeaver) tool . It is designed for C/C++. With it, coders may test multilple **variants** of their code dynamically and then choose the best variant to ship their code. 
