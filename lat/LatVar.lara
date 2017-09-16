@@ -36,7 +36,7 @@ LatVar.prototype.changeVariantInAst = function(currentValue) {
         LatUtils._warn("only read option in changeVariantInAst is not yet implemented");
         //TODO: basta alterar o vardecl
         //var $temp = this.vardecl;
-        //$temp.replace(%{[[currentValue.value]]}%);
+        //$temp.exec setValue (currentValue.value)
     }else{
         //TODO: move the for here after implementing readonly
         println("read only is not yet implemented, but when it is this message should not appear");
