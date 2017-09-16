@@ -64,7 +64,7 @@ LatReport.prototype.replaceOverallResults = function() {
     this.replacer.replaceAll("[[bestVariant]]", this.transformVariantToText(this.lat.uniqueVariants[bestVariantNumber].variant));
     this.replacer.replaceAll("[[bestTime]]", this.lat.results[this.lat.getTuneName()].overall.best_time);
     this.replacer.replaceAll("[[numSearchGroups]]", this.lat.uniqueVariants.length);
-    this.replacer.replaceAll("[[executionTime]]", this.lat._executionTime);
+    this.replacer.replaceAll("[[executionTime]]", (this.lat._duration / 1000000000.0) + "s");
 };
 
 LatReport.prototype.replaceSystemConstants = function() {
@@ -121,8 +121,9 @@ LatReport.prototype.transformVariantToText = function(variant) {
 LatReport.prototype.getSearchGroupScript = function(index) {
     var searchGroup = this.lat.searchGroups[index];
     var replacerChart = this.getSearchGroupReplacer(searchGroup.length);
-
+    
     replacerChart.replaceAll("[[searchGroupIndex]]", index);
+    replacerChart.replaceAll("[[searchGroupVariables]]", searchGroup.map(function(e) { return e.name; }).join(","));
 
     if (searchGroup.length == 1) {
         var variableValuesX = [];
@@ -161,11 +162,9 @@ LatReport.prototype.getSearchGroupScript = function(index) {
         replacerChart.replaceAll("[[zValues]]", variableTimes.join(", "));
         replacerChart.replaceAll("[[varName1]]", this.lat.uniqueVariables[searchGroup[0].index].name);
         replacerChart.replaceAll("[[varName2]]", this.lat.uniqueVariables[searchGroup[1].index].name);
-    } else if (searchGroup.length == 3) {
-        replacerChart.replaceAll("[[xValues]]", "[1, 2, 3, 4, 5]");
-        replacerChart.replaceAll("[[yValues]]", "[1, 2, 3, 4, 5]");
+    } else {
+        return "console.log(\"No display available for 4D or more, searchGroup: " + (index + 1) + "\");";
     }
-    replacerChart.replaceAll("[[searchGroupVariables]]", searchGroup.map(function(e) { return e.name; }).join(","));
     return replacerChart.getString();
 };
 
