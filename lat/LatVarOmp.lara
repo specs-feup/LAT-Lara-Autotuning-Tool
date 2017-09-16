@@ -1,6 +1,4 @@
 var LatVarOmp = function(name, scheduleTypes, LatVarScheduleChunkSize, LatVarnumThreads, type) {
-    println("Constructor");
-
     LatVar.call(this, name, type);
     //types allowed: dynamic, static, guided, auto, runtime
     this.scheduleTypes = scheduleTypes;
