@@ -2,6 +2,8 @@ import lara.Io;
 import lara.code.Timer;
 import lara.util.Replacer;
 import lara.Strings;
+import lara.cmake.CMaker;
+import lara.util.ProcessExecutor;
 
 import clava.Clava;
 
@@ -60,6 +62,7 @@ Lat.prototype.tune = function() {
 Lat.prototype.toConfig = function(filename) {
     filename = LatUtils.getRightExtension(filename, "json");
     Io.writeJson(filename, this);
+    //TODO: check this
     writeFile(filename, JSON.stringify(this));
 };
 
@@ -216,6 +219,13 @@ Lat.prototype.updatePathVariables = function() {
     this._graphsFolder = this._resultsFolder + "/graphs"; /** the folder that will hold the charts */
     this._timerFileName = "/times.txt"; /** the filename where the executed variants will write to */
     this._timerFile = this._resultsFolder + this._timerFileName; /** the complete file path for _timerFileName */
+
+    //create the timer file and get it's absolute path
+    var fullTimerPath = Io.getAbsolutePath(this._timerFile);
+    var replacerPath = new Replacer(fullTimerPath);
+    replacerPath.replaceAll("\\", "/");
+    this._timerFileAbsolute = replacerPath.getString();
+
     this._bestResult = this._resultsFolder + "/best"; /** the folder that will hold the best variant source code without timer prints */
     this._templateFolder = "../lat/templates/"; /** the file that will contain each tuning operation's report */
     this._reporterTemplate = "../lat/templates/report.html"; /** the file that will contain each tuning operation's report */
@@ -424,7 +434,8 @@ Lat.prototype.generateVariantsRecursive = function(searchGroup, index, searchGro
                 this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //only update the value
                 this.uniqueVariants.push({
                     variant: LatUtils.clone(this.currentVariant),
-                    searchGroupIndex: searchGroupIndex
+                    searchGroupIndex: searchGroupIndex,
+                    executable: ""
                 }); //save to the array the format {variant:,searchGroupIndex}
             }
         }
@@ -462,11 +473,14 @@ Lat.prototype.generateSourceCode = function() {
             }
         }
         //2nd include the timer prints
-        var timer = new Timer("NANOSECONDS", "../results" + this._timerFileName);
+        var timer = new Timer("NANOSECONDS", this._timerFileAbsolute);
         timer.time($eqMeasure, this.getTuneName() + " " + i + " ");
 
         //3rd write the variant to the output folder
         Clava.writeCode(this._variantsFolder + "/" + i);
+
+        //4th use CMaker
+        this.uniqueVariants[i].executable = this.generateExecutable(i); //save the executable
 
         Clava.popAst(); //retrieve the initial ast after changing it, to allow multiple changes
         this.popIndent().print("Done", true).print();
@@ -480,8 +494,18 @@ Lat.prototype.generateSourceCode = function() {
 Lat.prototype.executeSourceCode = function() {
     for (var i = 0; i < this.numTests; i++) {
         //this.print("Starting test " + (i + 1) + " of " + this.numTests + "...").pushIndent();
-        this.print("Starting test " + (i + 1) + " of " + this.numTests + "...", true).pushIndent();
+        this.print("Starting test " + (i + 1) + " of " + this.numTests + "...").pushIndent();
         //TODO: execute code generated
+        for (var j = 0; j < this.uniqueVariants.length; j++) {
+            this.print("Executing Variant " + (j + 1) + " of " + this.uniqueVariants.length + "...", true).pushIndent();
+
+            new ProcessExecutor()
+                .setWorkingDir(this._variantsFolder + "/" + j)
+                .execute(this.uniqueVariants[j].executable);
+
+            this.popIndent().print("Done");
+        }
+
         //System.execute = function(command, workingDir, printToConsole, outputFile, append, timeout, timeunit)
 
         //this.popIndent().print("Done test " + (i + 1) + " of " + this.numTests);
@@ -582,7 +606,7 @@ Lat.prototype.checkVariablesInScope = function() {
                 }
             }
             if (!found) {
-                LatUtils._error("Variable '" + this.uniqueVariables[i].name + "' not found in the variables available in the current scope: [" + foundVariables + "]");
+                LatUtils._error("Variable '" + this.uniqueVariables[i].name + "' declaration not found in the variables available in the current scope: [" + foundVariables + "]");
             }
         }
     }
@@ -602,4 +626,19 @@ Lat.prototype.checkIncludes = function() {
         this.file.addInclude("omp.h");
     }
 
+};
+
+Lat.prototype.generateExecutable = function(i) {
+    var cmaker = new CMaker("variant_" + i)
+        .setMinimumVersion("3.0.2")
+        .setMakeCommand("nmake")
+        .addCxxFlags("-O3", "-std=c++11")
+        .addLibs("stdc++")
+        .setGenerator("MinGW Makefiles");
+
+    cmaker.sources.addSource(this.file.relativeFilepath);
+    cmaker.addIncludeFolder("../" + i);
+
+    var buildFolder = Io.getPath(this._variantsFolder + "/" + i, "build");
+    return cmaker.build(this._variantsFolder + "/" + i, buildFolder);
 };
