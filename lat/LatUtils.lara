@@ -201,15 +201,5 @@ LatUtils.getTime = function() {
 };
 
 LatUtils.escapeHtmlCharacters = function(original){
-    //return original;
-    //TODO: htmlentities for a string
     return Strings.escapeHtml(original);
-
-    var replacer = new Replacer(original);
-    replacer.replaceAll("<", "&lt;");
-    replacer.replaceAll(">", "&gt;");
-    replacer.replaceAll("&", "&amp;");
-    replacer.replaceAll("\"", "&quot;");
-    replacer.replaceAll("'", "&#039");
-    return replacer.getString();
 };
