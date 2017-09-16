@@ -7,7 +7,7 @@ import lara.util.ProcessExecutor;
 
 import clava.Clava;
 
-import weaver.Weaver;
+import weaver.WeaverOptions;
 
 import lat.LatVar;
 import lat.LatVarList;
@@ -25,7 +25,7 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
     this._printIndentation = 0; /** indicates the hierarchy level of the print operations */
     this._tuneCounts = 0; /** at each tuning operation the name that is output is changed automatically so that there is no confusion between diferent tuning operations */
     this.results = undefined; /** This variable will hold the results of each parseResults operation */
-    Weaver.setVerboseLevel(0); /** 0 to 3, increasing the verbosity */
+    WeaverOptions.setVerboseLevel(0); /** 0 to 3, increasing the verbosity */
     //get current file
     call callFile: getFile();
     this.file = callFile.thisFile;
