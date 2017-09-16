@@ -136,6 +136,17 @@ aspectdef TestSetters
 			lat.setTimeout("a");
 			LatUtils._warn("lat setTimeout should only accept numbers");
 		}catch(e){}
+		
+		//cmaker
+		var tempCmakerName = "cmakerName";
+		lat.setCmaker(new CMaker(tempCmakerName));
+		if(lat.cmaker.name !== tempCmakerName){
+			LatUtils._error("lat setCmaker name should be equal to " + tempCmakerName);
+		}
+		try{
+			lat.setCmaker(null);
+			LatUtils._warn("lat setCmaker should not values that are not instances of CMaker");
+		}catch(e){}
 	end
 	println("DONE");
 end
