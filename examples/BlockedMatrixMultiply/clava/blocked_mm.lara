@@ -14,8 +14,7 @@ aspectdef tune_mm
 
 	select marker end
 	apply
-		if($marker.content == "marker latMeasure"){
-			println("MARKER FOUND");
+		if($marker.content == "marker bmmMeasure"){
 			lat.setMeasure($marker.contents);
 		}
 	end

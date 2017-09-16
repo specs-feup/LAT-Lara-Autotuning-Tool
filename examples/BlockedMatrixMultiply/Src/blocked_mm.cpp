@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     Initialize(B, N, 2);
     //Initialize(C_naive, N, 0);
     Initialize(C_blocked, N, 0);
-#pragma lara marker latMeasure
+#pragma lara marker bmmMeasure
     {
         BlockedMatrixMultiply(A, B, C_blocked, N);
     }
