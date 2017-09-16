@@ -583,6 +583,7 @@ Lat.prototype.parseResults = function(emptyFileAfterwards) {
             delete this.results[tuneResult]["per_variant"][variant]["sum"];
         }
     }
+
     outs(this.results);
 
     if (emptyFileAfterwards) { //delete the processed contents of the file
@@ -599,11 +600,15 @@ Lat.prototype.getResults = function() {
 
 Lat.prototype.generateReport = function() {
     this.print("Generating the report...", true).pushIndent();
+    if (Object.keys(this.results).length == 0) {
+        LatUtils._warn("Results is empty...report will not be processed.");
+        this.popIndent().print("Failed (empty results - check cmaker options)", true).print();
+    } else {
+        var reporter = new LatReport(this);
+        reporter.generateReport();
 
-    var reporter = new LatReport(this);
-    reporter.generateReport();
-
-    this.popIndent().print("Done", true).print();
+        this.popIndent().print("Done", true).print();
+    }
 }
 
 Lat.prototype.checkVariablesInScope = function() {
