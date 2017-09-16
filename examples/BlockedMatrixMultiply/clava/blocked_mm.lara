@@ -1,0 +1,30 @@
+import lat.Lat;
+
+aspectdef tune_mm
+	var lat = new Lat("blocked_mm");
+	
+	lat.loadCmaker().cmaker.setMakeCommand("nmake");
+	
+	select function end
+	apply
+		if($function.name == "BlockedMatrixMultiply"){
+			lat.setScope($function.body);
+		}
+	end
+
+	select marker end
+	apply
+		if($marker.content == "marker latMeasure"){
+			println("MARKER FOUND");
+			lat.setMeasure($marker.contents);
+		}
+	end
+	
+	var blk_k = new LatVarRange("blk_k", LatConst.L1_CACHE_LINESIZE, 16 * LatConst.L1_CACHE_LINESIZE, LatConst.L1_CACHE_LINESIZE / 2);
+	var blk_j = new LatVarRange("blk_j", LatConst.L1_CACHE_LINESIZE, 16 * LatConst.L1_CACHE_LINESIZE, LatConst.L1_CACHE_LINESIZE / 2);
+	var blk_i = new LatVarRange("blk_i", LatConst.L1_CACHE_LINESIZE, 16 * LatConst.L1_CACHE_LINESIZE, LatConst.L1_CACHE_LINESIZE / 2);
+
+	lat.setVariables([blk_k, blk_j, blk_i]);
+	
+	lat.tune();
+end
