@@ -1,4 +1,4 @@
-var LatVarOmp = function(name, scheduleTypes, scheduleChunkSize, LatVarnumThreads, type) {
+var LatVarOmp = function(name, scheduleTypes, scheduleChunkSize, numThreads, type) {
     LatVar.call(this, name, type);
     //types allowed: dynamic, static, guided, auto, runtime
     this.scheduleTypes = scheduleTypes;
@@ -7,12 +7,12 @@ var LatVarOmp = function(name, scheduleTypes, scheduleChunkSize, LatVarnumThread
         scheduleChunkSize = new LatVarList("", [undefined]);
     }
     LatUtils.checkLatVarRangeOrList(scheduleChunkSize, "scheduleChunkSize");
-    if (LatVarnumThreads === undefined) {
-        LatVarnumThreads = new LatVarList("", [0]);
+    if (numThreads === undefined) {
+        numThreads = new LatVarList("", [0]);
     }
-    LatUtils.checkLatVarRangeOrList(LatVarnumThreads, "LatVarnumThreads");
+    LatUtils.checkLatVarRangeOrList(numThreads, "numThreads");
     this.scheduleChunkSize = scheduleChunkSize;
-    this.LatVarnumThreads = LatVarnumThreads;
+    this.numThreads = numThreads;
     this.pragma = undefined; //specific for each variant so it is only loaded inside .puhs/.pop
     this.generateOmpVariants();
     this.restart();
@@ -49,15 +49,15 @@ LatVarOmp.prototype.generateOmpVariants = function() {
         this.scheduleChunkSize.getNext(); //ignore default chunk size
         while (this.scheduleChunkSize.hasNext()) {
             var chunkSize = this.scheduleChunkSize.getNext().value;
-            this.LatVarnumThreads.getNext(); //ignore num threads default
-            while (this.LatVarnumThreads.hasNext()) {
+            this.numThreads.getNext(); //ignore num threads default
+            while (this.numThreads.hasNext()) {
                 this.variants.push({
                     scheduleType: this.scheduleTypes[i],
                     scheduleChunkSize: chunkSize,
-                    numThreads: this.LatVarnumThreads.getNext().value
+                    numThreads: this.numThreads.getNext().value
                 });
             }
-            this.LatVarnumThreads.restart();
+            this.numThreads.restart();
         }
         this.scheduleChunkSize.restart();
     }
