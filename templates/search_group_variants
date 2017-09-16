@@ -1,0 +1,17 @@
+<div class="uk-container uk-container-center">
+    <h2>Plot</h2>
+    <div id="chartSearchGroup_[[searchGroupIndex]]"></div>
+    <h2>[[numVariantsSearchGroup]] Variants</h2>
+    <table id ="tableVariants_[[searchGroupIndex]]" class="uk-container uk-container-center">
+        <thead>
+            <tr>
+                <th class="uk-text-center"><a class="uk-link-muted" href="javascript:void(0)" title="Sort"  uk-tooltip>Variant</a></th>
+                <th class="uk-text-center"><a class="uk-link-muted" href="javascript:void(0)" title="Sort"  uk-tooltip>Values</a></th>
+                <th class="uk-text-center"><a class="uk-link-muted" href="javascript:void(0)" title="Sort"  uk-tooltip>Time (ns)</a></th>
+            </tr>
+        </thead>
+        <tbody>
+            [[variantsRows]]
+        </tbody>
+    </table>
+</div>
