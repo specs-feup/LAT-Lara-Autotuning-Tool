@@ -147,7 +147,6 @@ LatReport.prototype.getSearchGroupScript = function(index) {
         var variablesLabel = [];
         var variableTimes = [];
         for (var i = 0; i < this.lat.uniqueVariants.length; i++) {
-            outs(this.lat.uniqueVariants[i]);
             if (this.lat.uniqueVariants[i].searchGroupIndex == index) { //this variant matches this searchGroup
                 variableValuesX.push(this.lat.uniqueVariants[i].variant[searchGroup[0].index].value);
                 variableValuesY.push(this.lat.uniqueVariants[i].variant[searchGroup[1].index].value);
