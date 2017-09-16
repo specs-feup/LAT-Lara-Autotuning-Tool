@@ -47,6 +47,11 @@ Lat.prototype.tune = function() {
     this.generateUniqueVariables();
     this.generateBaseVariant(); //must come after generateUniqueVariables
     this.generateUniqueVariants();
+    if(this.uniqueVariants == 0){
+        LatUtils._warn("No variant to test, add variables or searchGroups before calling .tune()");
+        return;
+    }
+
 
     this.checkVariablesInScope();
     if (Io.readFile(this._timerFile) == null) {
@@ -493,7 +498,11 @@ Lat.prototype.generateSourceCode = function() {
 
                 var callOutput = undefined;
                 if (!LatUtils.isLatVarOmp(this.uniqueVariables[j])) { //omp does not use vardecl nor varref
-                    call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]); //find the vardecl and all varref attributes of the current LatVar
+                    if($eqScope.instanceOf("scope")){
+                        call callOutput: getJoinpointsToChangeForSingleLatVarScope($eqScope, this.uniqueVariables[j]); 
+                    }else{
+                        call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]); 
+                    }
                 } else {
                     call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[j]);
                 }
@@ -613,7 +622,11 @@ Lat.prototype.generateReport = function() {
 
 Lat.prototype.checkVariablesInScope = function() {
     this.print("Checking the validity of the supplied variables...", true).pushIndent();
-    call callOutput: findVariablesInJoinpoint(this.scope);
+    if(this.scope.instanceOf("scope")){
+        call callOutput: findVariablesInJoinpointScope(this.scope);
+    }else{
+        call callOutput: findVariablesInJoinpoint(this.scope);
+    }
     var foundVariables = callOutput.list;
     if (foundVariables.length < this.uniqueVariables.length) {
         LatUtils._error("Not enough variables in the source code to match the supplied LatVars in this scope found: [" + foundVariables + "]");

@@ -1,23 +1,34 @@
 
 aspectdef findVariablesInJoinpoint
-    input jp end
+    input $jp end
     output list end 
 
     list = [];
-    select jp.vardecl end
+    select $jp.vardecl end
+    apply
+        list.push($vardecl.name);
+    end
+end
+
+aspectdef findVariablesInJoinpointScope
+    input $jp end
+    output list end 
+
+    list = [];
+    select $jp.stmt.vardecl end
     apply
         list.push($vardecl.name);
     end
 end
 
 aspectdef getJoinpointsToChange
-    input jp, latvars end
+    input $jp, latvars end
     output latvarsOut end 
 
     latvarsOut = latvars;
 
     //find vardecls
-    select jp.vardecl end
+    select $jp.vardecl end
     apply
         for(var i = 0; i < latvarsOut.length; i++){
             if(latvarsOut[i].name == $vardecl.name){
@@ -30,7 +41,7 @@ aspectdef getJoinpointsToChange
         latvarsOut[i].varrefs = [];
     }
     //find varrefs
-    select jp.varref end
+    select $jp.varref end
     apply
         for(var i = 0; i < latvarsOut.length; i++){
             if(latvarsOut[i].name == $varref.name){
@@ -43,13 +54,13 @@ aspectdef getJoinpointsToChange
 end
 
 aspectdef getJoinpointsToChangeForSingleLatVar
-    input jp, latvar end
+    input $jp, latvar end
     output latvarOut end 
 
     latvarOut = latvar;
 
     //find vardecls
-    select jp.vardecl end
+    select $jp.vardecl end
     apply
         if(latvarOut.name == $vardecl.name){
             latvarOut.vardecl = $vardecl;
@@ -59,13 +70,39 @@ aspectdef getJoinpointsToChangeForSingleLatVar
 
     //find varrefs
     latvarOut.varrefs = [];
-    select jp.varref end
+    select $jp.varref end
     apply
         if(latvarOut.name == $varref.name){
             latvarOut.varrefs.push($varref);
         }
     end
 end
+aspectdef getJoinpointsToChangeForSingleLatVarScope
+    input $jp, latvar end
+    output latvarOut end 
+
+    latvarOut = latvar;
+
+    //find vardecls
+    select $jp.stmt.vardecl end
+    apply
+        if(latvarOut.name == $vardecl.name){
+            latvarOut.vardecl = $vardecl;
+            break;
+        }
+    end
+
+    //find varrefs
+    latvarOut.varrefs = [];
+    select $jp.stmt.varref end
+    apply
+        if(latvarOut.name == $varref.name){
+            latvarOut.varrefs.push($varref);
+        }
+    end
+end
+
+
 aspectdef getJoinpointsToChangeForLatVarOmp
     input latvar end
     output latvarOut end 
