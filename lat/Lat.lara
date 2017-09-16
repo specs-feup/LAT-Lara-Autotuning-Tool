@@ -29,12 +29,16 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
     //get current file
     call callFile: getFile();
     this.file = callFile.thisFile;
+    this.cmaker = undefined;
 };
 
 Lat.prototype.tune = function() {
     this.restartPrintLog();
     this.print("Starting tuning operation").pushIndent();
     this._tunned = false;
+
+    //check cmake options
+    this.checkCmakerOptions();
 
     if (this.searchType === LatConst.SEARCH_TYPE.DEPENDENT || this.searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
         this.variables = LatUtils.removeDuplicates(this.variables);
@@ -45,7 +49,7 @@ Lat.prototype.tune = function() {
     this.generateUniqueVariants();
 
     this.checkVariablesInScope();
-    if(Io.readFile(this._timerFile) == ""){
+    if (Io.readFile(this._timerFile) == null) {
         Io.writeFile(this._timerFile, "\n"); //create the file if it does not exist
     }
 
@@ -64,8 +68,6 @@ Lat.prototype.tune = function() {
 Lat.prototype.toConfig = function(filename) {
     filename = LatUtils.getRightExtension(filename, "json");
     Io.writeJson(filename, this);
-    //TODO: check this
-    writeFile(filename, JSON.stringify(this));
 };
 
 Lat.prototype.fromConfig = function(filename) {
@@ -127,7 +129,7 @@ Lat.prototype.setScope = function(scope) {
     return this;
 };
 Lat.prototype.setMeasure = function(measure) {
-    LatUtils.checkJoinpoint(measure, "measure");
+    //LatUtils.checkJoinpoint(measure, "measure");
     this.measure = measure;
     return this;
 };
@@ -208,9 +210,16 @@ Lat.prototype.setTimeout = function(timeout) {
     return this;
 };
 Lat.prototype.setOutputFolder = function(outputFolder) {
-    //TODO: validate path
+    Io.mkdir(outputFolder); //fails if invalid
     this.outputFolder = outputFolder;
     this.updatePathVariables();
+    return this;
+};
+Lat.prototype.setCmaker = function(cmaker) {
+    if (!(cmaker instanceof CMaker)) {
+        LatUtils._error("Invalid value supplied in setCmaker: the value should be an instance of CMaker");
+    }
+    this.cmaker = cmaker;
     return this;
 };
 
@@ -255,6 +264,16 @@ Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchTyp
     this.updatePathVariables();
 };
 
+Lat.prototype.loadCmaker = function() {
+    this.cmaker = new CMaker("tempName")
+        .setMinimumVersion("3.0.2")
+        .setMakeCommand("make")
+        .addCxxFlags("-O3", "-std=c++11")
+        .addLibs("stdc++")
+        .setGenerator("MinGW Makefiles");
+    return this;
+};
+
 /**
  * Return either the correct value or the default value for a given property
  */
@@ -269,6 +288,14 @@ Lat.prototype.validateProperty = function(propertyName, value, defaultValue) {
     }
     return value;
 };
+
+Lat.prototype.checkCmakerOptions = function() {
+    if (this.cmaker === undefined) {
+        LatUtils._warn("Before executing a .tune() operation you need to set the value of CMaker - if this is not done, the code might not execute! - Using default options");
+        return this.loadCmaker(); //loads the default cmaker
+    }
+}
+
 
 Lat.prototype.restartPrintLog = function() {
     this._printLog = "";
@@ -495,22 +522,17 @@ Lat.prototype.generateSourceCode = function() {
  */
 Lat.prototype.executeSourceCode = function() {
     for (var i = 0; i < this.numTests; i++) {
-        //this.print("Starting test " + (i + 1) + " of " + this.numTests + "...").pushIndent();
         this.print("Starting test " + (i + 1) + " of " + this.numTests + "...").pushIndent();
-        //TODO: execute code generated
         for (var j = 0; j < this.uniqueVariants.length; j++) {
             this.print("Executing Variant " + (j + 1) + " of " + this.uniqueVariants.length + "...", true).pushIndent();
 
             new ProcessExecutor()
+                .setPrintToConsole(false)
                 .setWorkingDir(this._variantsFolder + "/" + j)
                 .execute(this.uniqueVariants[j].executable);
 
             this.popIndent().print("Done");
         }
-
-        //System.execute = function(command, workingDir, printToConsole, outputFile, append, timeout, timeunit)
-
-        //this.popIndent().print("Done test " + (i + 1) + " of " + this.numTests);
         this.popIndent().print("Done");
     }
 
@@ -623,16 +645,13 @@ Lat.prototype.checkIncludes = function() {
 };
 
 Lat.prototype.generateExecutable = function(i) {
-    var cmaker = new CMaker("variant_" + i)
-        .setMinimumVersion("3.0.2")
-        .setMakeCommand("nmake")
-        .addCxxFlags("-O3", "-std=c++11")
-        .addLibs("stdc++")
-        .setGenerator("MinGW Makefiles");
 
-    cmaker.sources.addSource(this.file.relativeFilepath);
-    cmaker.addIncludeFolder("../" + i);
+    this.cmaker.sources = new CMakerSources();
+    this.cmaker.includeFolders = new StringSet();
+    this.cmaker.sources.addSource(this.file.relativeFilepath);
+    this.cmaker.addIncludeFolder("../" + i);
+    this.cmaker.name = "variant_" + i;
 
     var buildFolder = Io.getPath(this._variantsFolder + "/" + i, "build");
-    return cmaker.build(this._variantsFolder + "/" + i, buildFolder);
+    return this.cmaker.build(this._variantsFolder + "/" + i, buildFolder);
 };
