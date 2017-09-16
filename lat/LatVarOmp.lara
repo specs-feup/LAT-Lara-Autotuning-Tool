@@ -1,5 +1,5 @@
-var LatVarOmp = function(name, scheduleTypes, scheduleChunkSize, numThreads, type) {
-    LatVar.call(this, name, type);
+var LatVarOmp = function(name, scheduleTypes, scheduleChunkSize, numThreads) {
+    LatVar.call(this, name);
     //types allowed: dynamic, static, guided, auto, runtime
     this.scheduleTypes = scheduleTypes;
     //check these are LatVarRange or LatVarList
