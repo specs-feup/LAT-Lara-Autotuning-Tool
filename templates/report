@@ -14,9 +14,9 @@
 
     <title>Lat Report [[name]]</title>
     <style>
-        .svg-container{
-            display:block;
-            margin:auto;
+        .svg-container, .gl-container {
+            display: block;
+            margin: auto;
         }
     </style>
 </head>
@@ -155,6 +155,11 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <div class="uk-card uk-container uk-container-center uk-card-body uk-width-3-4@m  uk-card-secondary">
+                    <h3 class="uk-card-title">Best Variant [[bestVariantNumber]]</h3>
+                    <p>[[bestVariant]]</p>
+                </div>
             </div>
         </div>
 
@@ -169,6 +174,10 @@
         </ul>
         <br>
 
+        <h2 class="uk-heading-line"><span>Complete Variant List</span></h2>
+        <ul class="uk-margin uk-background-muted">
+            [[completeVariants]]
+        </ul>
 
         <h2 class="uk-heading-line"><span>Console Output</span></h2>
         <pre class="uk-text-left uk-background-muted" style="max-height: 400px;"><code>[[consoleOutput]]</code></pre>
@@ -182,6 +191,9 @@
     </div>
     <script>
         [[searchGroupsScript]]
+        $(document).ready(function() {
+            $('#tableVariants_all').DataTable();
+        });
     </script>
 </body>
 
