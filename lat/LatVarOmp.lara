@@ -1,17 +1,17 @@
-var LatVarOmp = function(name, scheduleTypes, LatVarScheduleChunkSize, LatVarnumThreads, type) {
+var LatVarOmp = function(name, scheduleTypes, scheduleChunkSize, LatVarnumThreads, type) {
     LatVar.call(this, name, type);
     //types allowed: dynamic, static, guided, auto, runtime
     this.scheduleTypes = scheduleTypes;
     //check these are LatVarRange or LatVarList
-    if (LatVarScheduleChunkSize === undefined) {
-        LatVarScheduleChunkSize = new LatVarList("", [undefined]);
+    if (scheduleChunkSize === undefined) {
+        scheduleChunkSize = new LatVarList("", [undefined]);
     }
-    LatUtils.checkLatVarRangeOrList(LatVarScheduleChunkSize, "LatVarScheduleChunkSize");
+    LatUtils.checkLatVarRangeOrList(scheduleChunkSize, "scheduleChunkSize");
     if (LatVarnumThreads === undefined) {
         LatVarnumThreads = new LatVarList("", [0]);
     }
     LatUtils.checkLatVarRangeOrList(LatVarnumThreads, "LatVarnumThreads");
-    this.LatVarScheduleChunkSize = LatVarScheduleChunkSize;
+    this.scheduleChunkSize = scheduleChunkSize;
     this.LatVarnumThreads = LatVarnumThreads;
     this.pragma = undefined; //specific for each variant so it is only loaded inside .puhs/.pop
     this.generateOmpVariants();
@@ -46,9 +46,9 @@ LatVarOmp.prototype.generateOmpVariants = function() {
     this.variants = [];
     //{scheduleType: , scheduleChunkSize: , numThreads: }
     for (var i = 0; i < this.scheduleTypes.length; i++) {
-        this.LatVarScheduleChunkSize.getNext(); //ignore default chunk size
-        while (this.LatVarScheduleChunkSize.hasNext()) {
-            var chunkSize = this.LatVarScheduleChunkSize.getNext().value;
+        this.scheduleChunkSize.getNext(); //ignore default chunk size
+        while (this.scheduleChunkSize.hasNext()) {
+            var chunkSize = this.scheduleChunkSize.getNext().value;
             this.LatVarnumThreads.getNext(); //ignore num threads default
             while (this.LatVarnumThreads.hasNext()) {
                 this.variants.push({
@@ -59,7 +59,7 @@ LatVarOmp.prototype.generateOmpVariants = function() {
             }
             this.LatVarnumThreads.restart();
         }
-        this.LatVarScheduleChunkSize.restart();
+        this.scheduleChunkSize.restart();
     }
     return this;
 };
