@@ -36,6 +36,7 @@ Lat.prototype.tune = function() {
     this.restartPrintLog();
     this.print("Starting tuning operation").pushIndent();
     this._tunned = false;
+    this._duration = System.nanos(); //tune start time, duration will be calculated later
 
     //check cmake options
     this.checkCmakerOptions();
@@ -61,6 +62,8 @@ Lat.prototype.tune = function() {
     this.generateSourceCode();
     this.executeSourceCode();
     this.parseResults();
+
+    this._duration = System.nanos() - this._duration;//must be before generateReport
     this.generateReport();
 
     this._tuneCounts++; //update the current index of the tuning operation after the report generation
@@ -352,10 +355,6 @@ Lat.prototype.getIndent = function() {
     return result;
 };
 
-var outs = function(a) {
-    println(JSON.stringify(a));
-};
-
 Lat.prototype.getTuneName = function() {
     return this.name + "_" + this._tuneCounts;
 }
@@ -437,19 +436,6 @@ Lat.prototype.generateUniqueVariants = function() {
         this.print("Done - " + (this.numUniqueVariants - this.uniqueVariants.length) + " redundant variant(s) removed - total: " + this.uniqueVariants.length);
     }
     this.popIndent().print("Done - " + this.uniqueVariants.length + " unique variants generated", true).print();
-    /*println("removed duplicates: " + this.uniqueVariants.length + " uniqueVariants: ");
-    print();
-    for (var i = 0; i < this.uniqueVariants.length; i++) {
-        for (var j = 0; j < this.uniqueVariants[i].variant.length; j++) {
-            if (this.uniqueVariants[i].variant[j].default) {
-                print("0 - ");
-            } else {
-                print(this.uniqueVariants[i].variant[j].value + " - ");
-            }
-        }
-        println();
-    }
-    //this.uniqueVariants.map(outs);*/
     return this;
 };
 
@@ -592,8 +578,6 @@ Lat.prototype.parseResults = function(emptyFileAfterwards) {
             delete this.results[tuneResult]["per_variant"][variant]["sum"];
         }
     }
-
-    outs(this.results);
 
     if (emptyFileAfterwards) { //delete the processed contents of the file
         Io.writeFile(this._timerFile, "");
