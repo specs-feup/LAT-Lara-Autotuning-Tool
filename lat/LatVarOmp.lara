@@ -63,9 +63,9 @@ LatVarOmp.prototype.generateOmpVariants = function() {
     }
     return this;
 };
-LatVarOmp.prototype.generateContent = function(currentValue) {
-    println(JSON.stringify(currentValue));
-    var newContent = this.pragma.content;
+
+LatVarOmp.generateContentBody = function(currentValue, body) {
+    var newContent = body!==undefined?body:"";
 
     if (currentValue.scheduleChunkSize === undefined) {
         newContent += " schedule(" + currentValue.scheduleType + ")";
@@ -76,6 +76,10 @@ LatVarOmp.prototype.generateContent = function(currentValue) {
         newContent += " num_threads(" + currentValue.numThreads + ")";
     }
     return newContent;
+}
+
+LatVarOmp.prototype.generateContent = function(currentValue) {
+    return LatVarOmp.generateContentBody(currentValue, this.pragma.content);
 };
 
 LatVarOmp.prototype.changeVariantInAst = function(currentValue) {
