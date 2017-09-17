@@ -37,24 +37,24 @@ LatReport.prototype.generateReport = function() {
     this.includeResources(); //include necessary css and js files
 };
 
-LatReport.prototype.replaceVariablesCards = function(){
+LatReport.prototype.replaceVariablesCards = function() {
     var variableCards = "";
-    for(var i = 0; i < this.lat.uniqueVariables.length; i++){
+    for (var i = 0; i < this.lat.uniqueVariables.length; i++) {
         variableCards += this.getVariableCard(this.lat.uniqueVariables[i]);
     }
     this.replacer.replaceAll("[[variableCards]]", variableCards);
 
 };
-LatReport.prototype.getVariableCard = function(variable){
+LatReport.prototype.getVariableCard = function(variable) {
     var replacerCard;
-    if(LatUtils.isLatVarList(variable)){
+    if (LatUtils.isLatVarList(variable)) {
         replacerCard = new Replacer(templates.getString("var_list"));
-    } else if(LatUtils.isLatVarRange(variable)){
+    } else if (LatUtils.isLatVarRange(variable)) {
         replacerCard = new Replacer(templates.getString("var_range"));
         replacerCard.replaceAll("[[start]]", variable.start);
         replacerCard.replaceAll("[[stop]]", variable.stop);
         replacerCard.replaceAll("[[step]]", variable.step);
-    } else if(LatUtils.isLatVarOmp(variable)){
+    } else if (LatUtils.isLatVarOmp(variable)) {
         replacerCard = new Replacer(templates.getString("var_omp"));
         replacerCard.replaceAll("[[ompTypes]]", variable.scheduleTypes.join(", "));
         replacerCard.replaceAll("[[ompChunks]]", variable.scheduleChunkSize.countElements());
@@ -139,7 +139,7 @@ LatReport.prototype.transformVariantToText = function(variant) {
             if (!LatUtils.isLatVarOmp(this.lat.uniqueVariables[i])) {
                 value = variant[i].value;
             } else {
-                value = "..." + this.lat.uniqueVariables[i].generateContent(variant[i]);
+                value = this.lat.uniqueVariables[i].generateContent(variant[i]);
             }
             result.push(name + " = " + value);
         }
@@ -148,10 +148,19 @@ LatReport.prototype.transformVariantToText = function(variant) {
     return result.join(", ");
 };
 
+LatReport.prototype.getVariableValue = function(variable) {
+    if (typeof variable === "object") {
+        println(JSON.stringify(variable));
+        return '"' + LatVarOmp.generateContentBody(variable) + '"';
+    } else {
+        return variable;
+    }
+};
+
 LatReport.prototype.getSearchGroupScript = function(index) {
     var searchGroup = this.lat.searchGroups[index];
     var replacerChart = this.getSearchGroupReplacer(searchGroup.length);
-    
+
     replacerChart.replaceAll("[[searchGroupIndex]]", index);
     replacerChart.replaceAll("[[searchGroupVariables]]", searchGroup.map(function(e) { return e.name; }).join(","));
 
@@ -161,7 +170,7 @@ LatReport.prototype.getSearchGroupScript = function(index) {
         var variableTimes = [];
         for (var i = 0; i < this.lat.uniqueVariants.length; i++) {
             if (this.lat.uniqueVariants[i].searchGroupIndex == index) { //this variant matches this searchGroup
-                variableValuesX.push(this.lat.uniqueVariants[i].variant[searchGroup[0].index].value);
+                variableValuesX.push(this.getVariableValue(this.lat.uniqueVariants[i].variant[searchGroup[0].index].value));
                 variablesLabel.push(this.transformVariantToText(this.lat.uniqueVariants[i].variant));
                 variableTimes.push(this.lat.results[this.lat.getTuneName()].per_variant[i].avg);
             }
@@ -179,8 +188,8 @@ LatReport.prototype.getSearchGroupScript = function(index) {
         var variableTimes = [];
         for (var i = 0; i < this.lat.uniqueVariants.length; i++) {
             if (this.lat.uniqueVariants[i].searchGroupIndex == index) { //this variant matches this searchGroup
-                variableValuesX.push(this.lat.uniqueVariants[i].variant[searchGroup[0].index].value);
-                variableValuesY.push(this.lat.uniqueVariants[i].variant[searchGroup[1].index].value);
+                variableValuesX.push(this.getVariableValue(this.lat.uniqueVariants[i].variant[searchGroup[0].index].value));
+                variableValuesY.push(this.getVariableValue(this.lat.uniqueVariants[i].variant[searchGroup[1].index].value));
                 variablesLabel.push(this.transformVariantToText(this.lat.uniqueVariants[i].variant));
                 variableTimes.push(this.lat.results[this.lat.getTuneName()].per_variant[i].avg);
             }
