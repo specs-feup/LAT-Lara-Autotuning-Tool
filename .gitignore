@@ -1,3 +1,4 @@
 tests/emptyTest.lara
 examples/*/Dst
 templatesTests/*
+*.clava
