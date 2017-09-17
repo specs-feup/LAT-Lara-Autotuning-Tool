@@ -1,6 +1,6 @@
 import lat.Lat;
 
-aspectdef tune_mm
+aspectdef tune_omp
 	var lat = new Lat("omp");
 	
 	lat.setVerbose(true).setOutputFolder("C:/Users/M/Desktop/Development/specs/LAT/lat/examples/Omp/Dst");
