@@ -35,23 +35,17 @@ int main(int argc, char **argv)
     }
 
 // Computation
-/*
-   Following demonstrates tuning omp parameters that are predefined in Isat.
-   It also demonstrates the use of dependent search.
-*/
-#pragma isat tuning scope(M_begin, M_end) measure(M_begin, M_end) variable(@omp_schedule_type, [static, dynamic, guided]) variable(@omp_schedule_chunk, range(5, 10, 1, pow2)) variable(@omp_num_threads, range(1, $NUM_CPU_THREADS, 1)) search(dependent)
-
 #pragma lara marker OmpMeasure
 {
     int i;
 
-#pragma omp parallel for
+#pragma lat_omp parallel for
     for (i = 0; i < N; i++)
     {
         C[i] = Compute(A[i], B[i]);
     }
 
-#pragma omp parallel for schedule(guided)
+#pragma lat_omp parallel for
     for (i = 0; i < N; i++)
     {
         C[i] = Compute(A[i], B[i]);
