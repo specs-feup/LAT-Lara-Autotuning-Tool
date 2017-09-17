@@ -76,16 +76,16 @@ aspectdef getJoinpointsToChangeForLatVarOmp
     output latvarOut end 
 
     latvarOut = latvar;
-    latvarOut.pragma = undefined;
+    latvarOut.pragmas = [];
     //find pragma with the same name as the LatVarOmp passed
     select pragma end
     apply
         if(latvarOut.name == $pragma.name){
-            latvarOut.pragma = $pragma;
+            latvarOut.pragmas.push($pragma);
             break;
         }
     end
-    
+    //TODO: check for multiple pragmas with the same name
 
 end
 

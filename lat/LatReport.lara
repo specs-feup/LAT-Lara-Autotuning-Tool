@@ -139,7 +139,7 @@ LatReport.prototype.transformVariantToText = function(variant) {
             if (!LatUtils.isLatVarOmp(this.lat.uniqueVariables[i])) {
                 value = variant[i].value;
             } else {
-                value = this.lat.uniqueVariables[i].generateContent(variant[i]);
+                value = LatVarOmp.generateContentBody(variant[i].value);
             }
             result.push(name + " = " + value);
         }

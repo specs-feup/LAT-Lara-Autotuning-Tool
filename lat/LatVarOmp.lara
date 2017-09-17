@@ -13,7 +13,7 @@ var LatVarOmp = function(name, scheduleTypes, scheduleChunkSize, numThreads) {
     LatUtils.checkLatVarRangeOrList(numThreads, "numThreads");
     this.scheduleChunkSize = scheduleChunkSize;
     this.numThreads = numThreads;
-    this.pragma = undefined; //specific for each variant so it is only loaded inside .puhs/.pop
+    this.pragmas = []; //specific for each variant so it is only loaded inside .puhs/.pop
     this.generateOmpVariants();
     this.restart();
 };
@@ -76,14 +76,12 @@ LatVarOmp.generateContentBody = function(currentValue, body) {
         newContent += " num_threads(" + currentValue.numThreads + ")";
     }
     return newContent;
-}
-
-LatVarOmp.prototype.generateContent = function(currentValue) {
-    return LatVarOmp.generateContentBody(currentValue, this.pragma.content);
 };
 
 LatVarOmp.prototype.changeVariantInAst = function(currentValue) {
-    currentValue = currentValue.value;
-    this.pragma.setContent(this.generateContent(currentValue));
-    this.pragma.setName("omp");
+    for(var i = 0; i < this.pragmas.length; i++){
+        currentValue = currentValue.value;
+        this.pragmas[i].setContent(LatVarOmp.generateContentBody(currentValue, this.pragmas[i].content));
+        this.pragmas[i].setName("omp");
+    }
 };
