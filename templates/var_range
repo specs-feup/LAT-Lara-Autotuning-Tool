@@ -1,0 +1,13 @@
+<div>
+    <div class="uk-card uk-card-secondary uk-card-body">
+        <h3 class="uk-card-title">[[varName]]</h3>
+        <div class="uk-text-left">
+            <h5 class="uk-margin-remove">LatVarRange</h5>
+            <strong>start: </strong> [[start]]<br/>
+            <strong>stop: </strong> [[stop]]<br/>
+            <strong>step: </strong> [[step]]<br/>
+            <strong>countElements: </strong> [[countElements]]<br/>
+            <strong>type: </strong> [[varType]]
+        </div>
+    </div>
+</div>
