@@ -9,6 +9,7 @@ aspectdef tune_mm
 	apply
 		if($function.name == "BlockedMatrixMultiply"){
 			lat.setScope($function.body);
+			break;
 		}
 	end
 
@@ -16,6 +17,7 @@ aspectdef tune_mm
 	apply
 		if($marker.content == "marker bmmMeasure"){
 			lat.setMeasure($marker.contents);
+			break;
 		}
 	end
 	
