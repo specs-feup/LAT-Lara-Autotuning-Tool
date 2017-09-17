@@ -39,8 +39,8 @@ LatReport.prototype.generateReport = function() {
 
 LatReport.prototype.replaceVariablesCards = function(){
     var variableCards = "";
-    for(var i = 0; i < this.uniqueVariables.length; i++){
-        variableCards += this.getVariableCard(this.uniqueVariables[i]);
+    for(var i = 0; i < this.lat.uniqueVariables.length; i++){
+        variableCards += this.getVariableCard(this.lat.uniqueVariables[i]);
     }
     this.replacer.replaceAll("[[variableCards]]", variableCards);
 
@@ -139,7 +139,7 @@ LatReport.prototype.transformVariantToText = function(variant) {
             if (!LatUtils.isLatVarOmp(this.lat.uniqueVariables[i])) {
                 value = variant[i].value;
             } else {
-                value = "..." + this.uniqueVariables[i].generateContent(variant[i]);
+                value = "..." + this.lat.uniqueVariables[i].generateContent(variant[i]);
             }
             result.push(name + " = " + value);
         }
