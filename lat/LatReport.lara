@@ -150,7 +150,6 @@ LatReport.prototype.transformVariantToText = function(variant) {
 
 LatReport.prototype.getVariableValue = function(variable) {
     if (typeof variable === "object") {
-        println(JSON.stringify(variable));
         return '"' + LatVarOmp.generateContentBody(variable) + '"';
     } else {
         return variable;
