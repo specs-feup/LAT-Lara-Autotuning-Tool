@@ -15,12 +15,12 @@ aspectdef tune_mm
 
 	select marker end
 	apply
-		if($marker.content == "marker bmmMeasure"){
-			lat.setMeasure($marker.contents);
+		if($marker.id == "bmmMeasure"){
+			println($marker.code);
+			lat.setMeasure($marker.contents); 
 			break;
 		}
 	end
-	
 	var blk_k = new LatVarRange("blk_k", LatConst.L1_CACHE_LINESIZE, 16 * LatConst.L1_CACHE_LINESIZE, LatConst.L1_CACHE_LINESIZE / 2);
 	var blk_j = new LatVarRange("blk_j", LatConst.L1_CACHE_LINESIZE, 16 * LatConst.L1_CACHE_LINESIZE, LatConst.L1_CACHE_LINESIZE / 2);
 	var blk_i = new LatVarRange("blk_i", LatConst.L1_CACHE_LINESIZE, 16 * LatConst.L1_CACHE_LINESIZE, LatConst.L1_CACHE_LINESIZE / 2);
