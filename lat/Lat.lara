@@ -137,7 +137,7 @@ Lat.prototype.setScope = function(scope) {
     return this;
 };
 Lat.prototype.setMeasure = function(measure) {
-    LatUtils.checkJoinpoint(measure, "measure");
+    //LatUtils.checkJoinpoint(measure, "measure");
     this.measure = measure;
     return this;
 };
