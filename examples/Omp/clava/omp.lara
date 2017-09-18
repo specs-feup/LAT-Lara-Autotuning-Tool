@@ -7,7 +7,7 @@ aspectdef tune_omp
 	
 	select marker end
 	apply
-		if($marker.content == "marker OmpMeasure"){
+		if($marker.id == "OmpMeasure"){
 			lat.setScope($marker.contents);
 		}
 	end
