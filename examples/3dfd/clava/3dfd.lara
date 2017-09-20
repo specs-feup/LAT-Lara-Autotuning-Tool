@@ -46,5 +46,7 @@ aspectdef tune_mm
 	
 	var nworkers_specified = new LatVarRange(1, LatConst.NUM_CPU_THREADS + 1, 1);
 
+	lat.setVariables([nworkers_specified]);
+
 	lat.tune();
 end
