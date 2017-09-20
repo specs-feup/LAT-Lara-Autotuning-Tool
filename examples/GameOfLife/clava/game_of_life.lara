@@ -1,0 +1,52 @@
+import lat.Lat;
+
+aspectdef tune_mm
+	var lat = new Lat("region_1");
+	
+	lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
+	
+	//-----------------------------------------------First Tuning scope
+	//#pragma isat tuning name(region_1) scope(M1_begin, M1_end) measure(M2_begin, M2_end) variable(x_blksize, range(100, 1000, 100)) variable(y_blksize, range(100, 1000, 100)) variable(num_threads, range(1, $NUM_CPU_THREADS + 1, 1))
+	
+	select marker end
+	apply
+		if($marker.id == "M1"){
+			lat.setScope($marker.contents); 
+		}else if($marker.id = "M2"){
+			lat.setMeasure($marker.contents); 
+		}
+		//optional exit option from select apply
+		if(lat.scope !== undefined && lat.measure !== undefined){
+			break;
+		}
+	end
+
+	var x_blksize = new LatVarRange("x_blksize", 100, 1000, 100);
+	var y_blksize = new LatVarRange("y_blksize", 100, 1000, 100);
+	var num_threads = new LatVarRange("num_threads", 1, $NUM_CPU_THREADS + 1, 1);
+	
+	lat.setVariables([x_blksize, y_blksize, num_threads]);
+	
+	lat.tune();
+
+	//-----------------------------------------------Second Tuning scope
+	//#pragma isat tuning scope(M3_begin, M3_end) measure(M2_begin, M2_end) variable(@omp_schedule_type, [static,dynamic,guided]) variable(@omp_num_threads, range(1, $NUM_CPU_THREADS+1, 1)) search(dependent)
+	lat.name = "region_2";
+	lat.scope = undefined;
+
+	select marker end
+	apply
+		if($marker.id == "M3"){
+			lat.setScope($marker.contents); 
+			break;
+		}
+	end
+	
+	var omp_schedule_chunk = new LatVarRange("", 5, 10, 1, pow2);
+	var omp_num_threads = new LatVarRange("", 1, LatConst.NUM_CPU_THREADS + 1, 1);
+	var omp = new LatVarOmp("lat_tompb", ["static", "dynamic", "guided"], omp_schedule_chunk, omp_num_threads);
+	
+	lat.setVariables([omp]);
+
+	lat.tune();
+end
