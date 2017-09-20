@@ -3,7 +3,7 @@ import lat.Lat;
 aspectdef tune_mm
 	var lat = new Lat("blocked_mm");
 	
-	lat.loadCmaker().cmaker.setMakeCommand("nmake");
+	lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
 	
 	select function end
 	apply

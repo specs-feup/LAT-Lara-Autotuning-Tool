@@ -3,7 +3,7 @@ import lat.Lat;
 aspectdef tune_omp
 	var lat = new Lat("omp");
 	
-	lat.loadCmaker().cmaker.setMakeCommand("nmake");
+	lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
 	
 	select marker end
 	apply
