@@ -48,11 +48,11 @@ long long Timer::getTimeStamp() {
 unsigned long long Timer::readRDTSC() {
 #ifdef _WIN32
     unsigned long long t;
-    __asm {
-        rdtsc
-        mov dword ptr t, eax
-        mov dword ptr t + 4, edx
-    }
+    asm (
+        "rdtsc\n\t"
+        "mov dword ptr t, eax\n\t"
+        "mov dword ptr t + 4, edx"
+	);
     return t;
 #else
     unsigned int a, d;

@@ -2,6 +2,7 @@
 #ifndef _TiledOMPBOARD_H_
 #define _TiledOMPBOARD_H_
 
+#include <stddef.h>
 #include "TiledBoard.h"
 #include "omp.h"
 

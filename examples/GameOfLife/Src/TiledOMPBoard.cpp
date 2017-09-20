@@ -60,4 +60,4 @@ void TiledOMPBoard::next_gen()
 #endif
     }
 }
-}
+

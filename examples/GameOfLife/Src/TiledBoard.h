@@ -2,6 +2,7 @@
 #ifndef _TiledBOARD_H_
 #define _TiledBOARD_H_
 
+#include <stddef.h>
 #include <vector>
 #include "Board.h"
 #ifdef DO_LOG
