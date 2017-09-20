@@ -6,6 +6,7 @@ var searchGroup_[[searchGroupIndex]] = {
     y: [[[yValues]]],
     z: [[[zValues]]],
     type: 'scatter3d',
+    mode: 'markers',
     marker: {size: 8},
     text: [[[variantsLabel]]]
 };
