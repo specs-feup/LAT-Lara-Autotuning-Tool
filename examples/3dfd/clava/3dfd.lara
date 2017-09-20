@@ -1,0 +1,50 @@
+import lat.Lat;
+
+aspectdef tune_mm
+	var lat = new Lat("co_cilk");
+	
+	lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
+	
+	//-----------------------------------------------First Tuning scope
+	//#pragma isat tuning name(co_cilk) scope(co_cilk_start, co_cilk_end) measure(start_timing, end_timing) variable(NPIECES, range(2, 8, 1)) variable(dx_threshold, range(200, 2000, 8)) variable(dy_threshold, range(2, 128, 2)) variable(dz_threshold, range(2, 128, 2)) variable(dt_threshold, range(2, 128, 2))
+	
+	select marker end
+	apply
+		if($marker.id == "co_cilk"){
+			lat.setScope($marker.contents); 
+		}else if($marker.id = "timing"){
+			lat.setMeasure($marker.contents); 
+		}
+		//optional exit option from select apply
+		if(lat.scope !== undefined && lat.measure !== undefined){
+			break;
+		}
+	end
+
+	var NPIECES = new LatVarRange("NPIECES", 2, 8, 1);
+	var dt_threshold = new LatVarRange("dt_threshold", 2, 128, 2);
+	var dx_threshold = new LatVarRange("dx_threshold", 200, 2000, 8);
+	var dy_threshold = new LatVarRange("dy_threshold", 2, 128, 2);
+	var dz_threshold = new LatVarRange("dz_threshold", 2, 128, 2);
+	
+	lat.setVariables([NPIECES, dt_threshold, dx_threshold, dy_threshold, dz_threshold]);
+	
+	lat.tune();
+
+	//-----------------------------------------------Second Tuning scope
+	//#pragma isat tuning name(thd_count) scope(initCilk_begin, initCilk_end) measure(start_timing, end_timing) variable(nworkers_specified, range(1, $NUM_CPU_THREADS + 1, 1))
+	lat.name = "thd_count";
+	lat.scope = undefined;
+
+	select marker end
+	apply
+		if($marker.id == "initCilk"){
+			lat.setScope($marker.contents); 
+			break;
+		}
+	end
+	
+	var nworkers_specified = new LatVarRange(1, LatConst.NUM_CPU_THREADS + 1, 1);
+
+	lat.tune();
+end
