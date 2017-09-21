@@ -4,8 +4,6 @@ import lara.util.Replacer;
 import lat.LatConst;
 import lat.LatUtils;
 import lat.templates;
-import lat.templates_css;
-import lat.templates_js;
 
 
 var LatReport = function(lat) {
@@ -249,7 +247,9 @@ LatReport.prototype.includeResources = function() {
     //copy the css and js files
 
     var filesToCopy = [];
-    var cssFiles = templates_css.getFileList();
+    println("getBaseFolder: " + templates.getBaseFolder());
+    var cssFiles = templates.getFileList("css");
+    println("cssFiles: " + cssFiles);
     for (var i = 0; i < cssFiles.length; i++) {
         var c = String(cssFiles[i]);
         filesToCopy.push({
@@ -257,7 +257,7 @@ LatReport.prototype.includeResources = function() {
             outputTo: "css/" + c.split("\\").pop() + ".css"
         });
     }
-    var jsFiles = templates_js.getFileList();
+    var jsFiles = templates.getFileList("js");
     for (var i = 0; i < jsFiles.length; i++) {
         var c = String(jsFiles[i]);
         filesToCopy.push({
