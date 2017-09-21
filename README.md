@@ -1,4 +1,5 @@
-# LAT - LARA Autotuning Tool
+# LAT - LARA Autotuning Tool 
+### (Ongoing project)
 
 ## What is Lat
 
@@ -16,3 +17,4 @@
  - :file_folder: [templates](https://github.com/specs-feup/LAT-Lara-Autotuning-Tool/tree/master/templates) - html, css and js (extensionless) files that Lat uses to produce the LatReport;
  - :file_folder: [tests](https://github.com/specs-feup/LAT-Lara-Autotuning-Tool/tree/master/tests) - LARA aspect files that contain some tests for lat methods and properties
  
+### [Presentation about Lat](https://docs.google.com/presentation/d/16jLotjWUA6WJFUu2lA5GW7NaVbV6wX7JJwPlvxN6Czc/edit?usp=sharing)
