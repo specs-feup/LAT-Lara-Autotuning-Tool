@@ -613,6 +613,7 @@ Lat.prototype.generateReport = function() {
 Lat.prototype.checkVariablesInScope = function() {
     this.print("Checking the validity of the supplied variables...", true).pushIndent();
     //get a list of vardecl
+    //TODO: check if each variable has a vardecl or at least a varref in the scope
     if(this.scope.instanceOf("scope")){
         call callOutput: findVardeclInJoinpointScope(this.scope);
     }else{
