@@ -30,6 +30,7 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
     call callFile: getFile();
     this.file = callFile.thisFile;
     this.cmaker = undefined;
+	this.executionFlags = "";
 };
 
 Lat.prototype.tune = function() {
@@ -202,6 +203,11 @@ Lat.prototype.setClearCode = function(clearCode) {
 Lat.prototype.setVerbose = function(verbose) {
     LatUtils.checkBoolean(verbose, "verbose");
     this.verbose = verbose;
+    return this;
+};
+Lat.prototype.setExecutionFlags = function(executionFlags) {
+    checkType(executionFlags, "string");
+    this.executionFlags = executionFlags;
     return this;
 };
 Lat.prototype.setAbort = function(abort) {
@@ -524,7 +530,7 @@ Lat.prototype.executeSourceCode = function() {
             new ProcessExecutor()
                 .setPrintToConsole(false)
                 .setWorkingDir(this._variantsFolder + "/" + j)
-                .execute(this.uniqueVariants[j].executable);
+                .execute(this.uniqueVariants[j].executable + " " + this.executionFlags);
 
             this.popIndent().print("Done");
         }
@@ -650,10 +656,16 @@ Lat.prototype.generateExecutable = function(i) {
 
     this.cmaker.sources = new CMakerSources();
     this.cmaker.includeFolders = new StringSet();
-    this.cmaker.sources.addSource(this.file.relativeFilepath);
+    //this.cmaker.sources.addSource(this.file.relativeFilepath);
     this.cmaker.addIncludeFolder("../" + i);
     this.cmaker.name = "variant_" + i;
 
     var buildFolder = Io.getPath(this._variantsFolder + "/" + i, "build");
+	
+	call out1 : addFiles();
+	for(var file of out1.files) {
+		this.cmaker.sources.addSource(file);
+	}
+	
     return this.cmaker.build(this._variantsFolder + "/" + i, buildFolder);
 };

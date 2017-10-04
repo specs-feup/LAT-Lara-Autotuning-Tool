@@ -98,3 +98,15 @@ aspectdef getFile
     end
 
 end
+
+
+aspectdef addFiles
+	output files end
+	
+	files = [];
+	select file end
+	apply
+		files.push($file.relativeFilepath);
+		//println("FILE!: " + $file.relativeFilepath);
+	end
+end
