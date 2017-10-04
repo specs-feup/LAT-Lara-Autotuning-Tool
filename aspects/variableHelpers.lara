@@ -1,5 +1,5 @@
 
-aspectdef findVariablesInJoinpoint
+aspectdef findVardeclInJoinpoint
     input $jp end
     output list end 
 
@@ -10,7 +10,7 @@ aspectdef findVariablesInJoinpoint
     end
 end
 
-aspectdef findVariablesInJoinpointScope
+aspectdef findVardeclInJoinpointScope
     input $jp end
     output list end 
 

@@ -614,9 +614,9 @@ Lat.prototype.checkVariablesInScope = function() {
     this.print("Checking the validity of the supplied variables...", true).pushIndent();
     //get a list of vardecl
     if(this.scope.instanceOf("scope")){
-        call callOutput: findVariablesInJoinpointScope(this.scope);
+        call callOutput: findVardeclInJoinpointScope(this.scope);
     }else{
-        call callOutput: findVariablesInJoinpoint(this.scope);
+        call callOutput: findVardeclInJoinpoint(this.scope);
     }
     var foundVariables = callOutput.list;
     if (foundVariables.length < this.uniqueVariables.length) {
