@@ -499,7 +499,7 @@ Lat.prototype.generateSourceCode = function() {
                     call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[j]);
                 }
                 this.uniqueVariables[j] = callOutput.latvarOut;
-                this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i].variant[j]); //update the AST with the current value for this LatVar's variant
+                this.uniqueVariables[j].changeVariantInAst(this.scope, this.uniqueVariants[i].variant[j]); //update the AST with the current value for this LatVar's variant
             }
         }
         //2nd include the timer prints
@@ -612,6 +612,7 @@ Lat.prototype.generateReport = function() {
 
 Lat.prototype.checkVariablesInScope = function() {
     this.print("Checking the validity of the supplied variables...", true).pushIndent();
+    //get a list of vardecl
     if(this.scope.instanceOf("scope")){
         call callOutput: findVariablesInJoinpointScope(this.scope);
     }else{

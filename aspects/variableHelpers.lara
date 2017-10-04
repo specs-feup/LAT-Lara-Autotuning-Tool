@@ -110,3 +110,9 @@ aspectdef addFiles
 		//println("FILE!: " + $file.relativeFilepath);
 	end
 end
+
+aspectdef insertVarrefWriteAtScopeStart
+    input $scope, latVar, currentValue end
+
+    //TODO: implement insertion of varref write at the beginning of scope to set latVar to the currentValue.value
+end

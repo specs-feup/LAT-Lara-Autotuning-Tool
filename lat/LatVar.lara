@@ -24,7 +24,7 @@ LatVar.prototype.countElements = function() {
 LatVar.prototype.restart = function() {
     LatUtils._error("function restart not implemented");
 };
-LatVar.prototype.changeVariantInAst = function(currentValue) {
+LatVar.prototype.changeVariantInAst = function($scope, currentValue) {
     var readOnly = true;
     for(var i = 0; i < this.varrefs.length; i++){
         if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.WRITE || this.varrefs[i].useExpr.use == LatConst.VAR_USES.READWRITE){
@@ -33,8 +33,12 @@ LatVar.prototype.changeVariantInAst = function(currentValue) {
         }
     }
     if(readOnly){
-        var $temp = this.vardecl;
-        $temp.exec setInit (currentValue.value);
+        if(this.vardecl == undefined){//inserts a declaration in the beginning of scope
+            call insertVarrefWriteAtScopeStart($eqScope, this, currentValue);
+        }else{//change the vardecl
+            var $temp = this.vardecl;
+            $temp.exec setInit (currentValue.value);
+        }
     }else{
         for(var i = 0; i < this.varrefs.length; i++){
             if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.READ){
