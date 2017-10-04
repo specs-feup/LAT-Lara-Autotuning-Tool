@@ -26,6 +26,10 @@ aspectdef getJoinpointsToChangeForSingleLatVar
     output latvarOut end 
 
     latvarOut = latvar;
+    //clear the values
+    latvarOut.vardecl = undefined;
+    latvarOut.varrefs = [];
+
 
     //find vardecls
     select $jp.vardecl end
@@ -37,7 +41,6 @@ aspectdef getJoinpointsToChangeForSingleLatVar
     end
 
     //find varrefs
-    latvarOut.varrefs = [];
     select $jp.varref end
     apply
         if(latvarOut.name == $varref.name){
@@ -50,6 +53,9 @@ aspectdef getJoinpointsToChangeForSingleLatVarScope
     output latvarOut end 
 
     latvarOut = latvar;
+    //clear the values
+    latvarOut.vardecl = undefined;
+    latvarOut.varrefs = [];
 
     //find vardecls
     select $jp.stmt.vardecl end
@@ -61,7 +67,6 @@ aspectdef getJoinpointsToChangeForSingleLatVarScope
     end
 
     //find varrefs
-    latvarOut.varrefs = [];
     select $jp.stmt.varref end
     apply
         if(latvarOut.name == $varref.name){
