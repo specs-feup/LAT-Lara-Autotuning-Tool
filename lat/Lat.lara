@@ -612,7 +612,6 @@ Lat.prototype.generateReport = function() {
 
 Lat.prototype.checkVariablesInScope = function() {
     this.print("Checking the validity of the supplied variables...", true).pushIndent();
-    var countWarnings = 0;
     for (var i = 0; i < this.uniqueVariables.length; i++) {
         //for each uniqque variable check if it exists in the current scope
         if (!LatUtils.isLatVarOmp(this.uniqueVariables[i])) { //omp does not use vardecl nor varref
@@ -623,25 +622,17 @@ Lat.prototype.checkVariablesInScope = function() {
             }
             var tempLatVar = callOutput.latvarOut;
             if (tempLatVar.vardecl === undefined && tempLatVar.varrefs.length == 0) { //no vardecl and no varref
-                LatUtils._warn("Variable '" + tempLatVar.name + "' has no Vardecl or Varref in the current scope, check that this is the intended behaviour");
-                countWarnings++;
+                LatUtils._error("Variable '" + tempLatVar.name + "' has no Vardecl or Varref in the current scope, check that this is the intended behaviour");
             }
         } else {
             call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[i]);
             var tempLatVar = callOutput.latvarOut;
             if (tempLatVar.pragmas.length == 0) {
-                LatUtils._warn("OMP variable '" + tempLatVar.name + "' has no Pragma in the current scope to change, check that this is the intended behaviour");
-                countWarnings++;
+                LatUtils._error("OMP variable '" + tempLatVar.name + "' has no Pragma in the current scope to change, check that this is the intended behaviour");
             }
         }
     }
-    this.popIndent();
-    if (countWarnings == 0) {
-        this.print("Done - no warnings were found", true);
-    } else {
-        this.print("Done - " + countWarnings + " warnings were found", true);
-    }
-    this.print();
+    this.popIndent().print("Done - no warnings were found", true).print();
 };
 
 Lat.prototype.checkIncludes = function() {
