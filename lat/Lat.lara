@@ -19,8 +19,8 @@ import lat.LatReport;
 
 import aspects.variableHelpers;
 
-var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder) {
-    this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder);
+var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder, conservativeReplacement) {
+    this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder, conservativeReplacement);
     this._tunned = false; /** set to true after a tuning execution, used to block functions that require tune, such as printResults */
     this._printIndentation = 0; /** indicates the hierarchy level of the print operations */
     this._tuneCounts = 0; /** at each tuning operation the name that is output is changed automatically so that there is no confusion between diferent tuning operations */
@@ -30,7 +30,7 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
     call callFile: getFile();
     this.file = callFile.thisFile;
     this.cmaker = undefined;
-	this.executionFlags = "";
+    this.executionFlags = "";
 };
 
 Lat.prototype.tune = function() {
@@ -49,7 +49,7 @@ Lat.prototype.tune = function() {
     this.generateUniqueVariables();
     this.generateBaseVariant(); //must come after generateUniqueVariables
     this.generateUniqueVariants();
-    if(this.uniqueVariants == 0){
+    if (this.uniqueVariants == 0) {
         LatUtils._warn("No variant to test, add variables or searchGroups before calling .tune()");
         return;
     }
@@ -64,7 +64,7 @@ Lat.prototype.tune = function() {
     this.executeSourceCode();
     this.parseResults();
 
-    this._duration = System.nanos() - this._duration;//must be before generateReport
+    this._duration = System.nanos() - this._duration; //must be before generateReport
     this.generateReport();
 
     this._tuneCounts++; //update the current index of the tuning operation after the report generation
@@ -229,6 +229,11 @@ Lat.prototype.setOutputFolder = function(outputFolder) {
     this.updatePathVariables();
     return this;
 };
+Lat.prototype.setConservativeReplacement = function(conservativeReplacement) {
+    LatUtils.checkBoolean(conservativeReplacement, "conservativeReplacement");
+    this.conservativeReplacement = conservativeReplacement;
+    return this;
+};
 Lat.prototype.setCmaker = function(cmaker) {
     if (!(cmaker instanceof CMaker)) {
         LatUtils._error("Invalid value supplied in setCmaker: the value should be an instance of CMaker");
@@ -259,7 +264,7 @@ Lat.prototype.updatePathVariables = function() {
 
 //--------------------------------------------Helper functions (code compartimentalization)
 
-Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder) {
+Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder, conservativeReplacement) {
     //requried values
     this.name = this.validateProperty("name", name);
     this.scope = this.validateProperty("scope", scope);
@@ -275,6 +280,7 @@ Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchTyp
     this.abort = this.validateProperty("abort", abort, false);
     this.timeout = this.validateProperty("timeout", timeout, 0);
     this.outputFolder = this.validateProperty("outputFolder", outputFolder, ".");
+    this.conservativeReplacement = this.validateProperty("conservativeReplacement", conservativeReplacement, false);
     this.updatePathVariables();
 };
 
@@ -490,16 +496,16 @@ Lat.prototype.generateSourceCode = function() {
 
                 var callOutput = undefined;
                 if (!LatUtils.isLatVarOmp(this.uniqueVariables[j])) { //omp does not use vardecl nor varref
-                    if($eqScope.instanceOf("scope")){
-                        call callOutput: getJoinpointsToChangeForSingleLatVarScope($eqScope, this.uniqueVariables[j]); 
-                    }else{
-                        call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]); 
+                    if ($eqScope.instanceOf("scope")) {
+                        call callOutput: getJoinpointsToChangeForSingleLatVarScope($eqScope, this.uniqueVariables[j]);
+                    } else {
+                        call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]);
                     }
                 } else {
                     call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[j]);
                 }
                 this.uniqueVariables[j] = callOutput.latvarOut;
-                this.uniqueVariables[j].changeVariantInAst(this.uniqueVariants[i].variant[j]); //update the AST with the current value for this LatVar's variant
+                this.uniqueVariables[j].changeVariantInAst(this.scope, this.uniqueVariants[i].variant[j], this.conservativeReplacement); //update the AST with the current value for this LatVar's variant
             }
         }
         //2nd include the timer prints
@@ -612,29 +618,27 @@ Lat.prototype.generateReport = function() {
 
 Lat.prototype.checkVariablesInScope = function() {
     this.print("Checking the validity of the supplied variables...", true).pushIndent();
-    if(this.scope.instanceOf("scope")){
-        call callOutput: findVariablesInJoinpointScope(this.scope);
-    }else{
-        call callOutput: findVariablesInJoinpoint(this.scope);
-    }
-    var foundVariables = callOutput.list;
-    if (foundVariables.length < this.uniqueVariables.length) {
-        LatUtils._error("Not enough variables in the source code to match the supplied LatVars in this scope found: [" + foundVariables + "]");
-    }
     for (var i = 0; i < this.uniqueVariables.length; i++) {
-        if (!LatUtils.isLatVarOmp(this.uniqueVariables[i])) {
-            var found = false;
-            for (var j = 0; j < foundVariables.length; j++) {
-                if (this.uniqueVariables[i].name == foundVariables[j]) {
-                    found = true;
-                }
+        //for each uniqque variable check if it exists in the current scope
+        if (!LatUtils.isLatVarOmp(this.uniqueVariables[i])) { //omp does not use vardecl nor varref
+            if (this.scope.instanceOf("scope")) {
+                call callOutput: getJoinpointsToChangeForSingleLatVarScope(this.scope, this.uniqueVariables[i]);
+            } else {
+                call callOutput: getJoinpointsToChangeForSingleLatVar(this.scope, this.uniqueVariables[i]);
             }
-            if (!found) {
-                LatUtils._error("Variable '" + this.uniqueVariables[i].name + "' declaration not found in the variables available in the current scope: [" + foundVariables + "]");
+            var tempLatVar = callOutput.latvarOut;
+            if (tempLatVar.vardecl === undefined && tempLatVar.varrefs.length == 0) { //no vardecl and no varref
+                LatUtils._error("Variable '" + tempLatVar.name + "' has no Vardecl or Varref in the current scope, check that this is the intended behaviour");
+            }
+        } else {
+            call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[i]);
+            var tempLatVar = callOutput.latvarOut;
+            if (tempLatVar.pragmas.length == 0) {
+                LatUtils._error("OMP variable '" + tempLatVar.name + "' has no Pragma in the current scope to change, check that this is the intended behaviour");
             }
         }
     }
-    this.popIndent().print("Done - no errors were found", true).print();
+    this.popIndent().print("Done - no warnings were found", true).print();
 };
 
 Lat.prototype.checkIncludes = function() {
@@ -661,11 +665,11 @@ Lat.prototype.generateExecutable = function(i) {
     this.cmaker.name = "variant_" + i;
 
     var buildFolder = Io.getPath(this._variantsFolder + "/" + i, "build");
-	
-	call out1 : addFiles();
-	for(var file of out1.files) {
-		this.cmaker.sources.addSource(file);
-	}
-	
+
+    call out1: addFiles();
+    for (var file of out1.files) {
+        this.cmaker.sources.addSource(file);
+    }
+
     return this.cmaker.build(this._variantsFolder + "/" + i, buildFolder);
 };
