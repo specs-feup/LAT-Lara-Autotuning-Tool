@@ -30,7 +30,7 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
     call callFile: getFile();
     this.file = callFile.thisFile;
     this.cmaker = undefined;
-	this.executionFlags = "";
+    this.executionFlags = "";
 };
 
 Lat.prototype.tune = function() {
@@ -49,7 +49,7 @@ Lat.prototype.tune = function() {
     this.generateUniqueVariables();
     this.generateBaseVariant(); //must come after generateUniqueVariables
     this.generateUniqueVariants();
-    if(this.uniqueVariants == 0){
+    if (this.uniqueVariants == 0) {
         LatUtils._warn("No variant to test, add variables or searchGroups before calling .tune()");
         return;
     }
@@ -64,7 +64,7 @@ Lat.prototype.tune = function() {
     this.executeSourceCode();
     this.parseResults();
 
-    this._duration = System.nanos() - this._duration;//must be before generateReport
+    this._duration = System.nanos() - this._duration; //must be before generateReport
     this.generateReport();
 
     this._tuneCounts++; //update the current index of the tuning operation after the report generation
@@ -490,10 +490,10 @@ Lat.prototype.generateSourceCode = function() {
 
                 var callOutput = undefined;
                 if (!LatUtils.isLatVarOmp(this.uniqueVariables[j])) { //omp does not use vardecl nor varref
-                    if($eqScope.instanceOf("scope")){
-                        call callOutput: getJoinpointsToChangeForSingleLatVarScope($eqScope, this.uniqueVariables[j]); 
-                    }else{
-                        call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]); 
+                    if ($eqScope.instanceOf("scope")) {
+                        call callOutput: getJoinpointsToChangeForSingleLatVarScope($eqScope, this.uniqueVariables[j]);
+                    } else {
+                        call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]);
                     }
                 } else {
                     call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[j]);
@@ -612,31 +612,36 @@ Lat.prototype.generateReport = function() {
 
 Lat.prototype.checkVariablesInScope = function() {
     this.print("Checking the validity of the supplied variables...", true).pushIndent();
-    //get a list of vardecl
-    //TODO: check if each variable has a vardecl or at least a varref in the scope
-    if(this.scope.instanceOf("scope")){
-        call callOutput: findVardeclInJoinpointScope(this.scope);
-    }else{
-        call callOutput: findVardeclInJoinpoint(this.scope);
-    }
-    var foundVariables = callOutput.list;
-    if (foundVariables.length < this.uniqueVariables.length) {
-        LatUtils._error("Not enough variables in the source code to match the supplied LatVars in this scope found: [" + foundVariables + "]");
-    }
+    var countWarnings = 0;
     for (var i = 0; i < this.uniqueVariables.length; i++) {
-        if (!LatUtils.isLatVarOmp(this.uniqueVariables[i])) {
-            var found = false;
-            for (var j = 0; j < foundVariables.length; j++) {
-                if (this.uniqueVariables[i].name == foundVariables[j]) {
-                    found = true;
-                }
+        //for each uniqque variable check if it exists in the current scope
+        if (!LatUtils.isLatVarOmp(this.uniqueVariables[i])) { //omp does not use vardecl nor varref
+            if (this.scope.instanceOf("scope")) {
+                call callOutput: getJoinpointsToChangeForSingleLatVarScope(this.scope, this.uniqueVariables[i]);
+            } else {
+                call callOutput: getJoinpointsToChangeForSingleLatVar(this.scope, this.uniqueVariables[i]);
             }
-            if (!found) {
-                LatUtils._error("Variable '" + this.uniqueVariables[i].name + "' declaration not found in the variables available in the current scope: [" + foundVariables + "]");
+            var tempLatVar = callOutput.latvarOut;
+            if (tempLatVar.vardecl === undefined && tempLatVar.varrefs.length == 0) { //no vardecl and no varref
+                LatUtils._warn("Variable '" + tempLatVar.name + "' has no Vardecl or Varref in the current scope, check that this is the intended behaviour");
+                countWarnings++;
+            }
+        } else {
+            call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[i]);
+            var tempLatVar = callOutput.latvarOut;
+            if (tempLatVar.pragmas.length == 0) {
+                LatUtils._warn("OMP variable '" + tempLatVar.name + "' has no Pragma in the current scope to change, check that this is the intended behaviour");
+                countWarnings++;
             }
         }
     }
-    this.popIndent().print("Done - no errors were found", true).print();
+    this.popIndent();
+    if (countWarnings == 0) {
+        this.print("Done - no warnings were found", true);
+    } else {
+        this.print("Done - " + countWarnings + " warnings were found", true);
+    }
+    this.print();
 };
 
 Lat.prototype.checkIncludes = function() {
@@ -663,11 +668,11 @@ Lat.prototype.generateExecutable = function(i) {
     this.cmaker.name = "variant_" + i;
 
     var buildFolder = Io.getPath(this._variantsFolder + "/" + i, "build");
-	
-	call out1 : addFiles();
-	for(var file of out1.files) {
-		this.cmaker.sources.addSource(file);
-	}
-	
+
+    call out1: addFiles();
+    for (var file of out1.files) {
+        this.cmaker.sources.addSource(file);
+    }
+
     return this.cmaker.build(this._variantsFolder + "/" + i, buildFolder);
 };
