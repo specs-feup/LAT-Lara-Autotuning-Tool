@@ -1,3 +1,4 @@
+import aspects.variableHelpers;
 var LatVar = function(name, type) {
     LatUtils.checkString(name, "LatVar*.name");
     this.name = name;
@@ -34,7 +35,7 @@ LatVar.prototype.changeVariantInAst = function($scope, currentValue) {
     }
     if(readOnly){
         if(this.vardecl == undefined){//inserts a declaration in the beginning of scope
-            call insertVarrefWriteAtScopeStart($eqScope, this, currentValue);
+            call insertVarrefWriteAtScopeStart($scope, this, currentValue);
         }else{//change the vardecl
             var $temp = this.vardecl;
             $temp.exec setInit (currentValue.value);
