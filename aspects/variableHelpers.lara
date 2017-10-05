@@ -52,7 +52,6 @@ aspectdef getJoinpointsToChangeForSingleLatVarScope
     end
 end
 
-
 aspectdef getJoinpointsToChangeForLatVarOmp
     input latvar end
     output latvarOut end 
@@ -68,7 +67,6 @@ aspectdef getJoinpointsToChangeForLatVarOmp
         }
     end
     //TODO: check for multiple pragmas with the same name - issue on github
-
 end
 
 aspectdef getFile
@@ -89,12 +87,12 @@ aspectdef addFiles
 	select file end
 	apply
 		files.push($file.relativeFilepath);
-		//println("FILE!: " + $file.relativeFilepath);
 	end
 end
 
 aspectdef insertVarrefWriteAtScopeStart
     input $scope, latVar, currentValue end
 
+    $scope.insertBegin(latVar.name + " = " + currentValue.value);
     //TODO: implement insertion of varref write at the beginning of scope to set latVar to the currentValue.value
 end
