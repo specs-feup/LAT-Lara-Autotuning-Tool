@@ -1,4 +1,3 @@
-
 aspectdef getJoinpointsToChangeForSingleLatVar
     input $jp, latvar end
     output latvarOut end 
