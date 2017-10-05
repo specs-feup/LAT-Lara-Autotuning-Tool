@@ -67,7 +67,7 @@ aspectdef getJoinpointsToChangeForLatVarOmp
             break;
         }
     end
-    //TODO: check for multiple pragmas with the same name
+    //TODO: check for multiple pragmas with the same name - issue on github
 
 end
 
