@@ -19,8 +19,8 @@ import lat.LatReport;
 
 import aspects.variableHelpers;
 
-var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder) {
-    this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder);
+var Lat = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder, conservativeReplacement) {
+    this.loadDefaults(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder, conservativeReplacement);
     this._tunned = false; /** set to true after a tuning execution, used to block functions that require tune, such as printResults */
     this._printIndentation = 0; /** indicates the hierarchy level of the print operations */
     this._tuneCounts = 0; /** at each tuning operation the name that is output is changed automatically so that there is no confusion between diferent tuning operations */
@@ -229,6 +229,11 @@ Lat.prototype.setOutputFolder = function(outputFolder) {
     this.updatePathVariables();
     return this;
 };
+Lat.prototype.setConservativeReplacement = function(conservativeReplacement) {
+    LatUtils.checkBoolean(conservativeReplacement, "conservativeReplacement");
+    this.conservativeReplacement = conservativeReplacement;
+    return this;
+};
 Lat.prototype.setCmaker = function(cmaker) {
     if (!(cmaker instanceof CMaker)) {
         LatUtils._error("Invalid value supplied in setCmaker: the value should be an instance of CMaker");
@@ -259,7 +264,7 @@ Lat.prototype.updatePathVariables = function() {
 
 //--------------------------------------------Helper functions (code compartimentalization)
 
-Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder) {
+Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchType, numTests, removeDuplicates, clearCode, verbose, abort, timeout, outputFolder, conservativeReplacement) {
     //requried values
     this.name = this.validateProperty("name", name);
     this.scope = this.validateProperty("scope", scope);
@@ -275,6 +280,7 @@ Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchTyp
     this.abort = this.validateProperty("abort", abort, false);
     this.timeout = this.validateProperty("timeout", timeout, 0);
     this.outputFolder = this.validateProperty("outputFolder", outputFolder, ".");
+    this.conservativeReplacement = this.validateProperty("conservativeReplacement", conservativeReplacement, false);
     this.updatePathVariables();
 };
 
@@ -499,7 +505,7 @@ Lat.prototype.generateSourceCode = function() {
                     call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[j]);
                 }
                 this.uniqueVariables[j] = callOutput.latvarOut;
-                this.uniqueVariables[j].changeVariantInAst(this.scope, this.uniqueVariants[i].variant[j]); //update the AST with the current value for this LatVar's variant
+                this.uniqueVariables[j].changeVariantInAst(this.scope, this.uniqueVariants[i].variant[j], this.conservativeReplacement); //update the AST with the current value for this LatVar's variant
             }
         }
         //2nd include the timer prints

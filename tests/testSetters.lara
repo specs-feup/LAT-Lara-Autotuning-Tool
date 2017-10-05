@@ -123,6 +123,16 @@ aspectdef TestSetters
 			LatUtils._error("lat abort should be equal to false");
 		}
 		
+		//conservativeReplacement
+		lat.setConservativeReplacement(true);
+		if(lat.conservativeReplacement !== true){
+			LatUtils._error("lat conservativeReplacement should be equal to true");
+		}
+		lat.setConservativeReplacement(false);
+		if(lat.conservativeReplacement !== false){
+			LatUtils._error("lat conservativeReplacement should be equal to false");
+		}
+		
 		//timeout
 		lat.setTimeout(10);
 		if(lat.timeout !== 10){

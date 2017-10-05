@@ -89,10 +89,11 @@ aspectdef addFiles
 		files.push($file.relativeFilepath);
 	end
 end
-
+/*
 aspectdef insertVarrefWriteAtScopeStart
     input $scope, latVar, currentValue end
+    println($scope.joinPointType);
 
-    $scope.insertBegin(latVar.name + " = " + currentValue.value);
+    //$scope.insertBegin(latVar.name + " = " + currentValue.value);
     //TODO: implement insertion of varref write at the beginning of scope to set latVar to the currentValue.value
-end
+end*/

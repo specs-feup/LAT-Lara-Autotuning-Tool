@@ -25,26 +25,21 @@ LatVar.prototype.countElements = function() {
 LatVar.prototype.restart = function() {
     LatUtils._error("function restart not implemented");
 };
-LatVar.prototype.changeVariantInAst = function($scope, currentValue) {
-    var readOnly = true;
-    for(var i = 0; i < this.varrefs.length; i++){
-        if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.WRITE || this.varrefs[i].useExpr.use == LatConst.VAR_USES.READWRITE){
-            readOnly = false;
-            break;
-        }
-    }
-    if(readOnly){
-        if(this.vardecl == undefined){//inserts a declaration in the beginning of scope
-            call insertVarrefWriteAtScopeStart($scope, this, currentValue);
-        }else{//change the vardecl
-            var $temp = this.vardecl;
-            $temp.exec setInit (currentValue.value);
-        }
-    }else{
+LatVar.prototype.changeVariantInAst = function($scope, currentValue, conservativeReplacement) {
+    if(conservativeReplacement){//replace all reads until the first write
         for(var i = 0; i < this.varrefs.length; i++){
             if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.READ){
                 var $temp = this.varrefs[i];
-                $temp.replace(%{[[currentValue.value]]}%);
+                $temp.replace(currentValue.value);
+            }else if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.WRITE || this.varrefs[i].useExpr.use == LatConst.VAR_USES.READWRITE){//detect the first write or readwrite
+                break;
+            }
+        }
+    }else{//replace all reads
+        for(var i = 0; i < this.varrefs.length; i++){
+            if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.READ){
+                var $temp = this.varrefs[i];
+                $temp.replace(currentValue.value);
             }
         }
     }
