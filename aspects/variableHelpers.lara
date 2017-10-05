@@ -1,26 +1,4 @@
 
-aspectdef findVardeclInJoinpoint
-    input $jp end
-    output list end 
-
-    list = [];
-    select $jp.vardecl end
-    apply
-        list.push($vardecl.name);
-    end
-end
-
-aspectdef findVardeclInJoinpointScope
-    input $jp end
-    output list end 
-
-    list = [];
-    select $jp.stmt.vardecl end
-    apply
-        list.push($vardecl.name);
-    end
-end
-
 aspectdef getJoinpointsToChangeForSingleLatVar
     input $jp, latvar end
     output latvarOut end 
