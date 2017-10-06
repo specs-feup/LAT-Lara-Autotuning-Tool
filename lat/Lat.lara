@@ -290,7 +290,7 @@ Lat.prototype.loadCmaker = function() {
         //.setMakeCommand("make")
         .addCxxFlags("-O3", "-std=c++11")
         .addLibs("stdc++")
-        .setGenerator("MinGW Makefiles");
+        //.setGenerator("MinGW Makefiles");
     return this;
 };
 
