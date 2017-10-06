@@ -279,8 +279,8 @@ Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchTyp
 };
 
 Lat.prototype.loadCmaker = function() {
-    this.cmaker = new CMaker("tempName")
-        .setMinimumVersion("3.0.2")
+    this.cmaker = new CMaker("tempName");
+    this.cmaker.setMinimumVersion("3.0.2")
         //.setMakeCommand("make")
         .addCxxFlags("-O3", "-std=c++11")
         .addLibs("stdc++")
@@ -553,6 +553,10 @@ Lat.prototype.parseResults = function(emptyFileAfterwards) {
     var lines = contents.split("\n"); // split into an array in which each line is an array element
     this.results = {}; // a named object, the name is the tune name and the content is an array of time measures
     for (var i = 0; i < lines.length; i++) {
+		//if(lines[i].trim().length() === 0) {
+		//	continue;
+		//}
+		
         //parse one line from the timer file into variables
         //format: tuneName variant time
         var parts = lines[i].split(" "); // 0 -> [name]_[index], 1->[variant]_[index], 2->[time]ns
