@@ -78,7 +78,7 @@ LatVarOmp.generateContentBody = function(currentValue, body) {
     return newContent;
 };
 
-LatVarOmp.prototype.changeVariantInAst = function(currentValue) {
+LatVarOmp.prototype.changeVariantInAst = function($scope, currentValue) {
     for(var i = 0; i < this.pragmas.length; i++){
         currentValue = currentValue.value;
         this.pragmas[i].setContent(LatVarOmp.generateContentBody(currentValue, this.pragmas[i].content));
