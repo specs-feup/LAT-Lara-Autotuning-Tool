@@ -52,3 +52,10 @@ LatVar.prototype.setType = function(type) {
         this.type = LatConst.OUTPUT_TYPE.AUTO;
     }
 };
+
+/**
+ * @returns {boolean} true if this LatVar requires a variable in the given scope to work. By default returns true.
+ */
+LatVar.prototype.requiresScopeVariable = function() {
+	return true;
+}
