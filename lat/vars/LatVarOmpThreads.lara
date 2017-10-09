@@ -1,0 +1,74 @@
+var LatVarOmpThreads = function(numThreads, disableDynamicTeams) {
+    LatVar.call(this, "");
+    
+	if(disableDynamicTeams === undefined) {
+		disableDynamicTeams = false;
+	}
+	
+	
+    //check if it is a LatVarRange or LatVarList
+    LatUtils.checkLatVarRangeOrList(numThreads, "numThreads");
+	checkBoolean(disableDynamicTeams, "new LatVarOmpThreads::disableDynamicTeams");
+	
+    this.numThreads = numThreads;
+    this.generateOmpVariants();
+    this.restart();
+};
+
+LatVarOmpThreads.prototype = Object.create(LatVar.prototype);
+LatVarOmpThreads.prototype.constructor = LatVarOmpThreads;
+
+//Functions overloaded from LatVar
+LatVarOmpThreads.prototype.getNext = function() {
+    if (this.first) {
+        this.first = false;
+        return LatUtils.clone(LatConst.LAT_VALUE.DEFAULT);
+    }
+    return { type: this.type, value: this.variants[this.elementIndex++], default: false };
+};
+
+LatVarOmpThreads.prototype.hasNext = function() {
+    return this.elementIndex < this.variants.length;
+};
+LatVarOmpThreads.prototype.countElements = function() {
+    return this.variants.length;
+};
+LatVarOmpThreads.prototype.restart = function() {
+    this.elementIndex = 0;
+    this.first = true;
+    return this;
+};
+
+//specific functions
+LatVarOmpThreads.prototype.generateOmpVariants = function() {
+    this.variants = [];
+    this.numThreads.getNext(); //ignore num threads default
+    while (this.numThreads.hasNext()) {
+		this.variants.push({
+            numThreads: this.numThreads.getNext().value
+        });
+    }
+    this.numThreads.restart();
+
+    
+    return this;
+};
+
+LatVarOmpThreads.prototype.changeVariantInAst = function($scope, currentValue) {
+    println("Current value:");
+	printObject(currentValue);
+	// Add include
+	$scope.ancestor("file").addInclude("omp.h", true);
+	
+	// Disable dynamic teams, if enabled
+	if(this.disableDynamicTeams) {
+		$scope.exec insertBefore("omp_set_dynamic(0);");
+	}
+
+	// Set number of threads
+	$scope.exec insertBefore("omp_set_num_threads(" + currentValue.value.numThreads + ");");
+};
+
+LatVarOmpThreads.prototype.requiresScopeVariable = function() {
+	return false;
+}
