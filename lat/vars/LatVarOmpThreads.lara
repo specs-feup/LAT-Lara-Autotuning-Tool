@@ -11,7 +11,7 @@ var LatVarOmpThreads = function(numThreads, disableDynamicTeams) {
 	checkBoolean(disableDynamicTeams, "new LatVarOmpThreads::disableDynamicTeams");
 
     this.numThreads = numThreads;
-    this.generateOmpVariants();
+    //this.generateOmpVariants();
     this.restart();
 };
 
@@ -35,6 +35,7 @@ LatVarOmpThreads.prototype.restart = function() {
 };
 
 //specific functions
+/*
 LatVarOmpThreads.prototype.generateOmpVariants = function() {
     this.variants = [];
     this.numThreads.getNext(); //ignore num threads default
@@ -48,10 +49,8 @@ LatVarOmpThreads.prototype.generateOmpVariants = function() {
 
     return this;
 };
-
+*/
 LatVarOmpThreads.prototype.changeVariantInAst = function($scope, currentValue) {
-    println("Current value:");
-	printObject(currentValue);
 	// Add include
 	$scope.ancestor("file").addInclude("omp.h", true);
 
@@ -61,7 +60,7 @@ LatVarOmpThreads.prototype.changeVariantInAst = function($scope, currentValue) {
 	}
 
 	// Set number of threads
-	$scope.exec insertBefore("omp_set_num_threads(" + currentValue.value.numThreads + ");");
+	$scope.exec insertBefore("omp_set_num_threads(" + currentValue.value + ");");
 };
 
 LatVarOmpThreads.prototype.requiresScopeVariable = function() {
