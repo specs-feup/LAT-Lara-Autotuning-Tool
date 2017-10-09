@@ -507,7 +507,7 @@ Lat.prototype.generateSourceCode = function() {
                     call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[j]);
                 }
                 this.uniqueVariables[j] = callOutput.latvarOut;
-                this.uniqueVariables[j].changeVariantInAst(this.scope, this.uniqueVariants[i].variant[j], this.conservativeReplacement); //update the AST with the current value for this LatVar's variant
+				this.uniqueVariables[j].changeVariantInAst($eqScope, this.uniqueVariants[i].variant[j], this.conservativeReplacement); //update the AST with the current value for this LatVar's variant
             }
         }
         //2nd include the timer prints
