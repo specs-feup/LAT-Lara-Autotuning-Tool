@@ -31,6 +31,8 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
     this.file = callFile.thisFile;
     this.cmaker = undefined;
     this.executionFlags = undefined;
+	// Initialize search groups to empty array
+	this.searchGroups = [];
 };
 
 Lat.prototype.tune = function() {
@@ -652,8 +654,8 @@ Lat.prototype.checkVariablesInScope = function() {
                 call callOutput: getJoinpointsToChangeForSingleLatVar(this.scope, this.uniqueVariables[i]);
             }
             var tempLatVar = callOutput.latvarOut;
-            if (tempLatVar.vardecl === undefined && tempLatVar.varrefs.length == 0) { //no vardecl and no varref
-                LatUtils._error("Variable '" + tempLatVar.name + "' has no Vardecl or Varref in the current scope, check that this is the intended behaviour");
+            if (tempLatVar.requiresScopeVariable() && tempLatVar.vardecl === undefined && tempLatVar.varrefs.length == 0) { //no vardecl and no varref
+				LatUtils._error("Variable '" + tempLatVar.name + "' has no Vardecl or Varref in the current scope, check that this is the intended behaviour");
             }
         } else {
             call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[i]);
