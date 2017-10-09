@@ -247,17 +247,25 @@ LatReport.prototype.includeResources = function() {
     //copy the css and js files
 
     var filesToCopy = [];
-    println("getBaseFolder: " + templates.getBaseFolder());
+    //println("getBaseFolder: " + templates.getBaseFolder());
     var cssFiles = templates.getFileList("css");
-    println("cssFiles: " + cssFiles);
+    //println("cssFiles: " + cssFiles);
+	this._createFilesToCopy(cssFiles, templates.getBaseFolder(), filesToCopy);
+/*
+	
     for (var i = 0; i < cssFiles.length; i++) {
         var c = String(cssFiles[i]);
         filesToCopy.push({
             path: c,
             outputTo: "css/" + c.split("\\").pop() + ".css"
         });
+		println("Relative path:" + Io.getRelativePath(cssFiles[i], templates.getBaseFolder()));
+
     }
+	*/
     var jsFiles = templates.getFileList("js");
+	this._createFilesToCopy(jsFiles, templates.getBaseFolder(), filesToCopy);
+/*
     for (var i = 0; i < jsFiles.length; i++) {
         var c = String(jsFiles[i]);
         filesToCopy.push({
@@ -265,10 +273,24 @@ LatReport.prototype.includeResources = function() {
             outputTo: "js/" + c.split("\\").pop() + ".js"
         });
     }
-
+*/
     //var filesToCopy = ["css/uikit.min.css", "css/dataTables.uikit.css", "js/jquery.min.js", "js/plotly.min.js", "js/uikit.min.js", "js/uikit-icons.min.js", "js/dataTables.uikit.js", "js/jquery.dataTables.js"];
     filesToCopy.map(function(element, index) {
+		//println("Copying " + element.path);
+		//println("Results Folder: " + this.lat._resultsFolder);
+		//println("OutputTo: " + element.outputTo);
+		//println("To " + this.lat._resultsFolder + "/" + element.outputTo);
         Io.copyFile(element.path, this.lat._resultsFolder + "/" + element.outputTo);
     }, this);
 
 };
+
+LatReport.prototype._createFilesToCopy = function(filesArray, baseFolder, outputArray) {
+	for (var i = 0; i < filesArray.length; i++) {
+        var currentFile = filesArray[i];
+        outputArray.push({
+            path: currentFile,
+            outputTo: Io.getRelativePath(currentFile, baseFolder)
+        });
+    }
+}
