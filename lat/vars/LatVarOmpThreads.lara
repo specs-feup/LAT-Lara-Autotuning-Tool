@@ -1,15 +1,15 @@
 var LatVarOmpThreads = function(numThreads, disableDynamicTeams) {
     LatVar.call(this, "");
-    
+
 	if(disableDynamicTeams === undefined) {
 		disableDynamicTeams = false;
 	}
-	
-	
+
+
     //check if it is a LatVarRange or LatVarList
     LatUtils.checkLatVarRangeOrList(numThreads, "numThreads");
 	checkBoolean(disableDynamicTeams, "new LatVarOmpThreads::disableDynamicTeams");
-	
+
     this.numThreads = numThreads;
     this.generateOmpVariants();
     this.restart();
@@ -20,22 +20,17 @@ LatVarOmpThreads.prototype.constructor = LatVarOmpThreads;
 
 //Functions overloaded from LatVar
 LatVarOmpThreads.prototype.getNext = function() {
-    if (this.first) {
-        this.first = false;
-        return LatUtils.clone(LatConst.LAT_VALUE.DEFAULT);
-    }
-    return { type: this.type, value: this.variants[this.elementIndex++], default: false };
+    return this.numThreads.getNext();
 };
 
 LatVarOmpThreads.prototype.hasNext = function() {
-    return this.elementIndex < this.variants.length;
+    return this.numThreads.hasNext();
 };
 LatVarOmpThreads.prototype.countElements = function() {
-    return this.variants.length;
+    return this.numThreads.countElements();
 };
 LatVarOmpThreads.prototype.restart = function() {
-    this.elementIndex = 0;
-    this.first = true;
+    this.numThreads.restart();
     return this;
 };
 
@@ -50,7 +45,7 @@ LatVarOmpThreads.prototype.generateOmpVariants = function() {
     }
     this.numThreads.restart();
 
-    
+
     return this;
 };
 
@@ -59,7 +54,7 @@ LatVarOmpThreads.prototype.changeVariantInAst = function($scope, currentValue) {
 	printObject(currentValue);
 	// Add include
 	$scope.ancestor("file").addInclude("omp.h", true);
-	
+
 	// Disable dynamic teams, if enabled
 	if(this.disableDynamicTeams) {
 		$scope.exec insertBefore("omp_set_dynamic(0);");
