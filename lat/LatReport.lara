@@ -44,6 +44,8 @@ LatReport.prototype.replaceVariablesCards = function() {
 
 };
 LatReport.prototype.getVariableCard = function(variable) {
+
+    /*
     var replacerCard;
     if (LatUtils.isLatVarList(variable)) {
         replacerCard = new Replacer(templates.getString("var_list"));
@@ -58,10 +60,14 @@ LatReport.prototype.getVariableCard = function(variable) {
         replacerCard.replaceAll("[[ompChunks]]", variable.scheduleChunkSize.countElements());
         replacerCard.replaceAll("[[ompNumThreads]]", variable.numThreads.countElements());
     }
+	*/
+	var replacerCard = variable.newTemplateCard();
+	
     replacerCard.replaceAll("[[varName]]", variable.name);
     replacerCard.replaceAll("[[countElements]]", variable.countElements());
     replacerCard.replaceAll("[[varType]]", LatConst.getOutputType(variable.type));
-    return replacerCard.getString();
+    
+	return replacerCard.getString();
 };
 
 LatReport.prototype.replaceConfigurations = function() {

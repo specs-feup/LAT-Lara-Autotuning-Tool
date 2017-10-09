@@ -11,6 +11,7 @@ var LatVarOmpThreads = function(numThreads, disableDynamicTeams) {
 	checkBoolean(disableDynamicTeams, "new LatVarOmpThreads::disableDynamicTeams");
 
     this.numThreads = numThreads;
+	this.name = "#threads";
     //this.generateOmpVariants();
     this.restart();
 };
@@ -65,4 +66,8 @@ LatVarOmpThreads.prototype.changeVariantInAst = function($scope, currentValue) {
 
 LatVarOmpThreads.prototype.requiresScopeVariable = function() {
 	return false;
+}
+
+LatVarOmpThreads.prototype.newTemplateCard = function() {
+	return new Replacer(templates.getString("var_omp_threads.html.template"));
 }

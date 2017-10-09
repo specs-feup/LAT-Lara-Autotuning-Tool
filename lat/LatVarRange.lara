@@ -1,3 +1,6 @@
+import lat.templates;
+import lara.util.Replacer;
+
 var LatVarRange = function(name, start, stop, step, callback, type) {
     LatVar.call(this, name, type);
     LatUtils.checkNumber(start, "start");
@@ -55,3 +58,13 @@ LatVarRange.prototype.restart = function() {
 LatVarRange.prototype._defaultCallback = function(current) {
     return current;
 };
+
+LatVarRange.prototype.newTemplateCard = function() {
+	var replacerCard = new Replacer(templates.getString("var_range.html.template"));
+	
+	replacerCard.replaceAll("[[start]]", this.start);
+    replacerCard.replaceAll("[[stop]]", this.stop);
+    replacerCard.replaceAll("[[step]]", this.step);
+		
+	return replacerCard;
+}

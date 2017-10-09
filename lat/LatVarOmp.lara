@@ -1,3 +1,6 @@
+import lat.templates;
+import lara.util.Replacer;
+
 var LatVarOmp = function(name, scheduleTypes, scheduleChunkSize, numThreads) {
     LatVar.call(this, name);
     //types allowed: dynamic, static, guided, auto, runtime
@@ -85,3 +88,13 @@ LatVarOmp.prototype.changeVariantInAst = function($scope, currentValue) {
         this.pragmas[i].setName("omp");
     }
 };
+
+LatVarOmp.prototype.newTemplateCard = function() {
+	var replacerCard = new Replacer(templates.getString("var_omp.html.template"));
+	
+	replacerCard.replaceAll("[[ompTypes]]", this.scheduleTypes.join(", "));
+    replacerCard.replaceAll("[[ompChunks]]", this.scheduleChunkSize.countElements());
+    replacerCard.replaceAll("[[ompNumThreads]]", this.numThreads.countElements());
+		
+	return replacerCard;
+}

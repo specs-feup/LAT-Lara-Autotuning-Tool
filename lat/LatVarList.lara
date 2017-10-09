@@ -1,3 +1,6 @@
+import lat.templates;
+import lara.util.Replacer;
+
 var LatVarList = function(name, elements, type) {
     LatVar.call(this, name, type);
     LatUtils.checkArray(elements, "LatVarList elements");
@@ -31,3 +34,7 @@ LatVarList.prototype.restart = function() {
     this.first = true;
     return this;
 };
+
+LatVarList.prototype.newTemplateCard = function() {
+	return new Replacer(templates.getString("var_list.html.template"));
+}

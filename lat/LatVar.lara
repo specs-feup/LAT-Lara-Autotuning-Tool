@@ -1,4 +1,7 @@
 import aspects.variableHelpers;
+import lat.templates;
+import lara.util.Replacer;
+
 var LatVar = function(name, type) {
     LatUtils.checkString(name, "LatVar*.name");
     this.name = name;
@@ -59,3 +62,20 @@ LatVar.prototype.setType = function(type) {
 LatVar.prototype.requiresScopeVariable = function() {
 	return true;
 }
+
+/**
+ * New Replacer with the HTML that will be used in the final report.
+ *
+ * <p> "Tags" that will be automatically replaced if present in the returned Replacer: <br>
+ * <ul>
+ *   <li>[[varName]]</li>
+ *   <li>[[countElements]]</li>
+ *   <li>[[varType]]</li>
+ * </ul>
+ *
+ * @returns {lara.util.Replacer} Replacer with the HTML corresponding to this LatVar. Returns a default card if not overriden.
+ */
+LatVar.prototype.newTemplateCard = function() {
+	return new Replacer(templates.getString("default_card.html.template"));
+}
+
