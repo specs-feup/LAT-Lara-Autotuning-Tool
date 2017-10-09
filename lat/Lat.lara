@@ -30,7 +30,7 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
     call callFile: getFile();
     this.file = callFile.thisFile;
     this.cmaker = undefined;
-    this.executionFlags = "";
+    this.executionFlags = undefined;
 };
 
 Lat.prototype.tune = function() {
@@ -289,7 +289,7 @@ Lat.prototype.loadCmaker = function() {
     this.cmaker.setMinimumVersion("3.0.2")
         //.setMakeCommand("make")
         .addCxxFlags("-O3", "-std=c++11")
-        .addLibs("stdc++")
+        .addLibs("stdc++");
         //.setGenerator("MinGW Makefiles");
     return this;
 };
@@ -533,12 +533,33 @@ Lat.prototype.executeSourceCode = function() {
         for (var j = 0; j < this.uniqueVariants.length; j++) {
             this.print("Executing Variant " + (j + 1) + " of " + this.uniqueVariants.length + "...", true).pushIndent();
 
-            new ProcessExecutor()
-                .setPrintToConsole(false)
-                .setWorkingDir(this._variantsFolder + "/" + j)
-                .execute(this.uniqueVariants[j].executable + " " + this.executionFlags);
+			var command = this.uniqueVariants[j].executable;
+			if(this.executionFlags !== undefined) {
+				command += " " + this.executionFlags;
+			}
 
+            var executor = new ProcessExecutor();
+            var consoleOutput = executor.setPrintToConsole(false)
+                .setWorkingDir(this._variantsFolder + "/" + j)
+                .execute(command);
+
+			//debug("Executing '" + this.uniqueVariants[j].executable + " " + this.executionFlags);
+			//debug(consoleOutput);	
+				
             this.popIndent().print("Done");
+			
+			if(executor.getReturnValue() < 0) {
+				this.print("Execution returned value '" + executor.getReturnValue() +  " ' for command '" + command + "'\n");
+				if(!Strings.isEmpty(consoleOutput)) {
+					this.print("Output:");
+					this.print("#######");
+					this.print(consoleOutput);
+					this.print("#######\n");
+				}				
+				
+			}
+			
+			//println("TEST:" + "Executing '" + this.uniqueVariants[j].executable + " " + this.executionFlags + "\n" + consoleOutput);
         }
         this.popIndent().print("Done");
     }
@@ -675,5 +696,15 @@ Lat.prototype.generateExecutable = function(i) {
         this.cmaker.sources.addSource(file);
     }
 
-    return this.cmaker.build(this._variantsFolder + "/" + i, buildFolder);
+    var executable = this.cmaker.build(this._variantsFolder + "/" + i, buildFolder);
+	
+	if(executable === undefined) {
+		var msg = "[LAT] Could not generate executable";
+		if(!Strings.isEmpty(this.cmaker.getMakeOutput())) {
+			msg += ": " + this.cmaker.getMakeOutput();
+		}		
+		println(msg);
+	}
+	
+	return executable;
 };
