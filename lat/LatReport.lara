@@ -286,11 +286,19 @@ LatReport.prototype.includeResources = function() {
 };
 
 LatReport.prototype._createFilesToCopy = function(filesArray, baseFolder, outputArray) {
+	var templateSuffix = ".template";
 	for (var i = 0; i < filesArray.length; i++) {
         var currentFile = filesArray[i];
+		var outputPath = Io.getRelativePath(currentFile, baseFolder);
+		var extLength = templateSuffix.length();	
+		
+		if(outputPath.endsWith(templateSuffix)) {
+			outputPath = outputPath.substring(0, outputPath.length() - extLength);
+		}
+		
         outputArray.push({
             path: currentFile,
-            outputTo: Io.getRelativePath(currentFile, baseFolder)
+            outputTo: outputPath
         });
     }
 }
