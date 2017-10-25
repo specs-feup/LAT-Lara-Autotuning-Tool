@@ -33,6 +33,8 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
     this.executionFlags = undefined;
 	// Initialize search groups to empty array
 	this.searchGroups = [];
+	// Do not test parameter combinations alone
+	//this.skipDefaultCases = true;
 };
 
 Lat.prototype.tune = function() {
@@ -258,6 +260,9 @@ Lat.prototype.updatePathVariables = function() {
     replacerPath.replaceAll("\\", "/");
     this._timerFileAbsolute = replacerPath.getString();
 
+	// Clear timer file
+	Io.writeFile(this._timerFileAbsolute, "");
+	
     this._bestResult = this._resultsFolder + "/best"; /** the folder that will hold the best variant source code without timer prints */
     this._templateFolder = "../lat/templates/"; /** the file that will contain each tuning operation's report */
     this._reporterTemplate = "../lat/templates/report.html"; /** the file that will contain each tuning operation's report */
@@ -459,14 +464,28 @@ Lat.prototype.generateUniqueVariants = function() {
  * @param index the current index being delt with, of searchGroup
  */
 Lat.prototype.generateVariantsRecursive = function(searchGroup, index, searchGroupIndex) {
+	//println("SEARCH GROUP:" + searchGroup);
+	//println("INDEX:" + index);
+	//println("SEACH GROUP INDEX:" + searchGroupIndex);
     while (searchGroup[index].hasNext()) {
         if ((index + 1) < searchGroup.length) {
             this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //keep uniqueVariants order of elements the same as the order of unique Variants
             this.generateVariantsRecursive(searchGroup, index + 1, searchGroupIndex); //next LatVar in the searchGroup
         } else {
+			//var isFirst = true;
             while (searchGroup[index].hasNext()) {
+				
                 this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //only update the value
-                this.uniqueVariants.push({
+              /*  
+				// Skip first
+				if(isFirst) {
+					println("SKIPPING FIRST!");
+					isFirst = false;
+					continue;
+				}
+*/
+				
+				this.uniqueVariants.push({
                     variant: LatUtils.clone(this.currentVariant),
                     searchGroupIndex: searchGroupIndex,
                     executable: ""

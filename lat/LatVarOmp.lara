@@ -26,10 +26,12 @@ LatVarOmp.prototype.constructor = LatVarOmp;
 
 //Functions overloaded from LatVar
 LatVarOmp.prototype.getNext = function() {
-    if (this.first) {
+    /*
+	if (this.first) {
         this.first = false;
         return LatUtils.clone(LatConst.LAT_VALUE.DEFAULT);
     }
+	*/
     return { type: this.type, value: this.variants[this.elementIndex++], default: false };
 };
 LatVarOmp.prototype.hasNext = function() {
@@ -47,12 +49,13 @@ LatVarOmp.prototype.restart = function() {
 //specific functions
 LatVarOmp.prototype.generateOmpVariants = function() {
     this.variants = [];
+
     //{scheduleType: , scheduleChunkSize: , numThreads: }
     for (var i = 0; i < this.scheduleTypes.length; i++) {
-        this.scheduleChunkSize.getNext(); //ignore default chunk size
+        //this.scheduleChunkSize.getNext(); //ignore default chunk size
         while (this.scheduleChunkSize.hasNext()) {
             var chunkSize = this.scheduleChunkSize.getNext().value;
-            this.numThreads.getNext(); //ignore num threads default
+            //this.numThreads.getNext(); //ignore num threads default
             while (this.numThreads.hasNext()) {
                 this.variants.push({
                     scheduleType: this.scheduleTypes[i],
@@ -64,12 +67,26 @@ LatVarOmp.prototype.generateOmpVariants = function() {
         }
         this.scheduleChunkSize.restart();
     }
+	
+	println("OMP VARIANTS:" + this.variants.length);
+	
     return this;
 };
 
 LatVarOmp.generateContentBody = function(currentValue, body) {
     var newContent = body!==undefined?body:"";
 
+	// Remove schedule, if already present
+	var scheduleStartIndex = newContent.indexOf("schedule(");
+	if(scheduleStartIndex != -1) {
+		var scheduleEndIndex = newContent.indexOf(")", scheduleStartIndex);
+		if(scheduleEndIndex == -1) {
+			throw "Could not find end parenthesis of schedule: " + newContent;
+		}
+		
+		newContent = newContent.substring(0, scheduleStartIndex) + newContent.substring(scheduleEndIndex+1);
+	}
+	
     if (currentValue.scheduleChunkSize === undefined) {
         newContent += " schedule(" + currentValue.scheduleType + ")";
     } else {

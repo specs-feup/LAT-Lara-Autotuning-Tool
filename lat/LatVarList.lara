@@ -17,10 +17,12 @@ LatVarList.prototype.constructor = LatVarList;
 //Functions overloaded from LatVar
 
 LatVarList.prototype.getNext = function() {
-    if (this.first) {
+    /*
+	if (this.first) {
         this.first = false;
         return LatUtils.clone(LatConst.LAT_VALUE.DEFAULT);
     }
+	*/
     return { type: this.type, value: this.elements[this.elementIndex++], default: false };
 };
 LatVarList.prototype.hasNext = function() {
