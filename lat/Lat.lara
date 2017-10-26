@@ -262,6 +262,10 @@ Lat.prototype.updatePathVariables = function() {
 
 	// Clear timer file
 	Io.writeFile(this._timerFileAbsolute, "");
+
+	// Clear the variants folder, and recreate it
+	Io.deleteFolder(this._variantsFolder);
+	Io.mkdir(this._variantsFolder);
 	
     this._bestResult = this._resultsFolder + "/best"; /** the folder that will hold the best variant source code without timer prints */
     this._templateFolder = "../lat/templates/"; /** the file that will contain each tuning operation's report */
