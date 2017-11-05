@@ -245,6 +245,10 @@ LatReport.prototype.getVariantTableRow = function(i) {
 };
 LatReport.prototype.getSearchGroupReplacer = function(numElements) {
     var templateName = "search_group_" + numElements + "_var_script";
+	if(numElements > 2) {
+		templateName = "search_group_n_var_script";
+	}
+	
     return new Replacer(templates.getString(templateName));
 };
 

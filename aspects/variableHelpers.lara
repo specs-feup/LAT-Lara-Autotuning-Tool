@@ -1,3 +1,7 @@
+aspectdef Test
+	println("TEST");
+end
+
 aspectdef getJoinpointsToChangeForSingleLatVar
     input $jp, latvar end
     output latvarOut end 
@@ -25,6 +29,7 @@ aspectdef getJoinpointsToChangeForSingleLatVar
         }
     end
 end
+
 aspectdef getJoinpointsToChangeForSingleLatVarScope
     input $jp, latvar end
     output latvarOut end 

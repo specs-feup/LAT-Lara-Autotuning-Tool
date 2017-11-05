@@ -1,0 +1,28 @@
+/*
+var searchGroup_[[searchGroupIndex]] = {
+    x: [[[xValues]]],
+    y: [[[yValues]]],
+    mode: 'lines+markers',
+    marker: {size: 8},
+    text: [[[variantsLabel]]]
+};
+
+var data_[[searchGroupIndex]] = [searchGroup_[[searchGroupIndex]]];
+
+var layout_[[searchGroupIndex]] = {
+    title: 'Variable [[searchGroupVariables]] impact on time',
+    autosize: false,
+    width:1200,
+    xaxis: {
+        title: '[[varName]]'
+    },
+    yaxis: {
+        title: 'Time (ns)'
+    }, 
+	paper_bgcolor: "#f8f8f8"
+};
+Plotly.newPlot('chartSearchGroup_[[searchGroupIndex]]', data_[[searchGroupIndex]], layout_[[searchGroupIndex]]);
+*/
+$(document).ready(function() {
+    $('#tableVariants_[[searchGroupIndex]]').DataTable();
+});
