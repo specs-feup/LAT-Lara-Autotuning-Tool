@@ -57,11 +57,11 @@ LatVarOmpThreads.prototype.changeVariantInAst = function($scope, currentValue) {
 
 	// Disable dynamic teams, if enabled
 	if(this.disableDynamicTeams) {
-		$scope.exec insertBefore("omp_set_dynamic(0);");
+		$scope.exec insertBegin("omp_set_dynamic(0);");
 	}
 
 	// Set number of threads
-	$scope.exec insertBefore("omp_set_num_threads(" + currentValue.value + ");");
+	$scope.exec insertBegin("omp_set_num_threads(" + currentValue.value + ");");
 };
 
 LatVarOmpThreads.prototype.requiresScopeVariable = function() {
