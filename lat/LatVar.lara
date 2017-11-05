@@ -29,6 +29,7 @@ LatVar.prototype.restart = function() {
     LatUtils._error("function restart not implemented");
 };
 LatVar.prototype.changeVariantInAst = function($scope, currentValue, conservativeReplacement) {
+
     if(conservativeReplacement){//replace all reads until the first write
         for(var i = 0; i < this.varrefs.length; i++){
             if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.READ){

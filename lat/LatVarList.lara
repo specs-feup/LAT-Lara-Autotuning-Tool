@@ -1,5 +1,6 @@
 import lat.templates;
 import lara.util.Replacer;
+import aspects.variableHelpers;
 
 var LatVarList = function(name, elements, type) {
     LatVar.call(this, name, type);
@@ -7,7 +8,8 @@ var LatVarList = function(name, elements, type) {
     if (elements.length <= 0) {
         LatUtils._error("LatVarList elements parameter only accepts non-empty element lists");
     }
-    this.elements = LatUtils.removeDuplicates(elements);
+	this.elements = elements;
+    //this.elements = LatUtils.removeDuplicates(elements);
     this.restart();
 };
 
@@ -36,6 +38,38 @@ LatVarList.prototype.restart = function() {
     this.first = true;
     return this;
 };
+
+LatVarList.prototype.changeVariantInAst = function($scope, currentValue, conservativeReplacement) {
+
+	// Select the varrefs
+	//call callOutput: getJoinpointsToChangeForSingleLatVarScope($scope, this);
+	(new aspects$variableHelpers$getJoinpointsToChangeForSingleLatVarScope($scope, this)).call();
+
+
+	// Replace the code
+    if(conservativeReplacement){//replace all reads until the first write
+        for(var i = 0; i < this.varrefs.length; i++){
+            if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.READ){
+                var $temp = this.varrefs[i];
+                $temp.replace(currentValue.value);
+            }else if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.WRITE || this.varrefs[i].useExpr.use == LatConst.VAR_USES.READWRITE){//detect the first write or readwrite
+                break;
+            }
+        }
+    }else{//replace all reads
+        for(var i = 0; i < this.varrefs.length; i++){
+            if(this.varrefs[i].useExpr.use == LatConst.VAR_USES.READ){
+                var $temp = this.varrefs[i];
+                $temp.replace(currentValue.value);
+            }
+        }
+    }
+    return this;
+	
+	
+};
+
+
 
 LatVarList.prototype.newTemplateCard = function() {
 	return new Replacer(templates.getString("var_list.html.template"));
