@@ -1,0 +1,10 @@
+<div>
+    <div class="uk-card uk-card-secondary uk-card-body">
+        <h3 class="uk-card-title">[[varName]]</h3>
+        <div class="uk-text-left">
+            <h5 class="uk-margin-remove">LatVarSet</h5>
+            <strong>countElements: </strong> [[countElements]]<br/>
+            <!-- <strong>type: </strong> [[varType]] -->
+        </div>
+    </div>
+</div>

@@ -1,0 +1,112 @@
+import lat.LatUtils;
+
+/**
+ * Expects a number of LatVar objects with the same value for countElements().
+ * 
+ * @class
+ */
+var LatVarSet = function() {
+    LatVar.call(this, "");
+
+	if(arguments.length === 0) {
+		throw "LatVarSet: needs at least one LatVar as argument";
+	}
+	
+	// Check that arguments are all LatVar objects
+	this.latVars = [];
+	this.numElements = undefined;
+	
+	for(var i = 0; i<arguments.length; i++) {
+		var latVar = arguments[i];
+		LatUtils.checkLatVar(latVar, "LatVarSet argument["+i+"]");
+		this.latVars.push(latVar);
+		
+		// Check if all LatVars have the same number of arguments
+		if(this.numElements === undefined) {
+			this.numElements = latVar.countElements();
+		} else {
+			if(this.numElements !== latVar.countElements()) {
+				throw "Argument " + i + " has " + latVar.countElements() + " elements but previous arguments have " + this.numElements + " elements";
+			}
+		}
+	}
+	
+//	println("LatVars in Set: " + this.latVars.length);
+//	println("Num elements: " + this.numElements);
+	this.name = "LatVarSet";
+    this.restart();
+};
+
+LatVarSet.prototype = Object.create(LatVar.prototype);
+LatVarSet.prototype.constructor = LatVarSet;
+
+//Functions overloaded from LatVar
+LatVarSet.prototype.getNext = function() {
+	var next = { type: this.type, value: "TESTING", default: false };
+	
+	var nexts = [];
+	var values = [];
+	for(var latVar of this.latVars) {
+		var latVarNext = latVar.getNext();
+		nexts.push(latVarNext);
+		values.push(latVarNext.value);
+	}
+	
+	// Mostly for report
+	next.value = values.join(", ");
+	
+	next.nexts = nexts;
+	
+    return next;
+};
+
+LatVarSet.prototype.hasNext = function() {
+	// Need only to check one
+    return this.latVars[0].hasNext();
+};
+LatVarSet.prototype.countElements = function() {
+    return this.numElements;
+};
+LatVarSet.prototype.restart = function() {
+    for(var latVar of this.latVars) {
+		latVar.restart();
+	}
+
+    return this;
+};
+
+//specific functions
+/*
+LatVarOmpThreads.prototype.generateOmpVariants = function() {
+    this.variants = [];
+    this.numThreads.getNext(); //ignore num threads default
+    while (this.numThreads.hasNext()) {
+		this.variants.push({
+            numThreads: this.numThreads.getNext().value
+        });
+    }
+    this.numThreads.restart();
+
+
+    return this;
+};
+*/
+LatVarSet.prototype.changeVariantInAst = function($scope, currentValue, conservativeReplacement) {
+	// currentValue is an array of values, one for each LatVar
+	//println("CURRENT VALUE:");
+	//printObject(currentValue);
+	
+	for(var i = 0; i<this.latVars.length; i++) {
+		//println("SCOPE BEFORE:\n"+$scope.code);
+		this.latVars[i].changeVariantInAst($scope, currentValue.nexts[i], conservativeReplacement);
+		//println("SCOPE AFTER:\n"+$scope.code);
+	}
+};
+
+LatVarSet.prototype.requiresScopeVariable = function() {
+	return false;
+}
+
+LatVarSet.prototype.newTemplateCard = function() {
+	return new Replacer(templates.getString("var_set.html.template"));
+}
