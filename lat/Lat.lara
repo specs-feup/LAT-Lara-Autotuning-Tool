@@ -25,7 +25,7 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
     this._printIndentation = 0; /** indicates the hierarchy level of the print operations */
     this._tuneCounts = 0; /** at each tuning operation the name that is output is changed automatically so that there is no confusion between diferent tuning operations */
     this.results = undefined; /** This variable will hold the results of each parseResults operation */
-    WeaverOptions.setVerboseLevel(0); /** 0 to 3, increasing the verbosity */
+    WeaverOptions.getData().setVerboseLevel(0); /** 0 to 3, increasing the verbosity */
     //get current file
     call callFile: getFile();
     this.file = callFile.thisFile;
@@ -71,10 +71,15 @@ Lat.prototype.tune = function() {
     this._duration = System.nanos() - this._duration; //must be before generateReport
     this.generateReport();
 
+	// Create results object
+	var parsedResults = this.buildResultsObject();
+	
     this._tuneCounts++; //update the current index of the tuning operation after the report generation
 
     this._tunned = true;
     this.popIndent().print("Tuning operation complete");
+	
+	return parsedResults;
 };
 
 
@@ -733,3 +738,43 @@ Lat.prototype.generateExecutable = function(i) {
 	
 	return executable;
 };
+
+Lat.prototype.buildResultsObject = function() {
+
+	// start creating the object
+	var results = {};
+	
+	results.name = this.name;
+	results.variants = [];
+
+	var tuneName = this.getTuneName();
+
+	var tuneResults = this.results[tuneName];
+	var variants = tuneResults["per_variant"];
+
+	// Create LatReport to use its function to generate an id
+	var latReport = new LatReport(this);
+	
+	for(var variantIndex in variants) {
+		println("Variant index:" + variantIndex);
+
+		var variant = {};
+
+		variant.id = latReport.transformVariantToText(this.uniqueVariants[variantIndex].variant);
+		variant.metrics = [];		
+
+		// For now, assume a single metric (time in ns)
+		var timeMetric = {};
+		timeMetric.name = "Execution Time";
+		timeMetric.unit = "ns";
+		timeMetric.values = variants[variantIndex].times;
+		
+		variant.metrics.push(timeMetric);	
+
+		results.variants.push(variant);
+	}
+
+	return results;
+}
+
+

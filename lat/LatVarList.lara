@@ -1,3 +1,4 @@
+import lat.LatVar;
 import lat.templates;
 import lara.util.Replacer;
 import aspects.variableHelpers;
@@ -42,8 +43,9 @@ LatVarList.prototype.restart = function() {
 LatVarList.prototype.changeVariantInAst = function($scope, currentValue, conservativeReplacement) {
 
 	// Select the varrefs
-	//call callOutput: getJoinpointsToChangeForSingleLatVarScope($scope, this);
-	(new aspects$variableHelpers$getJoinpointsToChangeForSingleLatVarScope($scope, this)).call();
+	call callOutput: getJoinpointsToChangeForSingleLatVarScope($scope, this);
+
+	//(new aspects$variableHelpers$getJoinpointsToChangeForSingleLatVarScope($scope, this)).call();
 
 
 	// Replace the code
