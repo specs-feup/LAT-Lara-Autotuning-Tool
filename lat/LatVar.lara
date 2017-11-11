@@ -89,6 +89,5 @@ LatVar.prototype.getNameArray = function() {
 
 
 LatVar.prototype.getValueArray = function(variant) {
-	println("LatVar.getValueArray: " + variant);
 	return [variant.value];
 }

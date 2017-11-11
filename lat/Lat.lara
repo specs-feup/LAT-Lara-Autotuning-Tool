@@ -762,12 +762,8 @@ Lat.prototype.buildResultsObject = function() {
 
 	var tuneResults = this.results[tuneName];
 	var variants = tuneResults["per_variant"];
-
-	// Create LatReport to use its function to generate an id
-	//var latReport = new LatReport(this);
 	
 	for(var variantIndex in variants) {
-		println("Variant index:" + variantIndex);
 
 		var variant = {};
 
@@ -777,29 +773,16 @@ Lat.prototype.buildResultsObject = function() {
 		if(variantArray.length !== latvars.length) {
 			throw "Expected variants to be the same length (" + variantArray.length + ") as latvars (" + latvars.length + ")";
 		}
-//		println("latvars");
-//		printObject(latvars);
-		//println("Current variant");
-		//printObject(this.uniqueVariants[variantIndex]);
+
 		variant.nameArray = [];
 		variant.valueArray = [];
 		for(var i=0; i<variantArray.length; i++) {
-		//for(var currentVariant of variantArray) {
 			var currentVariant = variantArray[i];
 			var latvar = latvars[i];
-//			println("LatVar Name:" + latvar.name);
-//			println("Current variant");
-//			printObject(currentVariant);
-//			println("\nLatVar Value:" + currentVariant.value);
-//			println("Name array:" + latvar.getNameArray());
-//			println("Value array:" + latvar.getValueArray(currentVariant.value));
 			variant.nameArray = variant.nameArray.concat(latvar.getNameArray());
 			variant.valueArray = variant.valueArray.concat(latvar.getValueArray(currentVariant));
 		}
 		
-		//variant.id = latReport.transformVariantToText(this.uniqueVariants[variantIndex].variant);
-		//variant.nameArray = this.uniqueVariants[variantIndex].variant.getNameArray();
-		//variant.valueArray = this.uniqueVariants[variantIndex].variant.getValueArray();
 		variant.metrics = [];		
 
 		
