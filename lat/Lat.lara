@@ -472,20 +472,30 @@ Lat.prototype.generateUniqueVariants = function() {
  * @param searchGroup a list with the LatVars of the current searchGroup
  * @param index the current index being delt with, of searchGroup
  */
-Lat.prototype.generateVariantsRecursive = function(searchGroup, index, searchGroupIndex) {
+Lat.prototype.generateVariantsRecursive = function(searchGroup, index, searchGroupIndex, currentLatVars) {
+	if(currentLatVars === undefined) {
+		currentLatVars = [];
+	}
+
 	//println("SEARCH GROUP:" + searchGroup);
 	//println("INDEX:" + index);
 	//println("SEACH GROUP INDEX:" + searchGroupIndex);
     while (searchGroup[index].hasNext()) {
         if ((index + 1) < searchGroup.length) {
             this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //keep uniqueVariants order of elements the same as the order of unique Variants
-            this.generateVariantsRecursive(searchGroup, index + 1, searchGroupIndex); //next LatVar in the searchGroup
+			var currentLatVarsCopy = currentLatVars.slice();
+			currentLatVarsCopy.push(searchGroup[index]);
+            
+			
+			this.generateVariantsRecursive(searchGroup, index + 1, searchGroupIndex, currentLatVarsCopy); //next LatVar in the searchGroup
         } else {
 			//var isFirst = true;
             while (searchGroup[index].hasNext()) {
 				
                 this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //only update the value
-              /*  
+				var currentLatVarsCopy = currentLatVars.slice();
+				currentLatVarsCopy.push(searchGroup[index]);
+			  /*  
 				// Skip first
 				if(isFirst) {
 					println("SKIPPING FIRST!");
@@ -496,6 +506,7 @@ Lat.prototype.generateVariantsRecursive = function(searchGroup, index, searchGro
 				
 				this.uniqueVariants.push({
                     variant: LatUtils.clone(this.currentVariant),
+					latvars: currentLatVarsCopy,
                     searchGroupIndex: searchGroupIndex,
                     executable: ""
                 }); //save to the array the format {variant:,searchGroupIndex}
@@ -753,16 +764,45 @@ Lat.prototype.buildResultsObject = function() {
 	var variants = tuneResults["per_variant"];
 
 	// Create LatReport to use its function to generate an id
-	var latReport = new LatReport(this);
+	//var latReport = new LatReport(this);
 	
 	for(var variantIndex in variants) {
 		println("Variant index:" + variantIndex);
 
 		var variant = {};
 
-		variant.id = latReport.transformVariantToText(this.uniqueVariants[variantIndex].variant);
+		var variantArray = this.uniqueVariants[variantIndex].variant;
+		var latvars = this.uniqueVariants[variantIndex].latvars;
+		
+		if(variantArray.length !== latvars.length) {
+			throw "Expected variants to be the same length (" + variantArray.length + ") as latvars (" + latvars.length + ")";
+		}
+//		println("latvars");
+//		printObject(latvars);
+		//println("Current variant");
+		//printObject(this.uniqueVariants[variantIndex]);
+		variant.nameArray = [];
+		variant.valueArray = [];
+		for(var i=0; i<variantArray.length; i++) {
+		//for(var currentVariant of variantArray) {
+			var currentVariant = variantArray[i];
+			var latvar = latvars[i];
+//			println("LatVar Name:" + latvar.name);
+//			println("Current variant");
+//			printObject(currentVariant);
+//			println("\nLatVar Value:" + currentVariant.value);
+//			println("Name array:" + latvar.getNameArray());
+//			println("Value array:" + latvar.getValueArray(currentVariant.value));
+			variant.nameArray = variant.nameArray.concat(latvar.getNameArray());
+			variant.valueArray = variant.valueArray.concat(latvar.getValueArray(currentVariant));
+		}
+		
+		//variant.id = latReport.transformVariantToText(this.uniqueVariants[variantIndex].variant);
+		//variant.nameArray = this.uniqueVariants[variantIndex].variant.getNameArray();
+		//variant.valueArray = this.uniqueVariants[variantIndex].variant.getValueArray();
 		variant.metrics = [];		
 
+		
 		// For now, assume a single metric (time in ns)
 		var timeMetric = {};
 		timeMetric.name = "Execution Time";
