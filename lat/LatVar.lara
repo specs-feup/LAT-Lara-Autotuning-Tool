@@ -80,3 +80,15 @@ LatVar.prototype.newTemplateCard = function() {
 	return new Replacer(templates.getString("default_card.html.template"));
 }
 
+
+LatVar.prototype.getNameArray = function() {
+	//println("LatVar internal name:" + this.name);
+	//return "hello";
+	return [this.name];
+}
+
+
+LatVar.prototype.getValueArray = function(variant) {
+	println("LatVar.getValueArray: " + variant);
+	return [variant.value];
+}

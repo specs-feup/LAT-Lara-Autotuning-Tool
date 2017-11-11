@@ -53,7 +53,9 @@ LatVarSet.prototype.getNext = function() {
 	}
 	
 	// Mostly for report
+	next.values = values;
 	next.value = values.join(", ");
+	
 	
 	next.nexts = nexts;
 	
@@ -109,4 +111,31 @@ LatVarSet.prototype.requiresScopeVariable = function() {
 
 LatVarSet.prototype.newTemplateCard = function() {
 	return new Replacer(templates.getString("var_set.html.template"));
+}
+
+LatVarSet.prototype.getNameArray = function() {
+	var names = [];
+
+	for(var latVar of this.latVars) {
+		names = names.concat(latVar.getNameArray());
+	}
+	//println("LatVarSet name:" + names);
+	return names;
+}
+
+LatVarSet.prototype.getValueArray = function(variant) {
+	var values = [];
+//println("LatVarSet.getValueArray::variant");
+//printObject(variant);
+	checkTrue(this.latVars.length === variant.nexts.length, "Expected number of LatVars (" + this.latVars.length + ") to be the same as variants (" + variant.nexts.length + ")");
+	
+	for(var i=0; i<this.latVars.length; i++) {
+	//for(var latVar of this.latVars) {
+		var latVar = this.latVars[i];
+		var next = variant.nexts[i];
+		
+		values = values.concat(latVar.getValueArray(next));
+	}
+	
+	return values;
 }
