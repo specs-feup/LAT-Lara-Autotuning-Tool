@@ -203,3 +203,74 @@ LatUtils.getTime = function() {
 LatUtils.escapeHtmlCharacters = function(original){
     return Strings.escapeHtml(original);
 };
+
+LatUtils.resultToCsv = function(latResults, outputFolder, delimiter) {
+	if(delimiter === undefined) {
+		delimiter = ";";
+	}
+
+
+	if(latResults.variants.length === 0) {
+		return "";
+	}
+	
+	var csvs = [];
+	
+	
+	// Get one variant, to build objects and headers
+	var firstVariant = latResults.variants[0];
+
+	//csv += "variant" + delimiter;
+	
+	// For each metric, create a CSV
+	for(metric of firstVariant.metrics) {
+		var csv = {};
+		csvs.push(csv);
+		
+		csv.name = Strings.replacer(metric.name, "[^a-zA-Z0-9]", "_") + "_" + metric.unit; 
+
+		// Add the names of the variant
+		csv.contents = firstVariant.nameArray.join(delimiter);
+		//csv.contents = "variant";
+		
+		// Add as many fields as values
+		for(var i = 1; i <= metric.values.length; i++) {
+			csv.contents += delimiter + "run_" + i;
+		}
+		
+		csv.contents += "\n";
+	}
+	
+	// Each variant is a line in the CSV
+	for(var variant of latResults.variants) {
+
+	// Each metric a csv
+		for(var i=0; i<variant.metrics.length; i++) {
+			var metric = variant.metrics[i];
+			
+			var csv = csvs[i];
+			
+			// Add values of variant
+			csv.contents += variant.valueArray.join(delimiter);
+			//csv.contents += Strings.replacer(variant.id, delimiter, "_");
+			
+			// Add values
+			for(var value of metric.values) {
+				csv.contents += delimiter + value;
+			}
+			
+			csv.contents += "\n";
+		}
+	}
+	
+	if(outputFolder !== undefined) {
+		// Write a csv file for each metric
+		for(var csv of csvs) {
+			var csvFilename = Io.getPath(outputFolder, csv.name + ".csv");
+			println("Writing file '"+ csvFilename.getAbsolutePath() + "'");
+			Io.writeFile(csvFilename, csv.contents);
+		}
+	}
+	
+	return csvs;
+}
