@@ -4,6 +4,7 @@ import lara.util.Replacer;
 import lara.Strings;
 import lara.cmake.CMaker;
 import lara.util.ProcessExecutor;
+import lara.metrics.ExecutionTimeMetric;
 
 import clava.Clava;
 
@@ -35,7 +36,26 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
 	this.searchGroups = [];
 	// Do not test parameter combinations alone
 	//this.skipDefaultCases = true;
+	
+	// METRIC: Array of metrics. By default, add time metric
+	this.metrics = [];
+	this.metrics.push(new ExecutionTimeMetric());
+	//this.metrics['executionTime'] = new ExecutionTimeMetric();
+	
+	// Initialize metrics results. 
+	// Object maps metrics names to an object that contains the name of the metric, the unit and array of values
+	// i.e., {metricName, unit, values}
+	//this.metricsResults = {};
+	this.metricsResults = [];
 };
+
+Lat.prototype.addMetric = function(metric) {
+	this.metrics.push(metric);
+}
+
+Lat.prototype.clearMetrics = function() {
+	this.metrics = [];
+}
 
 Lat.prototype.tune = function() {
     this.restartPrintLog();
@@ -78,6 +98,9 @@ Lat.prototype.tune = function() {
 
     this._tunned = true;
     this.popIndent().print("Tuning operation complete");
+
+	println("Metrics results:");
+	printObject(this.metricsResults);
 	
 	return parsedResults;
 };
@@ -549,10 +572,18 @@ Lat.prototype.generateSourceCode = function() {
 				this.uniqueVariables[j].changeVariantInAst($eqScope, this.uniqueVariants[i].variant[j], this.conservativeReplacement); //update the AST with the current value for this LatVar's variant
             }
         }
+
+		
+		// METRIC: To remove
         //2nd include the timer prints
         var timer = new Timer("NANOSECONDS", this._timerFileAbsolute);
         timer.time($eqMeasure, this.getTuneName() + " " + i + " ");
 
+		// METRIC: iterate over the array/map of metrics and instrument code
+		for(var metric of this.metrics) {
+			metric.instrument($eqMeasure);
+		}
+		
         //3rd write the variant to the output folder
         Clava.writeCode(this._variantsFolder + "/" + i);
 
@@ -584,6 +615,36 @@ Lat.prototype.executeSourceCode = function() {
                 .setWorkingDir(this._variantsFolder + "/" + j)
                 .execute(command);
 
+			// Extract the outputs of each metric	
+			//for(var metric of this.metrics) {
+			for(var metricIndex = 0; metricIndex < this.metrics.length; metricIndex++) {
+				var metric = this.metrics[metricIndex];
+				
+				// Extract results
+				var metricReport = metric.report(executor);
+			
+				// Get the results for the metric
+				//var metricResults = this.metricsResults[metric.getName()];
+				var metricResults = this.metricsResults[metricIndex];
+				if(metricResults === undefined) {
+					// Create metricResults
+					metricResults = {name : metric.getName(), unit : metricReport.getUnit(), variants : []};
+					
+					// Set metricResults
+					this.metricsResults[metricIndex] = metricResults;
+				}
+				
+				// Get variant values
+				var variantValues = metricResults.variants[j];
+				if(variantValues === undefined) {
+					variantValues = [];
+					metricResults.variants[j] = variantValues;
+				}
+				
+				variantValues.push(metricReport.getValue());				
+			}
+			
+	
 			//debug("Executing '" + this.uniqueVariants[j].executable + " " + this.executionFlags);
 			//debug(consoleOutput);	
 				
