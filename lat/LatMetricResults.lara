@@ -1,0 +1,34 @@
+/**
+ * Represents the exploration results for a single metric.
+ *
+ * @param {string} name - Name of the metric
+ * @param {string} unit - Unit of the measured values
+ * @param {String[][]} variants - An array that will store the values of each variant
+ */
+var LatMetricResults = function(name, unit, variantsValues) {
+	checkDefined(name, "LatMetricResults:name");
+	checkDefined(unit, "LatMetricResults:unit");
+	
+	if(variantsValues === undefined) {
+		variantsValues = [];
+	}
+
+	this.name = name;
+	this.unit = unit;
+	this.variantsValues = variantsValues;
+}
+
+LatMetricResults.prototype.addValue(variantIndex, value) {
+	this.getVariantValues(variantIndex).push(value);
+}
+
+LatMetricResults.prototype.getVariantValues(variantIndex) {
+	var variantValues = this.variants[variantIndex];
+	if(variantValues === undefined) {
+		variantValues = [];
+		this.variants[variantIndex] = variantValues;
+	}
+	
+	return variantValues;
+}
+				

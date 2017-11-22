@@ -17,6 +17,7 @@ import lat.LatVarOmp;
 import lat.LatConst;
 import lat.LatUtils;
 import lat.LatReport;
+import lat.LatMetricResults;
 
 import aspects.variableHelpers;
 
@@ -628,12 +629,15 @@ Lat.prototype.executeSourceCode = function() {
 				var metricResults = this.metricsResults[metricIndex];
 				if(metricResults === undefined) {
 					// Create metricResults
-					metricResults = {name : metric.getName(), unit : metricReport.getUnit(), variants : []};
+					//metricResults = {name : metric.getName(), unit : metricReport.getUnit(), variants : []};
+					metricResults = new LatMetricResults(metric.getName(), metricReport.getUnit());
 					
 					// Set metricResults
 					this.metricsResults[metricIndex] = metricResults;
 				}
 				
+				metricResults.addValue(j, metricReport.getValue());
+/*				
 				// Get variant values
 				var variantValues = metricResults.variants[j];
 				if(variantValues === undefined) {
@@ -642,6 +646,7 @@ Lat.prototype.executeSourceCode = function() {
 				}
 				
 				variantValues.push(metricReport.getValue());				
+*/
 			}
 			
 	
