@@ -1,5 +1,9 @@
 import lara.util.Replacer;
 import lara.Strings;
+
+/**
+ * @class
+ */
 var LatUtils = {};
 
 LatUtils._error = function(message) {

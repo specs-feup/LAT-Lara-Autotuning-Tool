@@ -1,0 +1,65 @@
+// * @param {string} unit - Unit of the measured values
+
+/**
+ * Represents the exploration results for a single metric for all variants.
+ *
+ * @param {string} name - Name of the metric
+ */
+var LatMetricResults = function(name) {
+	checkString(name, "LatMetricResults:name");
+	//checkString(unit, "LatMetricResults:unit");
+	
+	this.name = name;
+	this.unit = undefined;
+	this.variantsValues = [];
+};
+
+/**
+ * @param {Object} variantIndex - The index of the variant.
+ * @param {Object} value - The value extracted from a program execution.
+ */
+LatMetricResults.prototype.addValue = function(variantIndex, value) {
+	var latVariantResults = this.getVariantValues(variantIndex);
+	latVariantResults.push(value);
+}
+
+/**
+ * @param {Object} variantIndex - The index of the variant.
+ *
+ * @return {L#lat.data.LatVariantResults} - The execution values for the specified variant.
+ */
+LatMetricResults.prototype.getVariantValues = function(variantIndex) {
+	var variantValues = this.variantsValues[variantIndex];
+	if(variantValues === undefined) {
+		variantValues = [];
+		this.variantsValues[variantIndex] = variantValues;
+	}
+	
+	return variantValues;
+}
+
+/**
+ * Sets the unit if undefined, or checks if it is the same as the one already set if defined.
+ *
+ * @param {Object} unit - Unit of the metric
+ */
+LatMetricResults.prototype.setOrCheckUnit = function(unit) {
+	if(this.unit === undefined) {
+		this.unit = unit;
+		return;
+	}
+	
+	checkTrue(this.unit === unit, "Expected values '"+this.unit+"' and '"+unit+"' to be the same");
+}
+
+/**
+ * @param {Object} variantIndex - The index of the variant.
+ *
+ * @return {boolean} True if exists results for the given index, false otherwise.
+ */
+ /*
+LatMetricResults.prototype.hasVariant = function(variantIndex) {
+	return this.variantsValues[variantIndex] !== undefined;
+}
+*/
+				

@@ -1,0 +1,28 @@
+/** 
+ * Represents the exploration results for all variants and metrics
+ *
+ * @param {string} name - The name of the exploration run.
+ * @param {L#lat.data.LatMetricResults[]} metricsResults - Array with the metrics results.
+ * @param {L#lat.data.LatVariantVariable[]} variantsVariables - Array with the variants variables values.
+ *
+ */
+var LatRunResults = function(name, variantsVariables, metricsResults) {
+	checkString(name, "LatRunResults::name");
+	checkArray(variantsVariables, "LatRunResults::variantsVariables");
+	checkArray(metricsResults, "LatRunResults::metricsResults");
+	
+	this.name = name;
+	this.variantsVariables = variantsVariables;
+	this.metricsResults = metricsResults;
+};
+
+
+LatRunResults.prototype.getName = function() {
+	return this.name = name;
+}
+
+LatRunResults.prototype.addMetricResults = function(metricIndex, variantIndex, metricResult) {
+	var latMetricResults = this.metricsResults[metricIndex];
+	latMetricResults.setOrCheckUnit(metricResult.getUnit());
+	latMetricResults.addValue(variantIndex, metricResult.getValue());
+}

@@ -1,0 +1,15 @@
+// * @param {Object[]} values - The values of this variant variable for all the unique variants of the run.
+/**
+ * @param {string} name - The name of the variant variable.
+ */
+var LatVariantVariable = function(name) {
+	checkString(name, "LatVariantVariable::name");
+	//checkArray(values, "LatVariantVariable::values");
+	
+	this.name = name;
+	this.values = [];
+};
+
+LatVariantVariable.prototype.addValue = function(value) {
+	this.values.push(value);
+}
