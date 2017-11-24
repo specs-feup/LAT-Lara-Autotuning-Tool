@@ -208,7 +208,10 @@ LatUtils.escapeHtmlCharacters = function(original){
     return Strings.escapeHtml(original);
 };
 
-LatUtils.resultToCsv = function(latResults, outputFolder, delimiter) {
+/**
+ * @deprecated
+ */
+LatUtils.resultToCsvOld = function(latResults, outputFolder, delimiter) {
 	if(delimiter === undefined) {
 		delimiter = ";";
 	}
@@ -265,6 +268,68 @@ LatUtils.resultToCsv = function(latResults, outputFolder, delimiter) {
 			
 			csv.contents += "\n";
 		}
+	}
+	
+	if(outputFolder !== undefined) {
+		// Write a csv file for each metric
+		for(var csv of csvs) {
+			var csvFilename = Io.getPath(outputFolder, csv.name + ".csv");
+			println("Writing file '"+ csvFilename.getAbsolutePath() + "'");
+			Io.writeFile(csvFilename, csv.contents);
+		}
+	}
+	
+	return csvs;
+}
+
+
+LatUtils.resultToCsv = function(latResults, outputFolder, delimiter) {
+	if(delimiter === undefined) {
+		delimiter = ";";
+	}
+
+
+	if(latResults.variantsVariables.length === 0) {
+		return "";
+	}
+	
+	var csvs = [];
+
+	// For each metric, create a CSV
+	for(var metricIndex = 0; metricIndex < latResults.metricsResults.length; metricIndex++) {
+		metric = latResults.metricsResults[metricIndex];
+		
+		// Create CSV for the metric
+		var csv = {};
+		csvs.push(csv);
+		csv.name = Strings.replacer(metric.name, "[^a-zA-Z0-9]", "_") + "_" + metric.unit; 
+
+		
+		// Build header
+		csv.contents = latResults.variantsVariables.map(function(variantVariable){return variantVariable.name;}).join(delimiter);
+		// Add as many fields as values
+		var numRuns = metric.variantsValues[0].length;
+		for(var i = 1; i <= numRuns; i++) {
+			csv.contents += delimiter + "run_" + i;
+		}
+		
+		csv.contents += "\n";
+
+		// Each variant represents a line in the csv
+		var numVariants = latResults.variantsVariables[0].values.length;
+		for(var variantIndex = 0; variantIndex < numVariants; variantIndex++) {
+			// Add variant values
+			csv.contents += latResults.variantsVariables.map(function(variantVariable){return variantVariable.values[variantIndex];}).join(delimiter);
+	
+			csv.contents += delimiter;
+	
+			// Add execution values
+			csv.contents += metric.variantsValues[variantIndex].join(delimiter);
+			
+			// Finish line
+			csv.contents += "\n";
+		}		
+			
 	}
 	
 	if(outputFolder !== undefined) {

@@ -14,6 +14,14 @@ var LatMetricResults = function(name) {
 	this.variantsValues = [];
 };
 
+LatMetricResults.prototype.getName = function() {
+	return this.name;
+}
+
+LatMetricResults.prototype.getUnit = function() {
+	return this.unit;
+}
+
 /**
  * @param {Object} variantIndex - The index of the variant.
  * @param {Object} value - The value extracted from a program execution.

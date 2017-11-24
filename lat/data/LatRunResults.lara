@@ -26,3 +26,25 @@ LatRunResults.prototype.addMetricResults = function(metricIndex, variantIndex, m
 	latMetricResults.setOrCheckUnit(metricResult.getUnit());
 	latMetricResults.addValue(variantIndex, metricResult.getValue());
 }
+
+/**
+ * @param {L#lat.data.LatVariantVariable[]}
+ */
+LatRunResults.prototype.getVariantsVariables = function() {
+	return this.variantsVariables;
+}
+
+LatRunResults.prototype.getNumVariants = function() {
+	return this.variantsVariables.length;
+}
+
+/**
+ * @param {L#lat.data.LatMetricResults[]}
+ */
+LatRunResults.prototype.getMetricsResults = function() {
+	return this.metricsResults;
+}
+
+LatRunResults.prototype.getNumMetrics = function() {
+	return this.metricsResults.length;
+}

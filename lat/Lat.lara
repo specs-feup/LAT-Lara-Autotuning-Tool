@@ -681,9 +681,7 @@ Lat.prototype.executeSourceCode = function() {
         this.popIndent().print("Done");
     }
 	
-		
-	println("New results:");
-	printObject(this.runResults);
+	
 };
 
 Lat.prototype.parseResults = function(emptyFileAfterwards) {
