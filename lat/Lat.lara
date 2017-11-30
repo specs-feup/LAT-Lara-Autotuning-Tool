@@ -73,12 +73,12 @@ Lat.prototype.tune = function() {
 
 	// Create results object
 	var parsedResults = this.buildResultsObject();
-	
+
     this._tuneCounts++; //update the current index of the tuning operation after the report generation
 
     this._tunned = true;
     this.popIndent().print("Tuning operation complete");
-	
+
 	return parsedResults;
 };
 
@@ -271,7 +271,7 @@ Lat.prototype.updatePathVariables = function() {
 	// Clear the variants folder, and recreate it
 	Io.deleteFolder(this._variantsFolder);
 	Io.mkdir(this._variantsFolder);
-	
+
     this._bestResult = this._resultsFolder + "/best"; /** the folder that will hold the best variant source code without timer prints */
     this._templateFolder = "../lat/templates/"; /** the file that will contain each tuning operation's report */
     this._reporterTemplate = "../lat/templates/report.html"; /** the file that will contain each tuning operation's report */
@@ -315,7 +315,7 @@ Lat.prototype.loadCmaker = function() {
  */
 Lat.prototype.validateProperty = function(propertyName, value, defaultValue) {
     /*TODO: use this[propertyName]
-    
+
     if (defaultValue === undefined && value === undefined) {
         LatUtils._error("The value specified for the property '" + propertyName + "' is undefined and it is a required property");
     }*/
@@ -406,7 +406,7 @@ Lat.prototype.generateSearchGroups = function() {
     return this;
 };
 /**
- * create a list of unique variables from search groups for the custom searchtype, or return this.variables for the other cases 
+ * create a list of unique variables from search groups for the custom searchtype, or return this.variables for the other cases
  */
 Lat.prototype.generateUniqueVariables = function() {
     this.print("Searching for Unique Variables...", true);
@@ -448,7 +448,7 @@ Lat.prototype.generateBaseVariant = function() {
  */
 Lat.prototype.generateUniqueVariants = function() {
     this.print("Generating Unique Variants...", true).pushIndent();
-    this.uniqueVariants = []; // a list 
+    this.uniqueVariants = []; // a list
     for (var i = 0; i < this.searchGroups.length; i++) {
         this.currentVariant = LatUtils.clone(this.baseVariant); //if this is not clone it's values will be changed
         this.generateVariantsRecursive(this.searchGroups[i], 0, i);
@@ -468,7 +468,7 @@ Lat.prototype.generateUniqueVariants = function() {
 };
 
 /**
- * 
+ *
  * @param searchGroup a list with the LatVars of the current searchGroup
  * @param index the current index being delt with, of searchGroup
  */
@@ -485,17 +485,17 @@ Lat.prototype.generateVariantsRecursive = function(searchGroup, index, searchGro
             this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //keep uniqueVariants order of elements the same as the order of unique Variants
 			var currentLatVarsCopy = currentLatVars.slice();
 			currentLatVarsCopy.push(searchGroup[index]);
-            
-			
+
+
 			this.generateVariantsRecursive(searchGroup, index + 1, searchGroupIndex, currentLatVarsCopy); //next LatVar in the searchGroup
         } else {
 			//var isFirst = true;
             while (searchGroup[index].hasNext()) {
-				
+
                 this.currentVariant[searchGroup[index].index] = searchGroup[index].getNext(); //only update the value
 				var currentLatVarsCopy = currentLatVars.slice();
 				currentLatVarsCopy.push(searchGroup[index]);
-			  /*  
+			  /*
 				// Skip first
 				if(isFirst) {
 					println("SKIPPING FIRST!");
@@ -503,7 +503,7 @@ Lat.prototype.generateVariantsRecursive = function(searchGroup, index, searchGro
 					continue;
 				}
 */
-				
+
 				this.uniqueVariants.push({
                     variant: LatUtils.clone(this.currentVariant),
 					latvars: currentLatVarsCopy,
@@ -523,46 +523,54 @@ Lat.prototype.generateSourceCode = function() {
     //0 check if any includes are necessary
     this.checkIncludes();
 
-    var countVarsPerVariant = this.uniqueVariables.length; //avoid multiple accesses
     for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
         this.print("Generating for Variant " + (i + 1) + " of " + this.uniqueVariants.length + "...", true).pushIndent();
-        Clava.pushAst(); //preserve the initial ast before changing it : LowLevelApi.getNode(this.scope).hashCode()
-        // Find equivalent join points
-        var $eqScope = LatUtils.findNewJp(this.scope);
-        var $eqMeasure = LatUtils.findNewJp(this.measure);
-
-        //1st alter  the value of all variables according to the current variant
-        for (var j = 0; j < countVarsPerVariant; j++) { //foreach variable in the current variant
-            if (!this.uniqueVariants[i].variant[j].default) { //only edit if the default value is not selected
-
-                var callOutput = undefined;
-                if (!LatUtils.isLatVarOmp(this.uniqueVariables[j])) { //omp does not use vardecl nor varref
-                    if ($eqScope.instanceOf("scope")) {
-                        call callOutput: getJoinpointsToChangeForSingleLatVarScope($eqScope, this.uniqueVariables[j]);
-                    } else {
-                        call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]);
-                    }
-                } else {
-                    call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[j]);
-                }
-                this.uniqueVariables[j] = callOutput.latvarOut;
-				this.uniqueVariables[j].changeVariantInAst($eqScope, this.uniqueVariants[i].variant[j], this.conservativeReplacement); //update the AST with the current value for this LatVar's variant
-            }
-        }
-        //2nd include the timer prints
-        var timer = new Timer("NANOSECONDS", this._timerFileAbsolute);
-        timer.time($eqMeasure, this.getTuneName() + " " + i + " ");
-
-        //3rd write the variant to the output folder
-        Clava.writeCode(this._variantsFolder + "/" + i);
-
-        //4th use CMaker
-        this.uniqueVariants[i].executable = this.generateExecutable(i); //save the executable
-
-        Clava.popAst(); //retrieve the initial ast after changing it, to allow multiple changes
+        this.generateVariantSourceCode(i);
         this.popIndent().print("Done", true).print();
     }
     this.popIndent().print("Done", true).print();
+};
+
+/**
+ * Generate and compile the source code for the variant at index i
+ * @param i the index in this.uniqueVariants of the variant to generate
+ */
+Lat.prototype.generateVariantSourceCode = function(i) {
+    Clava.pushAst(); //preserve the initial ast before changing it : LowLevelApi.getNode(this.scope).hashCode()
+    var variant = this.uniqueVariants[i];
+    // Find equivalent join points
+    var $eqScope = LatUtils.findNewJp(this.scope);
+    var $eqMeasure = LatUtils.findNewJp(this.measure);
+
+    //1st alter  the value of all variables according to the current variant
+    for (var j = 0; j < this.uniqueVariables.length; j++) { //foreach variable in the current variant
+        if (!variant.variant[j].default) { //only edit if the default value is not selected
+
+            var callOutput = undefined;
+            if (!LatUtils.isLatVarOmp(this.uniqueVariables[j])) { //omp does not use vardecl nor varref
+                if ($eqScope.instanceOf("scope")) {
+                    call callOutput: getJoinpointsToChangeForSingleLatVarScope($eqScope, this.uniqueVariables[j]);
+                } else {
+                    call callOutput: getJoinpointsToChangeForSingleLatVar($eqScope, this.uniqueVariables[j]);
+                }
+            } else {
+                call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[j]);
+            }
+            this.uniqueVariables[j] = callOutput.latvarOut;
+            this.uniqueVariables[j].changeVariantInAst($eqScope, variant.variant[j], this.conservativeReplacement); //update the AST with the current value for this LatVar's variant
+        }
+    }
+    //2nd include the timer prints
+    var timer = new Timer("NANOSECONDS", this._timerFileAbsolute);
+    timer.time($eqMeasure, this.getTuneName() + " " + i + " ");
+
+    //3rd write the variant to the output folder
+    Clava.writeCode(this._variantsFolder + "/" + i);
+
+    //4th use CMaker
+    variant.executable = this.generateExecutable(i); //save the executable
+
+    Clava.popAst(); //retrieve the initial ast after changing it, to allow multiple changes
 };
 
 /**
@@ -585,10 +593,10 @@ Lat.prototype.executeSourceCode = function() {
                 .execute(command);
 
 			//debug("Executing '" + this.uniqueVariants[j].executable + " " + this.executionFlags);
-			//debug(consoleOutput);	
-				
+			//debug(consoleOutput);
+
             this.popIndent().print("Done");
-			
+
 			if(executor.getReturnValue() < 0) {
 				this.print("Execution returned value '" + executor.getReturnValue() +  " ' for command '" + command + "'\n");
 				if(!Strings.isEmpty(consoleOutput)) {
@@ -596,10 +604,10 @@ Lat.prototype.executeSourceCode = function() {
 					this.print("#######");
 					this.print(consoleOutput);
 					this.print("#######\n");
-				}				
-				
+				}
+
 			}
-			
+
 			//println("TEST:" + "Executing '" + this.uniqueVariants[j].executable + " " + this.executionFlags + "\n" + consoleOutput);
         }
         this.popIndent().print("Done");
@@ -624,7 +632,7 @@ Lat.prototype.parseResults = function(emptyFileAfterwards) {
 		//if(lines[i].trim().length() === 0) {
 		//	continue;
 		//}
-		
+
         //parse one line from the timer file into variables
         //format: tuneName variant time
         var parts = lines[i].split(" "); // 0 -> [name]_[index], 1->[variant]_[index], 2->[time]ns
@@ -738,15 +746,15 @@ Lat.prototype.generateExecutable = function(i) {
     }
 
     var executable = this.cmaker.build(this._variantsFolder + "/" + i, buildFolder);
-	
+
 	if(executable === undefined) {
 		var msg = "[LAT] Could not generate executable";
 		if(!Strings.isEmpty(this.cmaker.getMakeOutput())) {
 			msg += ": " + this.cmaker.getMakeOutput();
-		}		
+		}
 		println(msg);
 	}
-	
+
 	return executable;
 };
 
@@ -754,7 +762,7 @@ Lat.prototype.buildResultsObject = function() {
 
 	// start creating the object
 	var results = {};
-	
+
 	results.name = this.name;
 	results.variants = [];
 
@@ -762,14 +770,14 @@ Lat.prototype.buildResultsObject = function() {
 
 	var tuneResults = this.results[tuneName];
 	var variants = tuneResults["per_variant"];
-	
+
 	for(var variantIndex in variants) {
 
 		var variant = {};
 
 		var variantArray = this.uniqueVariants[variantIndex].variant;
 		var latvars = this.uniqueVariants[variantIndex].latvars;
-		
+
 		if(variantArray.length !== latvars.length) {
 			throw "Expected variants to be the same length (" + variantArray.length + ") as latvars (" + latvars.length + ")";
 		}
@@ -782,17 +790,17 @@ Lat.prototype.buildResultsObject = function() {
 			variant.nameArray = variant.nameArray.concat(latvar.getNameArray());
 			variant.valueArray = variant.valueArray.concat(latvar.getValueArray(currentVariant));
 		}
-		
-		variant.metrics = [];		
 
-		
+		variant.metrics = [];
+
+
 		// For now, assume a single metric (time in ns)
 		var timeMetric = {};
 		timeMetric.name = "Execution Time";
 		timeMetric.unit = "ns";
 		timeMetric.values = variants[variantIndex].times;
-		
-		variant.metrics.push(timeMetric);	
+
+		variant.metrics.push(timeMetric);
 
 		results.variants.push(variant);
 	}
