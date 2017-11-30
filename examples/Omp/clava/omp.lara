@@ -4,6 +4,7 @@ aspectdef tune_omp
 	var lat = new Lat("omp");
 	
 	lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
+	lat.setOutputFolder("C:/Users/M/Desktop/Development/specs/LAT/lat/examples/Omp/Dst");
 	
 	select marker end
 	apply
