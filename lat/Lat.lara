@@ -694,6 +694,14 @@ Lat.prototype.filterVariants = function(filterCallBack) {
     // this.uniqueVariants = this.uniqueVariants.filter(variant => filterCallBack(variant));
 }
 
+/**
+ * Remove a variant from the list, by index
+ * @param index the index at which to remove
+ */
+Lat.prototype.removeVariant = function(index) {
+    this.uniqueVariants.splice(index);
+}
+
 Lat.prototype.generateReport = function() {
     this.print("Generating the report...", true).pushIndent();
     if (Object.keys(this.results).length == 0) {
