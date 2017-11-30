@@ -686,6 +686,14 @@ Lat.prototype.getResults = function() {
     return LatUtils.clone(this.results);
 }
 
+/**
+ * Fitler the values inside this.uniqueVariants
+ * @param filterCallBack callback that should return true or false, where false means the variants that cause a false will bew removed
+ */
+Lat.prototype.filterVariants = function(filterCallBack) {
+    // this.uniqueVariants = this.uniqueVariants.filter(variant => filterCallBack(variant));
+}
+
 Lat.prototype.generateReport = function() {
     this.print("Generating the report...", true).pushIndent();
     if (Object.keys(this.results).length == 0) {
