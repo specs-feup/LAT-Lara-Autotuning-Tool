@@ -581,34 +581,7 @@ Lat.prototype.executeSourceCode = function() {
         this.print("Starting test " + (i + 1) + " of " + this.numTests + "...").pushIndent();
         for (var j = 0; j < this.uniqueVariants.length; j++) {
             this.print("Executing Variant " + (j + 1) + " of " + this.uniqueVariants.length + "...", true).pushIndent();
-
-			var command = this.uniqueVariants[j].executable;
-			if(this.executionFlags !== undefined) {
-				command += " " + this.executionFlags;
-			}
-
-            var executor = new ProcessExecutor();
-            var consoleOutput = executor.setPrintToConsole(false)
-                .setWorkingDir(this._variantsFolder + "/" + j)
-                .execute(command);
-
-			//debug("Executing '" + this.uniqueVariants[j].executable + " " + this.executionFlags);
-			//debug(consoleOutput);
-
-            this.popIndent().print("Done");
-
-			if(executor.getReturnValue() < 0) {
-				this.print("Execution returned value '" + executor.getReturnValue() +  " ' for command '" + command + "'\n");
-				if(!Strings.isEmpty(consoleOutput)) {
-					this.print("Output:");
-					this.print("#######");
-					this.print(consoleOutput);
-					this.print("#######\n");
-				}
-
-			}
-
-			//println("TEST:" + "Executing '" + this.uniqueVariants[j].executable + " " + this.executionFlags + "\n" + consoleOutput);
+            this.executeVariant(j);
         }
         this.popIndent().print("Done");
     }
@@ -617,6 +590,42 @@ Lat.prototype.executeSourceCode = function() {
         this.print("Clearing generated variants from your system...", true).pushIndent();
         Io.deleteFolder(this._variantsFolder);
         this.popIndent().print("Done");
+    }
+};
+/**
+ * Execute a single variant
+ * @param i the index of the variant to execute
+ * @param returnMetric boolean decidiing wether the measured metric of this variant should be returned
+ * @return the metric
+ */
+Lat.prototype.executeVariant = function(i, returnMetric) {
+    var variant = this.uniqueVariants[i];
+    var command = variant.executable;
+    if(this.executionFlags !== undefined) {
+        command += " " + this.executionFlags;
+    }
+
+    var executor = new ProcessExecutor();
+    var consoleOutput = executor.setPrintToConsole(false)
+        .setWorkingDir(this._variantsFolder + "/" + i)
+        .execute(command);
+
+    this.popIndent().print("Done");
+
+    if(executor.getReturnValue() < 0) {//if the execution fails
+        var userMessage = "Execution returned value '" + executor.getReturnValue() +  " ' for command '" + command + "'\n";
+        this.print(userMessage);
+        if(!Strings.isEmpty(consoleOutput)) {
+            this.print("Output:");
+            this.print("#######");
+            this.print(consoleOutput);
+            this.print("#######\n");
+        }
+        if (returnMetric) {
+            this._error(userMessage);
+        }
+    }else if(returnMetric){
+        //TODO: read the desired metric, this should be done in accordance to the way metrics will be gathered in the future
     }
 };
 
