@@ -2,7 +2,7 @@
 
 int main() {
 	int a = 0;
-	#pragma lara marker smartSearchTest
+#pragma lara marker smartSearchTest
 	{
 		int x = 2000;
 		for(int i = 0; i < x % 20; i++){
