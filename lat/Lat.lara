@@ -37,18 +37,18 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
 	//this.skipDefaultCases = true;
 };
 
-Lat.prototype.tune = function() {
-    this.restartPrintLog();
-    this.print("Starting tuning operation").pushIndent();
-    this._tunned = false;
-    this._duration = System.nanos(); //tune start time, duration will be calculated later
-
+/**
+ * Run the necessary checks and generate variants
+ */
+Lat.prototype.prepareForTuning = function(){
     //check cmake options
     this.checkCmakerOptions();
 
+    //remove duplicates
     if (this.searchType === LatConst.SEARCH_TYPE.DEPENDENT || this.searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
         this.variables = LatUtils.removeDuplicates(this.variables);
     }
+    //generate the variants
     this.generateSearchGroups();
     this.generateUniqueVariables();
     this.generateBaseVariant(); //must come after generateUniqueVariables
@@ -58,11 +58,18 @@ Lat.prototype.tune = function() {
         return;
     }
 
-
     this.checkVariablesInScope();
     if (Io.readFile(this._timerFile) == null) {
         Io.writeFile(this._timerFile, "\n"); //create the file if it does not exist
     }
+}
+Lat.prototype.tune = function() {
+    this.restartPrintLog();
+    this.print("Starting tuning operation").pushIndent();
+    this._tunned = false;
+    this._duration = System.nanos(); //tune start time, duration will be calculated later
+
+    this.prepareForTuning();
 
     this.generateSourceCode();
     this.executeSourceCode();
