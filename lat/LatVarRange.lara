@@ -70,4 +70,4 @@ LatVarRange.prototype.newTemplateCard = function() {
     replacerCard.replaceAll("[[step]]", this.step);
 		
 	return replacerCard;
-}
+};
