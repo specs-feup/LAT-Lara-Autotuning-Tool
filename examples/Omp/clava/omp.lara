@@ -2,22 +2,23 @@ import lat.Lat;
 
 aspectdef tune_omp
 	var lat = new Lat("omp");
-	
-	lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
-	
+
+	lat.setVerbose(true).loadCmaker().cmaker.setGenerator("MinGW Makefiles").setMakeCommand("mingw32-make");
+	// lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
+
 	select marker end
 	apply
 		if($marker.id == "OmpMeasure"){
 			lat.setScope($marker.contents);
 		}
 	end
-	
+
 	var omp_schedule_chunk = new LatVarRange("", 5, 10, 1, pow2);
 	var omp_num_threads = new LatVarRange("", 1, LatConst.NUM_CPU_THREADS);
 	var omp = new LatVarOmp("lat_omp", ["static", "dynamic", "guided"], omp_schedule_chunk, omp_num_threads);
 
 	lat.setSearchGroups([[omp]]);
-	
+
 	lat.tune();
 end
 
