@@ -1,0 +1,128 @@
+import lara.dse.DseLoop;
+
+import lara.code.Timer;
+import lara.metrics.FileSizeMetric;
+
+import lara.metrics.EnergyMetric;
+import lara.metrics.ExecutionTimeMetric;
+
+import lat.Lat;
+import lat.LatUtils;
+import lat.vars.LatVarSet;
+
+import lara.Io;
+
+/**
+ * LAT implementation of DseLoop.
+ *
+ * @class
+ */
+var LatDseLoop = function() {
+	// Parent constructor
+    DseLoop.call(this);
+	
+	this.cmaker = undefined;
+};
+// Inheritance
+LatDseLoop.prototype = Object.create(DseLoop.prototype);
+
+LatDseLoop.prototype.setCMaker = function(cmaker) {
+	this.cmaker = cmaker;
+}
+
+LatDseLoop.prototype.execute = function($scope, $measure, dseVariants, metrics, outputFolder, numExec) {
+
+	if(outputFolder === undefined) {
+		outputFolder = "./lat_output";
+	}
+	
+	if(numExec === undefined) {
+		numExec = 10;
+	}
+	
+	var lat = new Lat("matrix_mul");
+
+	// For debuging
+	lat.setVerbose(true);
+
+	if(this.cmaker !== undefined) {
+		lat.setCmaker(this.cmaker);
+	}
+	
+	// Specific to my PC setup
+	if(Platforms.isWindows()) {
+		lat.loadCmaker().cmaker.setGenerator("MinGW Makefiles").setMakeCommand("mingw32-make");
+	}
+
+	// Output folder
+	lat.setOutputFolder(outputFolder);
+
+	// Select portion of code that we will explore
+	lat.setScope($scope);
+	lat.setMeasure($measure);		
+
+	var dseVars = this._convertDseVariants(dseVariants);
+	lat.addSearchGroup(dseVars);
+
+	lat.setNumTests(numExec);
+
+	lat.setMetrics(metrics);
+
+	return lat.tune();
+};
+
+
+LatDseLoop.prototype._convertDseVariants = function(dseVariants) {
+	var dseVars = [];
+
+	for(var dseVariant of dseVariants) {
+		dseVars.push(this._convertDseVariant(dseVariant));
+	}
+	
+	return dseVars;
+}
+
+
+LatDseLoop.prototype._convertDseVariant = function(dseVariant) {
+	if(dseVariant.getType() === "VariableVariant") {
+		return this._convertVariableVariant(dseVariant);
+	}
+	
+	throw "LatDseLoop._convertDseVariant: DseVariant '"+dseVariant.getType()+"' not implemented yet";
+}
+
+LatDseLoop.prototype._convertVariableVariant = function(variableVariant) {
+
+	// If only one variable, create LatVar
+	if(variableVariant.getNames().length == 1) {
+		return this._createLatVar(variableVariant.getNames()[0], variableVariant.getDseValues());		
+	}
+	// Otherwise, create LatVarSet
+	else {
+		var latVars = [];
+		var dseValues = variableVariant.getDseValues();
+		if(dseValues.getType() !== "DseValuesSet") {
+			throw "Not yet implemented for DseValues of type " + dseValues.getType();
+		}
+		
+		for(var i=0; i<variableVariant.getNames().length; i++) {
+			var varName = variableVariant.getNames()[i];
+			var values = dseValues.dseValuesArray[i];
+			latVars.push(this._createLatVar(varName, values));
+		}
+		
+		return new LatVarSet(latVars);
+	}
+
+}
+
+LatDseLoop.prototype._createLatVar = function(varName, dseValues) {
+	var dseValuesType = dseValues.getType();
+	
+	if(dseValuesType === "DseValuesList") {
+		return new LatVarList(varName, dseValues.values);
+	}
+	
+	throw "LatDseLoop._createLatVar: DseValues '"+dseValuesType+"' not implemented yet";
+
+}
