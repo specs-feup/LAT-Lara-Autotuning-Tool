@@ -12,12 +12,14 @@ var LatVarSet = function() {
 		throw "LatVarSet: needs at least one LatVar as argument";
 	}
 	
+	var latVarsArray = arrayFromArgs(arguments);
+	
 	// Check that arguments are all LatVar objects
 	this.latVars = [];
 	this.numElements = undefined;
 	
-	for(var i = 0; i<arguments.length; i++) {
-		var latVar = arguments[i];
+	for(var i = 0; i<latVarsArray.length; i++) {
+		var latVar = latVarsArray[i];
 		LatUtils.checkLatVar(latVar, "LatVarSet argument["+i+"]");
 		this.latVars.push(latVar);
 		
