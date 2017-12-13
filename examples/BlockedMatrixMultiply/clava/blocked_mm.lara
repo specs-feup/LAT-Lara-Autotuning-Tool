@@ -3,8 +3,9 @@ import lat.Lat;
 aspectdef tune_mm
 	var lat = new Lat("blocked_mm");
 	
-	lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
-	
+	lat.setVerbose(true).loadCmaker().cmaker.setGenerator("MinGW Makefiles").setMakeCommand("mingw32-make");
+	// lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
+
 	select function end
 	apply
 		if($function.name == "BlockedMatrixMultiply"){

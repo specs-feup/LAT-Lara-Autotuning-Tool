@@ -1,0 +1,58 @@
+import lat.Lat;
+
+aspectdef tune_mm
+	var lat = new Lat("blocked_mm");
+
+	lat.setOutputFolder("C:/Users/M/Desktop/Development/specs/LAT/lat/examples/SmartSearch/Dst");
+	lat.setVerbose(true).loadCmaker().cmaker.setGenerator("MinGW Makefiles").setMakeCommand("mingw32-make");
+	// lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
+
+	select marker end
+	apply
+		if($marker.id == "smartSearchTest"){
+			lat.setScope($marker.contents);
+			break;
+		}
+	end
+	var x = new LatVarRange("x", 1, 100, 10);
+	var y = new LatVarRange("y", 5, 21, 3);
+	lat.setVariables([x, y]);
+
+	//some metrics helper functions
+	function Metrics(){
+		this.average = 0;
+		this.minDiff = Infinity;
+		this.count = 0;
+	};
+	Metrics.prototype.restart = function(){
+	};
+	Metrics.prototype.update = function(number){
+		var total = this.average * this.count + number;//undo the division and add the new number
+		this.count++;
+		var newAverage = total/this.count;//calculte new average
+		var diff = Math.abs(newAverage - this.average);//calculate current diff
+		this.average = newAverage;//update the average
+		this.minDiff = Math.min(this.minDiff, diff);//update the minDiff
+	};
+	var metrics = new Metrics();
+	lat.prepareForTuning();
+	while (lat.uniqueVariants.length > 0) {
+		lat.generateVariantSourceCode(0);//TODO: replace with line below once execute variant returns a value
+		// var result = lat.executeVariant(0);
+		var result = (Math.random() * (1.6 - 0.5) + 0.5);
+		metrics.update(result);
+		print(metrics.average + "\n");
+		if (metrics.minDiff < 0.01) {//example single filter condition
+			lat.removeVariant(lat.uniqueVariants.length-1);//remove last
+			break;
+		}else if(metrics.average > 1.20){//example stop condition
+			break;
+		}else if(metrics.average > 1){//example multiple filter example
+			lat.filterVariants(function(variant){
+				return variant[0].value < (metrics.count * 10) || variant[0].default == false;//filter out values greater than or equal to (metrics.count * 10) and default values
+			});
+		}
+		lat.removeVariant(0);
+	}
+	print("Done");
+end

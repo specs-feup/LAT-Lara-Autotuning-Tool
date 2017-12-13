@@ -61,18 +61,20 @@ Lat.prototype.clearMetrics = function() {
 	this.metrics = [];
 }
 
-Lat.prototype.tune = function() {
-    this.restartPrintLog();
-    this.print("Starting tuning operation").pushIndent();
-    this._tunned = false;
-    this._duration = System.nanos(); //tune start time, duration will be calculated later
 
+
+/**
+ * Run the necessary checks and generate variants
+ */
+Lat.prototype.prepareForTuning = function(){
     //check cmake options
     this.checkCmakerOptions();
 
+    //remove duplicates
     if (this.searchType === LatConst.SEARCH_TYPE.DEPENDENT || this.searchType === LatConst.SEARCH_TYPE.INDEPENDENT) {
         this.variables = LatUtils.removeDuplicates(this.variables);
     }
+    //generate the variants
     this.generateSearchGroups();
     this.generateUniqueVariables();
     this.generateBaseVariant(); //must come after generateUniqueVariables
@@ -82,11 +84,18 @@ Lat.prototype.tune = function() {
         return;
     }
 
-
     this.checkVariablesInScope();
     if (Io.readFile(this._timerFile) == null) {
         Io.writeFile(this._timerFile, "\n"); //create the file if it does not exist
     }
+}
+Lat.prototype.tune = function() {
+    this.restartPrintLog();
+    this.print("Starting tuning operation").pushIndent();
+    this._tunned = false;
+    this._duration = System.nanos(); //tune start time, duration will be calculated later
+
+    this.prepareForTuning();
 
     this.generateSourceCode();
     this.executeSourceCode();
@@ -549,17 +558,28 @@ Lat.prototype.generateSourceCode = function() {
     //0 check if any includes are necessary
     this.checkIncludes();
 
-    var countVarsPerVariant = this.uniqueVariables.length; //avoid multiple accesses
     for (var i = 0; i < this.uniqueVariants.length; i++) { //foreach variant
         this.print("Generating for Variant " + (i + 1) + " of " + this.uniqueVariants.length + "...", true).pushIndent();
+        this.generateVariantSourceCode(i);
+        this.popIndent().print("Done", true).print();
+    }
+    this.popIndent().print("Done", true).print();
+};
+
+/**
+ * Generate and compile the source code for the variant at index i
+ * @param i the index in this.uniqueVariants of the variant to generate
+ */
+Lat.prototype.generateVariantSourceCode = function(i) {
         Clava.pushAst(); //preserve the initial ast before changing it : LowLevelApi.getNode(this.scope).hashCode()
+    var variant = this.uniqueVariants[i];
         // Find equivalent join points
         var $eqScope = LatUtils.findNewJp(this.scope);
         var $eqMeasure = LatUtils.findNewJp(this.measure);
 
         //1st alter  the value of all variables according to the current variant
-        for (var j = 0; j < countVarsPerVariant; j++) { //foreach variable in the current variant
-            if (!this.uniqueVariants[i].variant[j].default) { //only edit if the default value is not selected
+    for (var j = 0; j < this.uniqueVariables.length; j++) { //foreach variable in the current variant
+        if (!variant.variant[j].default) { //only edit if the default value is not selected
 
                 var callOutput = undefined;
                 if (!LatUtils.isLatVarOmp(this.uniqueVariables[j])) { //omp does not use vardecl nor varref
@@ -572,7 +592,7 @@ Lat.prototype.generateSourceCode = function() {
                     call callOutput: getJoinpointsToChangeForLatVarOmp(this.uniqueVariables[j]);
                 }
                 this.uniqueVariables[j] = callOutput.latvarOut;
-				this.uniqueVariables[j].changeVariantInAst($eqScope, this.uniqueVariants[i].variant[j], this.conservativeReplacement); //update the AST with the current value for this LatVar's variant
+            this.uniqueVariables[j].changeVariantInAst($eqScope, variant.variant[j], this.conservativeReplacement); //update the AST with the current value for this LatVar's variant
             }
         }
 
@@ -591,12 +611,9 @@ Lat.prototype.generateSourceCode = function() {
         Clava.writeCode(this._variantsFolder + "/" + i);
 
         //4th use CMaker
-        this.uniqueVariants[i].executable = this.generateExecutable(i); //save the executable
+    variant.executable = this.generateExecutable(i); //save the executable
 
         Clava.popAst(); //retrieve the initial ast after changing it, to allow multiple changes
-        this.popIndent().print("Done", true).print();
-    }
-    this.popIndent().print("Done", true).print();
 };
 
 /**
@@ -613,15 +630,33 @@ Lat.prototype.executeSourceCode = function() {
         this.print("Starting test " + (i + 1) + " of " + this.numTests + "...").pushIndent();
         for (var j = 0; j < this.uniqueVariants.length; j++) {
             this.print("Executing Variant " + (j + 1) + " of " + this.uniqueVariants.length + "...", true).pushIndent();
+            this.executeVariant(j);
+        }
+        this.popIndent().print("Done");
+    }
 
-			var command = this.uniqueVariants[j].executable;
+    if (this.clearCode) { //remove all the created files
+        this.print("Clearing generated variants from your system...", true).pushIndent();
+        Io.deleteFolder(this._variantsFolder);
+        this.popIndent().print("Done");
+    }
+};
+/**
+ * Execute a single variant
+ * @param i the index of the variant to execute
+ * @param returnMetric boolean decidiing wether the measured metric of this variant should be returned
+ * @return the metric
+ */
+Lat.prototype.executeVariant = function(i, returnMetric) {
+    var variant = this.uniqueVariants[i];
+    var command = variant.executable;
 			if(this.executionFlags !== undefined) {
 				command += " " + this.executionFlags;
 			}
 
             var executor = new ProcessExecutor();
             var consoleOutput = executor.setPrintToConsole(false)
-                .setWorkingDir(this._variantsFolder + "/" + j)
+        .setWorkingDir(this._variantsFolder + "/" + i)
                 .execute(command);
 
 			// Extract the outputs of each metric	
@@ -659,27 +694,21 @@ Lat.prototype.executeSourceCode = function() {
 				
             this.popIndent().print("Done");
 			
-			if(executor.getReturnValue() < 0) {
-				this.print("Execution returned value '" + executor.getReturnValue() +  " ' for command '" + command + "'\n");
+    if(executor.getReturnValue() < 0) {//if the execution fails
+        var userMessage = "Execution returned value '" + executor.getReturnValue() +  " ' for command '" + command + "'\n";
+        this.print(userMessage);
 				if(!Strings.isEmpty(consoleOutput)) {
 					this.print("Output:");
 					this.print("#######");
 					this.print(consoleOutput);
 					this.print("#######\n");
 				}				
-				
+        if (returnMetric) {
+            this._error(userMessage);
 			}
-			
-			//println("TEST:" + "Executing '" + this.uniqueVariants[j].executable + " " + this.executionFlags + "\n" + consoleOutput);
+    }else if(returnMetric){
+        //TODO: read the desired metric, this should be done in accordance to the way metrics will be gathered in the future
         }
-        this.popIndent().print("Done");
-    }
-
-    if (this.clearCode) { //remove all the created files
-        this.print("Clearing generated variants from your system...", true).pushIndent();
-        Io.deleteFolder(this._variantsFolder);
-        this.popIndent().print("Done");
-    }
 	
 	
 };
@@ -739,6 +768,22 @@ Lat.prototype.parseResults = function(emptyFileAfterwards) {
 Lat.prototype.getResults = function() {
     if (!this._tunned) { LatUtils._error("A tuning operation is required before calling getResutls()"); }
     return LatUtils.clone(this.results);
+}
+
+/**
+ * Fitler the values inside this.uniqueVariants
+ * @param filterCallBack callback that should return true or false, where false means the variants that cause a false will bew removed
+ */
+Lat.prototype.filterVariants = function(filterCallBack) {
+    // this.uniqueVariants = this.uniqueVariants.filter(variant => filterCallBack(variant));
+}
+
+/**
+ * Remove a variant from the list, by index
+ * @param index the index at which to remove
+ */
+Lat.prototype.removeVariant = function(index) {
+    this.uniqueVariants.splice(index);
 }
 
 Lat.prototype.generateReport = function() {

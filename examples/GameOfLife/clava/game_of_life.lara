@@ -3,7 +3,8 @@ import lat.Lat;
 aspectdef tune_mm
 	var lat = new Lat("region_1");
 	
-	lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
+	lat.setVerbose(true).loadCmaker().cmaker.setGenerator("MinGW Makefiles").setMakeCommand("mingw32-make");
+	// lat.setVerbose(true).loadCmaker().cmaker.setMakeCommand("nmake");
 	
 	//-----------------------------------------------First Tuning scope
 	//#pragma isat tuning name(region_1) scope(M1_begin, M1_end) measure(M2_begin, M2_end) variable(x_blksize, range(100, 1000, 100)) variable(y_blksize, range(100, 1000, 100)) variable(num_threads, range(1, $NUM_CPU_THREADS + 1, 1))
