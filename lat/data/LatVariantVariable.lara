@@ -13,3 +13,12 @@ var LatVariantVariable = function(name) {
 LatVariantVariable.prototype.addValue = function(value) {
 	this.values.push(value);
 }
+
+LatVariantVariable.prototype.getName = function() {
+	return this.name;
+}
+
+
+LatVariantVariable.prototype.getValue = function(variantIndex) {
+	return this.values[variantIndex];
+}

@@ -38,6 +38,30 @@ LatRunResults.prototype.getNumVariants = function() {
 	return this.variantsVariables.length;
 }
 
+LatRunResults.prototype.getVariantVariableValue = function(variableName, variantIndex) {
+	for(var variantVariable of this.variantsVariables) {
+		if(variantVariable.getName() === variableName) {
+			return variantVariable.getValue(variantIndex);
+		}
+	}
+
+	println("Could not find variable variant with name '"+variableName+"'");
+
+	return undefined;
+}
+
+LatRunResults.prototype.getMetricResults = function(metricName) {
+	for(var metricResults of this.metricsResults) {
+		if(metricResults.getName() === metricName) {
+			return metricResults;
+		}
+	}
+
+	println("Could not find variable variant with name '"+variableName+"'");
+
+	return undefined;
+}
+
 /**
  * @param {L#lat.data.LatMetricResults[]}
  */
