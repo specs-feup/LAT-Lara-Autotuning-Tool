@@ -35,7 +35,7 @@ LatRunResults.prototype.getVariantsVariables = function() {
 }
 
 LatRunResults.prototype.getNumVariants = function() {
-	return this.variantsVariables.length;
+	return this.variantsVariables[0].getNumVariants();
 }
 
 LatRunResults.prototype.getVariantVariableValue = function(variableName, variantIndex) {
