@@ -22,3 +22,7 @@ LatVariantVariable.prototype.getName = function() {
 LatVariantVariable.prototype.getValue = function(variantIndex) {
 	return this.values[variantIndex];
 }
+
+LatVariantVariable.prototype.getNumVariants = function() {
+	return this.values.length;
+}
