@@ -281,6 +281,8 @@ Lat.prototype.setConservativeReplacement = function(conservativeReplacement) {
     this.conservativeReplacement = conservativeReplacement;
     return this;
 };
+
+/*
 Lat.prototype.setCmaker = function(cmaker) {
     if (!(cmaker instanceof CMaker)) {
         LatUtils._error("Invalid value supplied in setCmaker: the value should be an instance of CMaker");
@@ -288,6 +290,7 @@ Lat.prototype.setCmaker = function(cmaker) {
     this.cmaker = cmaker;
     return this;
 };
+*/
 
 Lat.prototype.updatePathVariables = function() {
     this._basePath = this.outputFolder + "/" + this.name;
@@ -343,13 +346,30 @@ Lat.prototype.loadDefaults = function(name, scope, variables, measure, searchTyp
     this.updatePathVariables();
 };
 
+Lat.prototype.getCmaker = function() {
+	if(this.cmaker === undefined) {
+		this.loadCmaker();
+	}
+	
+	return this.cmaker;
+}
+
 Lat.prototype.loadCmaker = function() {
-    this.cmaker = new CMaker("tempName");
+    this.cmaker = new CMaker("LAT CMaker");
     this.cmaker.setMinimumVersion("3.0.2")
         //.setMakeCommand("make")
+        // TODO: Use Clava standard flag
         .addCxxFlags("-O3", "-std=c++11")
+        // TODO: Only add if C++
         .addLibs("stdc++");
         //.setGenerator("MinGW Makefiles");
+
+    for(var userInclude of Clava.getData().getUserIncludes()) {
+        println("[CMAKER] Adding include: " + userInclude);
+        this.cmaker.addIncludeFolder(userInclude);
+    }
+
+
     return this;
 };
 
@@ -847,25 +867,26 @@ Lat.prototype.checkIncludes = function() {
 
 Lat.prototype.generateExecutable = function(i) {
 
-    this.cmaker.sources = new CMakerSources();
-    this.cmaker.includeFolders = new StringSet();
-    //this.cmaker.sources.addSource(this.file.relativeFilepath);
-    this.cmaker.addIncludeFolder("../" + i);
-    this.cmaker.name = "variant_" + i;
+
+	var variantCmaker = this.cmaker.copy();
+
+
+    variantCmaker.addIncludeFolder("../" + i);
+    variantCmaker.name = "variant_" + i;
 
     var buildFolder = Io.getPath(this._variantsFolder + "/" + i, "build");
 
     call out1: addFiles();
     for (var file of out1.files) {
-        this.cmaker.sources.addSource(file);
+        variantCmaker.sources.addSource(file);
     }
 
-    var executable = this.cmaker.build(this._variantsFolder + "/" + i, buildFolder);
+    var executable = variantCmaker.build(this._variantsFolder + "/" + i, buildFolder);
 	
 	if(executable === undefined) {
 		var msg = "[LAT] Could not generate executable";
-		if(!Strings.isEmpty(this.cmaker.getMakeOutput())) {
-			msg += ": " + this.cmaker.getMakeOutput();
+		if(!Strings.isEmpty(variantCmaker.getMakeOutput())) {
+			msg += ": " + variantCmaker.getMakeOutput();
 		}		
 		println(msg);
 	}
