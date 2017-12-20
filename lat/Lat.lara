@@ -361,7 +361,7 @@ Lat.prototype.loadCmaker = function() {
         // TODO: Use Clava standard flag
 		.addCxxFlags("-O3")
 		// Add standard
-		.addCxxFlags(Clava.getStandard().getFlag());
+		.addCxxFlags(Clava.getProgram().stdFlag);
         //.addCxxFlags("-O3", "-std=c++11")
         // TODO: Only add if C++
         //.addLibs("stdc++");
@@ -893,15 +893,20 @@ Lat.prototype.generateExecutable = function(i) {
 	// Add external sources
 	var extraSources = Clava.getProgram().extraSources;
 	for(var extraSource of extraSources) {
-		
+		debug("Adding external source '" + extraSource + "'");
 		if(Io.isFile(extraSource)) {
-			debug("Adding external source '" + extraSource + "'");
+			//debug("Adding external source '" + extraSource + "'");
 			variantCmaker.sources.addSource(extraSource);
 		} else if(Io.isFolder(extraSource)) {
+			variantCmaker.sources.addSources(Io.getPaths(extraSource));
+			/*
 			for(var path of Io.getPaths(extraSource)) {
-				debug("Adding external source '" + path + "'");
+				//debug("Adding external source '" + path + "'");
 				variantCmaker.sources.addSource(path);
 			}
+			*/
+		} else {
+			println("[LAT] Extra source ' " + extraSource +  " ' does not exist");
 		}
 	}
 	
