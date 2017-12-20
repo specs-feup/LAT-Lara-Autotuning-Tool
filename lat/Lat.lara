@@ -870,7 +870,35 @@ Lat.prototype.generateExecutable = function(i) {
 
 	var variantCmaker = this.cmaker.copy();
 
-
+	// Add external includes
+	var extraIncludes = Clava.getProgram().extraIncludes();
+	for(var extraInclude of extraIncludes) {
+		
+		if(Io.isFolder(extraInclude)) {
+			debug("Adding external include '" + extraInclude + "'");
+			variantCmaker.addIncludeFolder(extraInclude);
+		} else {
+			println("[LAT] Extra include ' " + extraIncludes +  " ' is not a folder");
+		}
+		
+	}
+	
+	// Add external sources
+	var extraSources = Clava.getProgram().extraSources();
+	for(var extraSource of extraSources) {
+		
+		if(Io.isFile(extraSource)) {
+			debug("Adding external source '" + extraSource + "'");
+			variantCmaker.sources.addSource(extraSource);
+		} else if(Io.isFolder(extraSource)) {
+			for(var path of Io.getPaths(extraSource)) {
+				debug("Adding external source '" + path + "'");
+				variantCmaker.sources.addSource(path);
+			}
+		}
+	}
+	
+	
     variantCmaker.addIncludeFolder("../" + i);
     variantCmaker.name = "variant_" + i;
 
