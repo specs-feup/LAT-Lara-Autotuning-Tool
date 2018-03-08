@@ -643,10 +643,12 @@ Lat.prototype.generateVariantSourceCode = function(i) {
 		}
 		
         //3rd write the variant to the output folder
-        Clava.writeCode(this._variantsFolder + "/" + i);
+        var codeFolder = this._variantsFolder + "/" + i;
+        Clava.writeCode(codeFolder);
+        //Clava.writeCode(this._variantsFolder + "/" + i);        
 
         //4th use CMaker
-    variant.executable = this.generateExecutable(i); //save the executable
+		variant.executable = this.generateExecutable(i, codeFolder); //save the executable
 
         Clava.popAst(); //retrieve the initial ast after changing it, to allow multiple changes
 };
@@ -872,7 +874,7 @@ Lat.prototype.checkIncludes = function() {
 
 };
 
-Lat.prototype.generateExecutable = function(i) {
+Lat.prototype.generateExecutable = function(i, codeFolder) {
 
 
 	var variantCmaker = this.cmaker.copy();
@@ -910,7 +912,7 @@ Lat.prototype.generateExecutable = function(i) {
 
     var buildFolder = Io.getPath(this._variantsFolder + "/" + i, "build");
 
-    call out1: addFiles();
+    call out1: addFiles(codeFolder);
     for (var file of out1.files) {
         variantCmaker.sources.addSource(file);
     }

@@ -82,12 +82,14 @@ end
 
 
 aspectdef addFiles
+	input destinationFolder end
 	output files end
 	
 	files = [];
 	select file end
 	apply
-		files.push($file.relativeFilepath);
+		//files.push($file.relativeFilepath);
+		files.push($file.destinationFilepath(Io.getAbsolutePath(destinationFolder)));
 	end
 end
 /*
