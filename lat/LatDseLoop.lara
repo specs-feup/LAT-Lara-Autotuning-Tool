@@ -47,6 +47,8 @@ LatDseLoop.prototype.execute = function($scope, $measure, dseVariants, metrics, 
 
 	if(this.cmaker !== undefined) {
 		lat.setCmaker(this.cmaker);
+	} else {
+		lat.loadCmaker();
 	}
 	
 	// Specific to my PC setup
