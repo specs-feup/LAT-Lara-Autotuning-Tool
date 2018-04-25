@@ -634,8 +634,8 @@ Lat.prototype.generateVariantSourceCode = function(i) {
 		
 		// METRIC: To remove
         //2nd include the timer prints
-        var timer = new Timer("NANOSECONDS", this._timerFileAbsolute);
-        timer.time($eqMeasure, this.getTuneName() + " " + i + " ");
+        //var timer = new Timer("NANOSECONDS", this._timerFileAbsolute);
+        //timer.time($eqMeasure, this.getTuneName() + " " + i + " ");
 
 		// METRIC: iterate over the array/map of metrics and instrument code
 		for(var metric of this.metrics) {
