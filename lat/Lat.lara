@@ -43,7 +43,7 @@ var Lat = function(name, scope, variables, measure, searchType, numTests, remove
 	
 	// METRIC: Array of metrics. By default, add time metric
 	this.metrics = [];
-	this.metrics.push(new ExecutionTimeMetric());
+	//this.metrics.push(new ExecutionTimeMetric());
 	//this.metrics['executionTime'] = new ExecutionTimeMetric();
 	
 	// Initialize metrics results. 
@@ -634,8 +634,8 @@ Lat.prototype.generateVariantSourceCode = function(i) {
 		
 		// METRIC: To remove
         //2nd include the timer prints
-        //var timer = new Timer("NANOSECONDS", this._timerFileAbsolute);
-        //timer.time($eqMeasure, this.getTuneName() + " " + i + " ");
+        var timer = new Timer("NANOSECONDS", this._timerFileAbsolute);
+        timer.time($eqMeasure, this.getTuneName() + " " + i + " ");
 
 		// METRIC: iterate over the array/map of metrics and instrument code
 		for(var metric of this.metrics) {
