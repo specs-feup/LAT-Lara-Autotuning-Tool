@@ -1,3 +1,4 @@
+import lat.LatConst;
 import lara.util.Replacer;
 import lara.Strings;
 
