@@ -1,3 +1,4 @@
+import lat.LatVar;
 import lat.templates;
 import lara.util.Replacer;
 
