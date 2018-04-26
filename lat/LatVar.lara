@@ -1,3 +1,4 @@
+import lat.LatUtils;
 import aspects.variableHelpers;
 import lat.templates;
 import lara.util.Replacer;
