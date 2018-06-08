@@ -729,7 +729,7 @@ Lat.prototype.executeVariant = function(i, returnMetric) {
 				
             this.popIndent().print("Done");
 			
-    if(executor.getReturnValue() < 0) {//if the execution fails
+    if(executor.getReturnValue() != 0) {//if the execution fails
         var userMessage = "Execution returned value '" + executor.getReturnValue() +  " ' for command '" + command + "'\n";
         this.print(userMessage);
 				if(!Strings.isEmpty(consoleOutput)) {
