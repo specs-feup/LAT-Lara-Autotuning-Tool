@@ -22,12 +22,17 @@ var LatDseLoop = function() {
     DseLoop.call(this);
 	
 	this.cmaker = undefined;
+	this.flags = undefined;
 };
 // Inheritance
 LatDseLoop.prototype = Object.create(DseLoop.prototype);
 
 LatDseLoop.prototype.setCMaker = function(cmaker) {
 	this.cmaker = cmaker;
+}
+
+LatDseLoop.prototype.setExecutionFlags = function(flags) {
+	this.flags = flags;
 }
 
 LatDseLoop.prototype.execute = function($scope, $measure, dseVariants, metrics, outputFolder, numExec) {
@@ -49,6 +54,11 @@ LatDseLoop.prototype.execute = function($scope, $measure, dseVariants, metrics, 
 		lat.setCmaker(this.cmaker);
 	} else {
 		lat.loadCmaker();
+	}
+
+	// Execution flags
+	if(this.flags !== undefined) {
+		lat.setExecutionFlags(this.flags);
 	}
 	
 	// Specific to my PC setup
